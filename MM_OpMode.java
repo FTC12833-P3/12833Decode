@@ -4,6 +4,7 @@ import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.Gamepad;
+import com.qualcomm.robotcore.util.RobotLog;
 
 public abstract class MM_OpMode extends LinearOpMode {
     MM_Robot robot = null;
@@ -24,7 +25,10 @@ public abstract class MM_OpMode extends LinearOpMode {
         multipleTelemetry.addData("Status", "Initializing... please wait");
         multipleTelemetry.update();
         initialize();
+
         while (opModeInInit()){
+            RobotLog.d("hi");
+            
             multipleTelemetry.addData("Status", "Initialized");
             multipleTelemetry.update();
 
