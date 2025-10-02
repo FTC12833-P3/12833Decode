@@ -25,8 +25,8 @@ public class MM_Drivetrain {
     private final double HEADING_ERROR_THRESHOLD = 3;
 
     public static double ROTATE_P_CO_EFF = .05;
-    public static double X_ERROR_THRESHOLD = .5;
-    public static double Y_ERROR_THRESHOLD = .5;
+    public static double X_ERROR_THRESHOLD = 1.5; //TODO fix threshold values (used to be .5)
+    public static double Y_ERROR_THRESHOLD = 1.5;
 
     public static double desiredPower = 1;
 
@@ -49,11 +49,6 @@ public class MM_Drivetrain {
         frMotor = opMode.hardwareMap.get(DcMotorEx.class, "frMotor");
         blMotor = opMode.hardwareMap.get(DcMotorEx.class, "blMotor");
         brMotor = opMode.hardwareMap.get(DcMotorEx.class, "brMotor");
-
-        flMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        frMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        blMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        brMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
         flMotor.setDirection(DcMotorEx.Direction.REVERSE);
         blMotor.setDirection(DcMotorEx.Direction.REVERSE);
@@ -108,6 +103,12 @@ public class MM_Drivetrain {
         frMotor.setPower(0);
         blMotor.setPower(0);
         brMotor.setPower(0);
+    }
+    public void enableBrakes(){
+        flMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        frMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        blMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        brMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
     }
 
     public void autoRunDrivetrain() {

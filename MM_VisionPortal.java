@@ -50,6 +50,7 @@ public class MM_VisionPortal {
 
     public Pose2D setPosFromApriltag(){
         List<AprilTagDetection> detections = aprilTagProcessor.getDetections();
+
         if(!detections.isEmpty() && detections.get(0).ftcPose != null){
             opMode.multipleTelemetry.addData("xIntrins", round2Dec(detections.get(0).ftcPose.x));
             opMode.multipleTelemetry.addData("yIntrins", round2Dec(detections.get(0).ftcPose.y));

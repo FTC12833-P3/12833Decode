@@ -19,12 +19,9 @@ public class MM_Position_Data {
     public double pastExtrinsicY;
 
     public static MM_Position targetPos = new MM_Position(0, 0, 0);
-    public MM_Spline testSpline = new MM_Spline(new double[]{36, 60, 36}, new double[]{24, 0, -24}, MM_Autos.SPLINE_DETAIL_LEVEL);
-    public MM_Spline testCubicSpline = new MM_Spline(new double[]{36, 96, 0, 48}, new double[]{46, 0, 0, -48}, MM_Autos.SPLINE_DETAIL_LEVEL, true);
-    public MM_Spline continuousCubicSpline = new MM_Spline(new double[]{36,104, 0, 48}, new double[]{49, 24, 24, 0}, MM_Autos.SPLINE_DETAIL_LEVEL, true);
+    public MM_Spline splineToCollectFirstSpikeMark = new MM_Spline(new double[]{-47, -47, -27, -12}, new double[]{-47, -31, -17, -33}, MM_Autos.SPLINE_DETAIL_LEVEL, true);
+    public MM_Spline splineToCollectSecondSpikeMark = new MM_Spline(new double[]{-47, -11, -1, -12}, new double[]{-47, -13, -16, -33}, MM_Autos.SPLINE_DETAIL_LEVEL, true);
 
-    //xPoints 48, 96, 0, 48
-    //yPoints , 0, -24, -24, -48
     MM_Position_Data(MM_OpMode opMode){
         this.opMode = opMode;
         visionPortal = new MM_VisionPortal(opMode);
@@ -55,6 +52,7 @@ public class MM_Position_Data {
         opMode.multipleTelemetry.addData("yawOdom", round2Dec(getHeading()));
 
         if (useApriltag) {
+            opMode.multipleTelemetry.addData("usingApriltags", "");
             if (AprilTagPos != null) {
                 pastExtrinsicY = AprilTagPos.getY(DistanceUnit.INCH);
             }
@@ -67,8 +65,7 @@ public class MM_Position_Data {
                 if ((opMode.opModeInInit() && MM_OpMode.currentGamepad1.b && !MM_OpMode.previousGamepad1.b) || (!opMode.opModeInInit() && opMode.getClass() != MM_Autos.class)) {
                     odometryController.setPosition(AprilTagPos);
                     if(opMode.opModeInInit()){
-                        MM_OpMode.alliance = MM_VisionPortal.startingTag == 13 || MM_VisionPortal.startingTag == 11? -1: 1; //TODO adjust for correct tags
-                        MM_OpMode.scoringLocation = MM_VisionPortal.startingTag == 13 || MM_VisionPortal.startingTag == 16? "": "";
+                        MM_OpMode.alliance = MM_VisionPortal.startingTag == 20? -1: 1;
                     }
                 }
             } else { //just here for dashboard

@@ -28,7 +28,7 @@ public abstract class MM_OpMode extends LinearOpMode {
 
         while (opModeInInit()){
             RobotLog.d("hi");
-            
+
             multipleTelemetry.addData("Status", "Initialized");
             multipleTelemetry.update();
 
@@ -40,6 +40,7 @@ public abstract class MM_OpMode extends LinearOpMode {
 
             if (getClass() == MM_Autos.class){
                 robot.drivetrain.navigation.updatePosition(true);
+                multipleTelemetry.addData("in autos class", "");
             }
         }
         runProcedures();
