@@ -74,7 +74,7 @@ public class MM_Autos extends MM_OpMode{
                 case COLLECT:
                     if (state != previousState){
                         //TODO turn on collector
-                        MM_Position_Data.targetPos.setY(MM_Position_Data.targetPos.getX() - 15);
+                        MM_Position_Data.targetPos.setY(MM_Position_Data.targetPos.getY() - 1);
                     }
 
                     if(robot.drivetrain.driveDone()){
@@ -90,6 +90,7 @@ public class MM_Autos extends MM_OpMode{
 
 
     public void setNextSplinePoint(MM_Spline spline){
+
         spline.updateDistanceTraveled(currentSection);
         targetX = spline.getNextPoint(currentSection)[0];
         targetY = spline.getNextPoint(currentSection)[1];
