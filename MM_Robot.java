@@ -4,6 +4,7 @@ public class MM_Robot {
     private MM_OpMode opMode;
 
     public MM_Drivetrain drivetrain;
+    public MM_Collector collector;
 
     public MM_Robot (MM_OpMode opMode){
         this.opMode = opMode;
@@ -11,5 +12,6 @@ public class MM_Robot {
 
     public void init(){
         drivetrain = new MM_Drivetrain(opMode);
+        collector = new MM_Collector(opMode);
     }
 }

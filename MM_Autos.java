@@ -73,18 +73,20 @@ public class MM_Autos extends MM_OpMode{
                     break;
                 case COLLECT:
                     if (state != previousState){
-                        //TODO turn on collector
+                        MM_Collector.runCollector = true;
                         MM_Position_Data.targetPos.setY(MM_Position_Data.targetPos.getY() - 1);
                     }
 
                     if(robot.drivetrain.driveDone()){
-                        //TODO turn off collector
+                        MM_Collector.runCollector = false;
                         previousState = state;
                         state = STATES.SCORE;
                     }
 
             }
             robot.drivetrain.autoRunDrivetrain();
+            robot.collector.autoRunCollector();
+
         }
     }
 
