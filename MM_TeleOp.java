@@ -14,6 +14,8 @@ public class MM_TeleOp extends MM_OpMode{
         while(opModeIsActive()){
             robot.drivetrain.driveWithSticks();
             robot.collector.runCollector();
+            robot.launcher.runLauncher();
+            MM_Launcher.runLauncher = true;
         }
     }
 }

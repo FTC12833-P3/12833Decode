@@ -62,7 +62,7 @@ public class MM_Position_Data {
                 opMode.multipleTelemetry.addData("yApril", round2Dec(AprilTagPos.getY(DistanceUnit.INCH)));
                 opMode.multipleTelemetry.addData("yawApril", round2Dec(AprilTagPos.getHeading(AngleUnit.DEGREES)));
 
-                if ((opMode.opModeInInit() && MM_OpMode.currentGamepad1.b && !MM_OpMode.previousGamepad1.b) || (!opMode.opModeInInit() && opMode.getClass() != MM_Autos.class)) {
+                if ((opMode.opModeInInit() && MM_OpMode.currentGamepad1.b && !MM_OpMode.previousGamepad1.b)) {
                     odometryController.setPosition(AprilTagPos);
                     if(opMode.opModeInInit()){
                         MM_OpMode.alliance = MM_VisionPortal.startingTag == 20? -1: 1;
@@ -86,7 +86,6 @@ public class MM_Position_Data {
         public double getX () {
         return currentPos.getX(DistanceUnit.INCH);
     }
-
 
         public double getY () {
         return currentPos.getY(DistanceUnit.INCH);

@@ -75,8 +75,8 @@ public class MM_VisionPortal {
                 .setDrawTagOutline(true)
                 .setDrawAxes(true)
                 .setDrawCubeProjection(true)
-                .setCameraPose(new Position(DistanceUnit.INCH, -.625, 6.8125, 0.0, 0L),
-                        new YawPitchRollAngles(AngleUnit.DEGREES, 0, -90, 38, 0L))
+                .setCameraPose(new Position(DistanceUnit.INCH, -8, .5, -8.5, 0L),
+                        new YawPitchRollAngles(AngleUnit.DEGREES, 0, 30, 0, 0L))
                 .build();
 
         visionPortal = new VisionPortal.Builder()
