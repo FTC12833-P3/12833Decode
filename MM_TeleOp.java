@@ -16,6 +16,7 @@ public class MM_TeleOp extends MM_OpMode{
             robot.collector.runCollector();
             robot.launcher.runLauncher();
             MM_Launcher.runLauncher = true;
+            multipleTelemetry.update();
         }
     }
 }

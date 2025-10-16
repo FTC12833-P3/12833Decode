@@ -83,6 +83,7 @@ public class MM_VisionPortal {
                 .setCamera(opMode.hardwareMap.get(WebcamName.class, "Webcam 1"))
                 .addProcessor(aprilTagProcessor)
                 .addProcessor(cameraStreamProcessor)
+                .setLiveViewContainerId(0)
                 .setStreamFormat(VisionPortal.StreamFormat.MJPEG)
                 .setAutoStopLiveView(true)
                 .build();
@@ -90,10 +91,10 @@ public class MM_VisionPortal {
         FtcDashboard.getInstance().startCameraStream(cameraStreamProcessor, 0);
 
 
-        limelight = opMode.hardwareMap.get(Limelight3A.class, "limelight");
-
-        limelight.pipelineSwitch(1); //switch to the yellow sample detector pipeline
-        limelight.start();
+//        limelight = opMode.hardwareMap.get(Limelight3A.class, "limelight");
+//
+//        limelight.pipelineSwitch(1); //switch to the yellow sample detector pipeline
+//        limelight.start();
     }
 
     private double round2Dec(double inDouble) {
