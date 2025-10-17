@@ -4,11 +4,8 @@ import static org.firstinspires.ftc.teamcode.MM_OpMode.currentGamepad1;
 import static org.firstinspires.ftc.teamcode.MM_OpMode.previousGamepad1;
 
 import com.acmerobotics.dashboard.config.Config;
-import com.qualcomm.hardware.rev.Rev2mDistanceSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
-
-import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 
 @Config
 public class MM_Drivetrain {
@@ -22,11 +19,18 @@ public class MM_Drivetrain {
     private final DcMotorEx brMotor;
 
     private static final double SLOW_MODE_POWER = .5;
-    private final double HEADING_ERROR_THRESHOLD = 3;
 
-    public static double ROTATE_P_CO_EFF = .05;
-    public static double X_ERROR_THRESHOLD = 1.5; //TODO fix threshold values (used to be .5)
-    public static double Y_ERROR_THRESHOLD = 1.5;
+    public static double headingErrorThreshold = 3;
+    public static double rotatePCoEff = .05;
+
+    public static double xErrorThreshold = 1.5; //TODO fix threshold values (used to be .5)
+    public static double yErrorThreshold = 1.5;
+
+    public static final double HEADING_ERROR_THRESHOLD = 3;
+    public static final double ROTATE_P_CO_EFF = .05;
+
+    public static final double X_ERROR_THRESHOLD = 1.5;
+    public static final double Y_ERROR_THRESHOLD = 1.5;
 
     public static double desiredPower = 1;
 
@@ -117,7 +121,7 @@ public class MM_Drivetrain {
         yError = MM_Position_Data.targetPos.getY() - navigation.getY();
         headingError = getNormalizedHeadingError();
 
-        double rotateVector = headingError * ROTATE_P_CO_EFF;
+        double rotateVector = headingError * rotatePCoEff;
         double moveAngle = Math.toDegrees(Math.atan2(yError, xError));
         double theta = moveAngle - navigation.getHeading() + 45;
 
@@ -142,7 +146,7 @@ public class MM_Drivetrain {
     }
 
     public boolean driveDone() {
-        return Math.abs(xError) < X_ERROR_THRESHOLD && Math.abs(yError) < Y_ERROR_THRESHOLD && Math.abs(headingError) < HEADING_ERROR_THRESHOLD;
+        return Math.abs(xError) < xErrorThreshold && Math.abs(yError) < yErrorThreshold && Math.abs(headingError) < headingErrorThreshold;
     }
 
     private double getNormalizedHeadingError() {

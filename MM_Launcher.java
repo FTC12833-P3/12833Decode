@@ -36,8 +36,7 @@ public class MM_Launcher {
         launchMotorRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         launchMotorLeft.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         launchMotorRight.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        launchMotorRight.setPower(1);
-        launchMotorLeft.setPower(1);
+
     }
 
     public void runLauncher(){
