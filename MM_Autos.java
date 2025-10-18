@@ -60,18 +60,14 @@ public class MM_Autos extends MM_OpMode {
                     break;
                 case DRIVE_TO_COLLECT:
                     if (state != previousState) {
-                        if (collectCycle > 1) {
+                        if (collectCycle != 1) {
                             if (collectCycle < collectSplines.size()) {
                                 previousState = state;
                                 heading = -90;
                                 prepareToSpline(collectSplines.get(collectCycle));
                             }
                         } else {
-                            if(collectCycle == 0) {
-                                MM_Position_Data.targetPos.setAll(-12, -33, -90);
-                            } else{
                                 MM_Position_Data.targetPos.setAll(12, -33, -90);
-                            }
                         }
                     }
 
@@ -84,7 +80,7 @@ public class MM_Autos extends MM_OpMode {
                     }
                     multipleTelemetry.addData("currentTargetX", MM_Position_Data.targetPos.getX());
 
-                    if (splineDone() || (readyToCollect && collectCycle < 2)){
+                    if (splineDone() || (readyToCollect && collectCycle == 1)){
                         previousState = state;
                         state = STATES.COLLECT;
                         readyToCollect = false;
