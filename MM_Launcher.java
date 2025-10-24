@@ -28,22 +28,20 @@ public class MM_Launcher {
 
      launchMotorLeft = opMode.hardwareMap.get(DcMotorEx.class, "launchMotorLeft");
      launchMotorRight = opMode.hardwareMap.get(DcMotorEx.class, "launchMotorRight");
-     launchMotorRight.setDirection(DcMotorEx.Direction.REVERSE);
+     launchMotorLeft.setDirection(DcMotorEx.Direction.REVERSE);
      launcherFeeder = opMode.hardwareMap.get(Servo.class, "launcherFeeder");
         launchMotorLeft.setTargetPosition(10);
         launchMotorRight.setTargetPosition(10);
         launchMotorLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         launchMotorRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        launchMotorLeft.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        launchMotorRight.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        launchMotorRight.setPower(1);
-        launchMotorLeft.setPower(1);
+
     }
 
     public void runLauncher(){
         calculateLauncherVelocity();
-        opMode.multipleTelemetry.addData("launcherSpeed", launcherSpeed);
-        opMode.multipleTelemetry.addData("launcherRealSpeed", launchMotorLeft.getVelocity());
+        opMode.multipleTelemetry.addData("launcherTargetSpeed", launcherSpeed);
+        opMode.multipleTelemetry.addData("launcherSpeedL", launchMotorLeft.getVelocity());
+        opMode.multipleTelemetry.addData("launcherSpeedR", launchMotorRight.getVelocity());
         launchMotorLeft.setVelocity(launcherSpeed);
         launchMotorRight.setVelocity(launcherSpeed);
 
@@ -53,9 +51,10 @@ public class MM_Launcher {
         double launchDistance = Math.abs(Math.hypot(projectileTarget.getX() - opMode.robot.drivetrain.navigation.getX(),
                             projectileTarget.getY() - opMode.robot.drivetrain.navigation.getY())) * 0.0254;
         opMode.multipleTelemetry.addData("launchDistance", launchDistance);
-        double metersPerSecond = Math.sqrt(Math.abs((launchDistance * Math.tan(LAUNCHER_ANGLE) - (9.81 * Math.pow(launchDistance, 2)) )/ (2 * FINAL_PROJECTILE_HEIGHT * Math.pow(Math.cos(LAUNCHER_ANGLE), 2))));
+        //double metersPerSecond = Math.sqrt(Math.abs((launchDistance * Math.tan(LAUNCHER_ANGLE) - (9.81 * Math.pow(launchDistance, 2)) )/ (2 * FINAL_PROJECTILE_HEIGHT * Math.pow(Math.cos(LAUNCHER_ANGLE), 2))));
+       double metersPerSecond = Math.sqrt((9.81 * launchDistance) / Math.sin(LAUNCHER_ANGLE * 2));
         opMode.multipleTelemetry.addData("metersPerSecond", metersPerSecond);
-        launcherSpeed = Math.abs(metersPerSecond * TICKS_PER_METER);
+        launcherSpeed = Math.abs(metersPerSecond * TICKS_PER_METER) * 2.7;
     }
 
 }
