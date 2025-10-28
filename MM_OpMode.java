@@ -38,10 +38,10 @@ public abstract class MM_OpMode extends LinearOpMode {
             previousGamepad2.copy(currentGamepad2);
             currentGamepad2.copy(gamepad2);
 
-            if (getClass() == MM_Autos.class){
+
                 robot.drivetrain.navigation.updatePosition(true);
-                multipleTelemetry.addData("in autos class", "");
-            }
+
+
         }
         runProcedures();
         if(isStopRequested()){

@@ -1,9 +1,10 @@
 package org.firstinspires.ftc.teamcode;
 
+import com.acmerobotics.dashboard.config.Config;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.Servo;
-
+@Config
 public class MM_Launcher {
     private MM_OpMode opMode;
     private DcMotorEx launchMotorLeft;
@@ -11,13 +12,14 @@ public class MM_Launcher {
     private Servo launcherFeeder;
     private MM_Position projectileTarget = new MM_Position(-65, -65, 0); //blue goal pos
 
+    public static double LAUNCHER_CO_EFF = 1.76; //2.3 for 30A wheels
     private double LAUNCHER_ANGLE = 45;
     public static boolean runLauncher = false;
     public static double launcherSpeed = 1;
     private final double FINAL_PROJECTILE_HEIGHT = 26.5; //height above launch height
 
     private final double TICKS_PER_REV = 28;
-    private final double WHEEL_DIAMETER = 75; //mm
+    private final double WHEEL_DIAMETER = 77.75; //mm 75.75 for ordered wheels, 70.95 for custom
     private final double CIRCUMFERENCE = Math.PI * WHEEL_DIAMETER;
     private final double TICKS_PER_METER = (TICKS_PER_REV / CIRCUMFERENCE) * 1000;
 
@@ -54,7 +56,7 @@ public class MM_Launcher {
         //double metersPerSecond = Math.sqrt(Math.abs((launchDistance * Math.tan(LAUNCHER_ANGLE) - (9.81 * Math.pow(launchDistance, 2)) )/ (2 * FINAL_PROJECTILE_HEIGHT * Math.pow(Math.cos(LAUNCHER_ANGLE), 2))));
        double metersPerSecond = Math.sqrt((9.81 * launchDistance) / Math.sin(LAUNCHER_ANGLE * 2));
         opMode.multipleTelemetry.addData("metersPerSecond", metersPerSecond);
-        launcherSpeed = Math.abs(metersPerSecond * TICKS_PER_METER) * 2.7;
+        launcherSpeed = Math.abs(metersPerSecond * TICKS_PER_METER) * LAUNCHER_CO_EFF;
     }
 
 }

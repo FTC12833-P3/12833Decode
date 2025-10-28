@@ -86,6 +86,7 @@ public class MM_Autos extends MM_OpMode{
             }
             robot.drivetrain.autoRunDrivetrain();
             robot.collector.autoRunCollector();
+            multipleTelemetry.update();
 
         }
     }
