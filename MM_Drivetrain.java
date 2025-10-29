@@ -89,6 +89,11 @@ public class MM_Drivetrain {
     private void setDrivePowers() {
         normalize();
 
+        opMode.multipleTelemetry.addData("flPower", flPower);
+        opMode.multipleTelemetry.addData("frPower", frPower);
+        opMode.multipleTelemetry.addData("blPower", blPower);
+        opMode.multipleTelemetry.addData("brPower", brPower);
+
         if (slowMode) {
             flPower *= SLOW_MODE_POWER;
             frPower *= SLOW_MODE_POWER;
@@ -131,7 +136,6 @@ public class MM_Drivetrain {
         frPower = (2 * Math.sin(Math.toRadians(theta)) * PID) + rotateVector;
         blPower = (2 * Math.sin(Math.toRadians(theta)) * PID) - rotateVector; //I double checked these lines.
         brPower = (2 * Math.cos(Math.toRadians(theta)) * PID) + rotateVector;
-
 
         setDrivePowers();
         opMode.multipleTelemetry.addData("zMove angle", moveAngle);
