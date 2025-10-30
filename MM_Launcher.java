@@ -40,11 +40,11 @@ public class MM_Launcher {
     }
 
     public void runLauncher(){
-        calculateLauncherVelocity();
-        opMode.multipleTelemetry.addData("launcherSpeed", launcherSpeed);
-        opMode.multipleTelemetry.addData("launcherRealSpeed", launchMotorLeft.getVelocity());
-        launchMotorLeft.setVelocity(launcherSpeed);
-        launchMotorRight.setVelocity(launcherSpeed);
+//        calculateLauncherVelocity();
+//        opMode.multipleTelemetry.addData("launcherSpeed", launcherSpeed);
+//        opMode.multipleTelemetry.addData("launcherRealSpeed", launchMotorLeft.getVelocity());
+//        launchMotorLeft.setVelocity(launcherSpeed);
+//        launchMotorRight.setVelocity(launcherSpeed);
 
     }
 

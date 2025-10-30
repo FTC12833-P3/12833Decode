@@ -54,7 +54,18 @@ public class MM_Autos extends MM_OpMode {
                             notDone = false;
                         }
 
-                        collectCycle++;
+
+                            if(settings[0]){ //if collect all spikes
+                                collectCycle++;
+                            } else if(settings[1] && collectCycle < 0){ //if collect first spike
+                                collectCycle = 0;
+                            } else if (settings[2] && collectCycle < 1){
+                                collectCycle = 1;
+                            } else if (settings[3] && collectCycle < 2){
+                                collectCycle = 2;
+                            } else {
+                                notDone = false;
+                            }
 
                     }
                     break;

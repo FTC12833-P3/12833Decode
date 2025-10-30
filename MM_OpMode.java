@@ -30,8 +30,11 @@ public abstract class MM_OpMode extends LinearOpMode {
     boolean spike1 = true;
     boolean spike2 = true;
     boolean spike3 = true;
-    boolean[] settings = {allSpikes, spike1, spike2, spike3};
-    String[] settingsNames = {"AllSpikesEnabled", "spike1Enabled", "spike2Enabled", "spike3Enabled"};
+    boolean eliminationMatch = false;
+    boolean scoreFastest = true;
+    boolean scoreGoalOnly = false;
+    boolean[] settings = {allSpikes, spike1, spike2, spike3, eliminationMatch, scoreFastest, };
+    String[] settingsNames = {"AllSpikesEnabled", "spike1Enabled", "spike2Enabled", "spike3Enabled", "Elimination Match", "score fastest", "score goal only"};
     int currentSetting = 0;
 
     public void runOpMode(){
@@ -39,23 +42,28 @@ public abstract class MM_OpMode extends LinearOpMode {
 
         multipleTelemetry.addData("Status", "Initializing... please wait");
         multipleTelemetry.update();
+
         initialize();
+
+        multipleTelemetry.addLine("Bumpers to change setting");
+        multipleTelemetry.addLine("Triggers to toggle true/false");
+        multipleTelemetry.addData(settingsNames[currentSetting], settings[currentSetting]);
 
         while (opModeInInit()){
             multipleTelemetry.addData("Status", "Initialized");
             if(getClass() == MM_Autos.class){
-                multipleTelemetry.addData("Alliance", alliance == 1? "Red": "Blue");
-                multipleTelemetry.addData("Start Position", startPos == 1? "Goal Side": "Audience Side");
+                multipleTelemetry.addLine("Bumpers to change setting");
+                multipleTelemetry.addLine("Triggers to toggle true/false");
+
                 multipleTelemetry.addData(settingsNames[currentSetting], settings[currentSetting]);
 
-                if (currentGamepad1.x && !previousGamepad1.x){
-                    startPos *= -1;
-                }
-
                 if (currentGamepad1.right_bumper && !previousGamepad1.right_bumper){
-                    selectNextSpikeMark();
+                    nextSetting();
                 } else if (currentGamepad1.left_bumper && !previousGamepad1.left_bumper){
-                    selectPreviousSpikeMark();
+                    previousSetting();
+                }
+                if((currentGamepad1.right_trigger > 0 &&! (previousGamepad1.right_trigger > 0)) || (currentGamepad1.left_trigger > 0 &&! (previousGamepad1.left_trigger > 0))){
+                    settings[currentSetting] = !settings[currentSetting];
                 }
             }
             multipleTelemetry.update();
@@ -67,7 +75,6 @@ public abstract class MM_OpMode extends LinearOpMode {
             currentGamepad2.copy(gamepad2);
 
             robot.drivetrain.navigation.updatePosition(true);
-            multipleTelemetry.addData("in autos class", "");
 
         }
         runProcedures();
@@ -87,7 +94,7 @@ public abstract class MM_OpMode extends LinearOpMode {
         robot.init();
     }
 
-    private void selectNextSpikeMark(){
+    private void nextSetting(){
         if (currentSetting == settings.length - 1){
             currentSetting = 0;
         } else {
@@ -95,7 +102,7 @@ public abstract class MM_OpMode extends LinearOpMode {
         }
     }
 
-    private void selectPreviousSpikeMark(){
+    private void previousSetting(){
         if (currentSetting < 1){
             currentSetting = 0;
         } else {
