@@ -14,7 +14,8 @@ public class MM_Autos extends MM_OpMode {
         DRIVE_TO_COLLECT,
         COLLECT,
         DRIVE_TO_LAUNCH,
-        LAUNCH
+        LAUNCH,
+        LOOK_AT_MOTIF
     }
 
     STATES previousState = null;
@@ -23,7 +24,9 @@ public class MM_Autos extends MM_OpMode {
     double targetX;
     double targetY;
     double heading;
-    int collectCycle = -1; //negative one to account for the first score state
+    int currentSpike = -1; //negative one to account for the first score state
+    int motif = 21;
+    boolean motifDone = false;
     boolean notDone = true;
     boolean readyToCollect = false;
     List<MM_Spline> collectSplines;
@@ -39,46 +42,61 @@ public class MM_Autos extends MM_OpMode {
         while (opModeIsActive() && notDone) {
             switch (state) {
                 case SCORE:
-                    //TODO launch
                     if (state != previousState) {
                         previousState = state;
-                        if (collectCycle < 2) {
-                            MM_Position_Data.targetPos.setAll(-12, -12, 45);
+                        if (currentSpike == 2) {
+                            MM_Position_Data.targetPos.setAll(54, -12, 23); // audience score
                         } else {
-                            MM_Position_Data.targetPos.setAll(54, -12, 23);
+                            MM_Position_Data.targetPos.setAll(-12, -12, 45); // goal score
                         }
                     } else if (robot.drivetrain.driveDone()) {
                         previousState = state;
                         state = STATES.DRIVE_TO_COLLECT;
-                        if (collectCycle >= collectSplines.size() - 1) {
+
+                        //TODO launch
+
+                        if (!settings[4] && currentSpike < 0) { //If I'm not in an elimination match and I just launched by preloads
+                            state = STATES.LOOK_AT_MOTIF;
+                            break;
+                        }
+
+                        if (currentSpike >= collectSplines.size() - 1) {
                             notDone = false;
                         }
 
-
-                            if(settings[0]){ //if collect all spikes
-                                collectCycle++;
-                            } else if(settings[1] && collectCycle < 0){ //if collect first spike
-                                collectCycle = 0;
-                            } else if (settings[2] && collectCycle < 1){
-                                collectCycle = 1;
-                            } else if (settings[3] && collectCycle < 2){
-                                collectCycle = 2;
-                            } else {
-                                notDone = false;
-                            }
-
+                        if (!motifDone && motif != -1) { // -1 we don't care about motif because it is an elimination match
+                            currentSpike = motif;
+                        } else if (settings[0] && motif == -1) { //if collect all spikes and it's a qualifier
+                            currentSpike++;
+                        } else if (settings[1] && currentSpike < 0 && motif != 1) { //if collect first spike
+                            currentSpike = 0;
+                        } else if (settings[2] && currentSpike < 1 && motif != 2) {// if collect second spike
+                            currentSpike = 1;
+                        } else if (settings[3] && currentSpike < 2 && motif != 3) { // if collect third spike
+                            currentSpike = 2;
+                        } else { // I'm finished with autos
+                            notDone = false;
+                        }
                     }
                     break;
+                case LOOK_AT_MOTIF:
+                    if (state != previousState) {
+                        MM_Position_Data.targetPos.setHeading(180);
+                    }
+
+                    if (robot.drivetrain.driveDone()) {
+
+                    }
                 case DRIVE_TO_COLLECT:
                     if (state != previousState) {
-                        if (collectCycle != 1) {
-                            if (collectCycle < collectSplines.size()) {
+                        if (currentSpike != 1) {
+                            if (currentSpike < collectSplines.size()) {
                                 previousState = state;
                                 heading = -90;
-                                prepareToSpline(collectSplines.get(collectCycle));
+                                prepareToSpline(collectSplines.get(currentSpike));
                             }
                         } else {
-                                MM_Position_Data.targetPos.setAll(12, -33, -90);
+                            MM_Position_Data.targetPos.setAll(12, -33, -90);
                         }
                     }
 
@@ -91,10 +109,16 @@ public class MM_Autos extends MM_OpMode {
                     }
                     multipleTelemetry.addData("currentTargetX", MM_Position_Data.targetPos.getX());
 
-                    if (splineDone() || (readyToCollect && collectCycle == 1)){
+                    if (splineDone() || (readyToCollect && currentSpike == 1)) {
                         previousState = state;
                         state = STATES.COLLECT;
                         readyToCollect = false;
+                        if(!motifDone){
+                            motifDone = true;
+                            if(motif != -1) {
+                                currentSpike = -1;
+                            }
+                        }
                     }
                     break;
                 case COLLECT:
