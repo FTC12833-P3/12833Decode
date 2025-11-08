@@ -65,6 +65,14 @@ public class MM_VisionPortal {
         return null;
     }
 
+    public int motif(){
+        List<AprilTagDetection> detections = aprilTagProcessor.getDetections();
+        if(!detections.isEmpty() && detections.get(0).id > 20 && detections.get(0).id < 24){
+            return detections.get(0).id % 20;
+        }
+        return -1;
+    }
+
 
 
     private void init(){
@@ -75,8 +83,8 @@ public class MM_VisionPortal {
                 .setDrawTagOutline(true)
                 .setDrawAxes(true)
                 .setDrawCubeProjection(true)
-                .setCameraPose(new Position(DistanceUnit.INCH, -.625, 6.8125, 0.0, 0L), //TODO change values back to lerPierre offsets
-                        new YawPitchRollAngles(AngleUnit.DEGREES, 0, -90, 38, 0L)) //guido has yaw 0, pitch -90, roll 38
+                .setCameraPose(new Position(DistanceUnit.INCH, -.625, 6.8125, 0.0, 0L),
+                        new YawPitchRollAngles(AngleUnit.DEGREES, 0, -90, 38, 0L)) //for lerpierre new Position(DistanceUnit.INCH, -8, .5, -8.5, 0L), new YawPitchRollAngles(AngleUnit.DEGREES, 0, 30, 0, 0L)
                 .build();
 
         visionPortal = new VisionPortal.Builder()
