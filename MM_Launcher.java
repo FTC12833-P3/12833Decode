@@ -5,6 +5,7 @@ import static org.firstinspires.ftc.teamcode.MM_OpMode.previousGamepad2;
 
 import com.acmerobotics.dashboard.config.Config;
 import com.qualcomm.robotcore.hardware.CRServo;
+import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.Servo;
@@ -15,13 +16,14 @@ public class MM_Launcher {
     private DcMotorEx launchMotorLeft;
     private DcMotorEx launchMotorRight;
     private Servo lowerFeedArm;
-    private CRServo upperFeedArm;
+    private CRServo mo;
+    private ColorSensor peephole;
     private MM_Position projectileTarget = new MM_Position(-65, -65, 0); //blue goal pos
 
     public static double LAUNCHER_CO_EFF = 1.76; //2.3 for 30A wheels
     private double LAUNCHER_ANGLE = 45;
     public static boolean runLauncher = false;
-    public static double launcherSpeed = 1;
+    public static double targetLauncherVelocity = 1;
     private final double FINAL_PROJECTILE_HEIGHT = 26.5; //height above launch height
     private final double LOWER_FEED_BAR_TOP_POSITION = .8;
 
@@ -32,7 +34,9 @@ public class MM_Launcher {
 
     private final double SLOW_SPEED_CO_EFF = .25;
 
-    private boolean haveArtifact = true;
+    private boolean artifactAtTop = true;
+    private boolean moIsReady = true;
+    private boolean launching = false;
 
     public MM_Launcher(MM_OpMode opMode) {
         this.opMode = opMode;
@@ -41,43 +45,57 @@ public class MM_Launcher {
         launchMotorRight = opMode.hardwareMap.get(DcMotorEx.class, "launchMotorRight");
         launchMotorLeft.setDirection(DcMotorEx.Direction.REVERSE);
         lowerFeedArm = opMode.hardwareMap.get(Servo.class, "launcherFeeder");
-        upperFeedArm = opMode.hardwareMap.get(CRServo.class, "upperFeedArm");
-        launchMotorLeft.setTargetPosition(10);
-        launchMotorRight.setTargetPosition(10);
+        mo = opMode.hardwareMap.get(CRServo.class, "upperFeedArm");
+        peephole = opMode.hardwareMap.get(ColorSensor.class, "upperFeedSensor");
         launchMotorLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         launchMotorRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
     }
 
     public void runLauncher() {
-        calculateLauncherVelocity();
-        opMode.multipleTelemetry.addData("launcherTargetSpeed", launcherSpeed);
+        setTargetLauncherVelocity();
+
+        opMode.multipleTelemetry.addData("launcherTargetSpeed", targetLauncherVelocity);
         opMode.multipleTelemetry.addData("launcherSpeedL", launchMotorLeft.getVelocity());
         opMode.multipleTelemetry.addData("launcherSpeedR", launchMotorRight.getVelocity());
 
-        if (haveArtifact) {
-            launchMotorLeft.setVelocity(launcherSpeed);
-            launchMotorRight.setVelocity(launcherSpeed);
+        if (haveArtifact() || launching) { //TODO only set velocity once
+            launchMotorLeft.setVelocity(targetLauncherVelocity);
+            launchMotorRight.setVelocity(targetLauncherVelocity);
         } else {
-            launchMotorLeft.setVelocity(launcherSpeed * SLOW_SPEED_CO_EFF);
-            launchMotorRight.setVelocity(launcherSpeed * SLOW_SPEED_CO_EFF);
+            launchMotorLeft.setVelocity(targetLauncherVelocity * SLOW_SPEED_CO_EFF);
+            launchMotorRight.setVelocity(targetLauncherVelocity * SLOW_SPEED_CO_EFF);
         }
 
-        if (haveArtifact && currentGamepad2.left_trigger > 0 && launchMotorLeft.getVelocity() - launcherSpeed < 50) {
-            lowerFeedArm.setPosition(LOWER_FEED_BAR_TOP_POSITION);
-            upperFeedArm.setPower(1);
-        } else {
-            upperFeedArm.setPower(0);
+        if (!launching && artifactAtTop && currentGamepad2.right_trigger > 0  && Math.abs(launchMotorLeft.getVelocity() - targetLauncherVelocity) < 50) {
+//            lowerFeedArm.setPosition(LOWER_FEED_BAR_TOP_POSITION); TODO fix the lower feed arm
+            mo.setPower(1);
+            launching = true;
+        }
+
+        if(launching) {
+            if (peephole.red() < 1000) {
+                moIsReady = false;
+            } else if (!moIsReady) {
+                moIsReady = true;
+                launching = false;
+                mo.setPower(0);
+            }
         }
     }
 
-    private void calculateLauncherVelocity() {
+    private void setTargetLauncherVelocity() {
         double launchDistance = Math.abs(Math.hypot(projectileTarget.getX() - opMode.robot.drivetrain.navigation.getX(),
                 projectileTarget.getY() - opMode.robot.drivetrain.navigation.getY())) * 0.0254;
         opMode.multipleTelemetry.addData("launchDistance", launchDistance);
         //double metersPerSecond = Math.sqrt(Math.abs((launchDistance * Math.tan(LAUNCHER_ANGLE) - (9.81 * Math.pow(launchDistance, 2)) )/ (2 * FINAL_PROJECTILE_HEIGHT * Math.pow(Math.cos(LAUNCHER_ANGLE), 2))));
         double metersPerSecond = Math.sqrt((9.81 * launchDistance) / Math.sin(LAUNCHER_ANGLE * 2));
         opMode.multipleTelemetry.addData("metersPerSecond", metersPerSecond);
-        launcherSpeed = Math.abs(metersPerSecond * TICKS_PER_METER) * LAUNCHER_CO_EFF;
+        targetLauncherVelocity = Math.abs(metersPerSecond * TICKS_PER_METER) * LAUNCHER_CO_EFF;
+    }
+
+    private boolean haveArtifact(){
+        return artifactAtTop;
     }
 
 }
+
