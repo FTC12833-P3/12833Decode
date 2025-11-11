@@ -24,7 +24,7 @@ public class MM_Autos extends MM_OpMode {
     double targetX;
     double targetY;
     double heading;
-    int currentSpike = 4; //negative one to account for the first score state
+    int currentSpike = 3; //extra increment to account for the first score state
     int motif = -1;
     boolean motifDone = false;
     boolean notDone = true;
@@ -36,7 +36,7 @@ public class MM_Autos extends MM_OpMode {
     @Override
     public void runProcedures() {
 
-        collectSplines = Arrays.asList(robot.drivetrain.navigation.splineToCollectSecondSpikeMark, robot.drivetrain.navigation.splineToCollectThirdSpikeMark, robot.drivetrain.navigation.splineToCollectFirstSpikeMark);
+        collectSplines = Arrays.asList( robot.drivetrain.navigation.splineToCollectThirdSpikeMark, robot.drivetrain.navigation.splineToCollectSecondSpikeMark,  robot.drivetrain.navigation.splineToCollectFirstSpikeMark);
         robot.drivetrain.enableBrakes();
 
         while (opModeIsActive() && notDone) {
@@ -68,11 +68,11 @@ public class MM_Autos extends MM_OpMode {
                             currentSpike = motif;
                         } else if (settings[0] && motif == -1) { //if collect all spikes and it's a qualifier
                             currentSpike--;
-                        } else if (settings[1] && currentSpike < 0 && motif != 1) { //if collect first spike
+                        } else if (settings[1] && currentSpike > 2 && motif != 2) { //if collect first spike
                             currentSpike = 2;
-                        } else if (settings[2] && currentSpike < 1 && motif != 2) {// if collect second spike
+                        } else if (settings[2] && currentSpike > 1 && motif != 1) {// if collect second spike
                             currentSpike = 1;
-                        } else if (settings[3] && currentSpike < 2 && motif != 3) { // if collect third spike
+                        } else if (settings[3] && currentSpike > 0 && motif != 0) { // if collect third spike
                             currentSpike = 0;
                         } else { // I'm finished with autos
                             notDone = false;
