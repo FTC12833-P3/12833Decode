@@ -68,7 +68,7 @@ public class MM_VisionPortal {
     public int motif(){
         List<AprilTagDetection> detections = aprilTagProcessor.getDetections();
         if(!detections.isEmpty() && detections.get(0).id > 20 && detections.get(0).id < 24){
-            return detections.get(0).id % 20;
+            return detections.get(0).id - 21;
         }
         return -1;
     }
