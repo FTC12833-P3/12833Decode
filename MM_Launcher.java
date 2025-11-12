@@ -8,7 +8,10 @@ import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
+import com.qualcomm.robotcore.hardware.DistanceSensor;
 import com.qualcomm.robotcore.hardware.Servo;
+
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 
 @Config
 public class MM_Launcher {
@@ -18,12 +21,16 @@ public class MM_Launcher {
     private Servo lowerFeedArm;
     private CRServo mo;
     private ColorSensor peephole;
+    private DistanceSensor peepholeDistance;
     private MM_Position projectileTarget = new MM_Position(-65, -65, 0); //blue goal pos
 
     public static double LAUNCHER_CO_EFF = 1.76; //2.3 for 30A wheels
     private double LAUNCHER_ANGLE = 45;
     public static boolean runLauncher = false;
     public static double targetLauncherVelocity = 1;
+    public static double lowerFeedArmFirstPosition = .3;
+    public static double lowerFeedArmSecondPosition = .6;
+    public static double lowerFeedArmThirdPosition = .9;
     private final double FINAL_PROJECTILE_HEIGHT = 26.5; //height above launch height
     private final double LOWER_FEED_BAR_TOP_POSITION = .8;
 
@@ -38,6 +45,7 @@ public class MM_Launcher {
     private boolean moIsReady = true;
     private boolean launching = false;
 
+
     public MM_Launcher(MM_OpMode opMode) {
         this.opMode = opMode;
 
@@ -47,6 +55,7 @@ public class MM_Launcher {
         lowerFeedArm = opMode.hardwareMap.get(Servo.class, "launcherFeeder");
         mo = opMode.hardwareMap.get(CRServo.class, "upperFeedArm");
         peephole = opMode.hardwareMap.get(ColorSensor.class, "upperFeedSensor");
+        peepholeDistance = opMode.hardwareMap.get(DistanceSensor.class, "upperFeedSensor");
         launchMotorLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         launchMotorRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
     }
@@ -57,6 +66,16 @@ public class MM_Launcher {
         opMode.multipleTelemetry.addData("launcherTargetSpeed", targetLauncherVelocity);
         opMode.multipleTelemetry.addData("launcherSpeedL", launchMotorLeft.getVelocity());
         opMode.multipleTelemetry.addData("launcherSpeedR", launchMotorRight.getVelocity());
+
+        if (launching){
+            if(true){ // there is an artifact at the top
+
+            } else if (true){ // there is an artifact at the middle
+
+            } else if (true){ // there is an artifact at the bottom
+
+            }
+        }
 
         if (haveArtifact() || launching) { //TODO only set velocity once
             launchMotorLeft.setVelocity(targetLauncherVelocity);
@@ -71,9 +90,11 @@ public class MM_Launcher {
             mo.setPower(1);
             launching = true;
         }
+        opMode.multipleTelemetry.addData("colors", "red %d, green %d, blue %d", peephole.red(), peephole.green(), peephole.blue());
+        opMode.multipleTelemetry.addData("Distance", peepholeDistance.getDistance(DistanceUnit.MM));
 
         if(launching) {
-            if (peephole.red() < 1000) {
+            if (peephole.red() < 350) {
                 moIsReady = false;
             } else if (!moIsReady) {
                 moIsReady = true;
