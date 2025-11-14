@@ -18,9 +18,9 @@ public class MM_Collector {
     }
 
     public void runCollector(){
-        if(opMode.gamepad2.right_bumper && opMode.robot.launcher.lowerFeedArmReady()){
+        if(opMode.gamepad1.right_bumper && opMode.robot.launcher.lowerFeedArmReady()){
             collector.setPower(COLLECT_POWER);
-        } else if (opMode.gamepad2.left_bumper){
+        } else if (opMode.gamepad1.left_bumper){
             collector.setPower(-COLLECT_POWER);
         } else {
             collector.setPower(0);

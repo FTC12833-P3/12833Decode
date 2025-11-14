@@ -1,6 +1,8 @@
 package org.firstinspires.ftc.teamcode;
 
+import static org.firstinspires.ftc.teamcode.MM_OpMode.currentGamepad1;
 import static org.firstinspires.ftc.teamcode.MM_OpMode.currentGamepad2;
+import static org.firstinspires.ftc.teamcode.MM_OpMode.previousGamepad1;
 import static org.firstinspires.ftc.teamcode.MM_OpMode.previousGamepad2;
 
 import com.acmerobotics.dashboard.config.Config;
@@ -69,13 +71,13 @@ public class MM_Launcher {
         opMode.multipleTelemetry.addData("launcherSpeedR", launchMotorRight.getVelocity());
 
         if (launching){
-            if(currentGamepad2.b && !previousGamepad2.b && lowerFeedArm.getPosition() == 0){
+            if(currentGamepad1.b && !previousGamepad1.b && lowerFeedArm.getPosition() == 0){
                 lowerFeedArm.setPosition(lowerFeedArmFirstPosition);
-            } else if (currentGamepad2.b && !previousGamepad2.b && lowerFeedArm.getPosition() == lowerFeedArmFirstPosition){
+            } else if (currentGamepad1.b && !previousGamepad1.b && lowerFeedArm.getPosition() == lowerFeedArmFirstPosition){
                 lowerFeedArm.setPosition(lowerFeedArmSecondPosition);
-            } else if (currentGamepad2.b && !previousGamepad2.b && lowerFeedArm.getPosition() == lowerFeedArmSecondPosition){
+            } else if (currentGamepad1.b && !previousGamepad1.b && lowerFeedArm.getPosition() == lowerFeedArmSecondPosition){
                  lowerFeedArm.setPosition(lowerFeedArmThirdPosition);
-            } else if (currentGamepad2.b && !previousGamepad2.b){
+            } else if (currentGamepad1.b && !previousGamepad1.b){
                 lowerFeedArm.setPosition(0);
             }
         }
@@ -88,7 +90,7 @@ public class MM_Launcher {
             launchMotorRight.setVelocity(targetLauncherVelocity * SLOW_SPEED_CO_EFF);
         }
 
-        if (!launching && artifactAtTop && currentGamepad2.right_trigger > 0  && Math.abs(launchMotorLeft.getVelocity() - targetLauncherVelocity) < 50) {
+        if (!launching && artifactAtTop && currentGamepad1.right_trigger > 0  && Math.abs(launchMotorLeft.getVelocity() - targetLauncherVelocity) < 50) {
 //            lowerFeedArm.setPosition(LOWER_FEED_BAR_TOP_POSITION); TODO fix the lower feed arm
             mo.setPower(1);
             launching = true;
