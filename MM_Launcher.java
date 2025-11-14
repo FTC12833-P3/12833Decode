@@ -31,6 +31,7 @@ public class MM_Launcher {
     public static double lowerFeedArmFirstPosition = .3;
     public static double lowerFeedArmSecondPosition = .6;
     public static double lowerFeedArmThirdPosition = .9;
+
     private final double FINAL_PROJECTILE_HEIGHT = 26.5; //height above launch height
     private final double LOWER_FEED_BAR_TOP_POSITION = .8;
 
@@ -68,12 +69,14 @@ public class MM_Launcher {
         opMode.multipleTelemetry.addData("launcherSpeedR", launchMotorRight.getVelocity());
 
         if (launching){
-            if(true){ // there is an artifact at the top
-
-            } else if (true){ // there is an artifact at the middle
-
-            } else if (true){ // there is an artifact at the bottom
-
+            if(currentGamepad2.b && !previousGamepad2.b && lowerFeedArm.getPosition() == 0){
+                lowerFeedArm.setPosition(lowerFeedArmFirstPosition);
+            } else if (currentGamepad2.b && !previousGamepad2.b && lowerFeedArm.getPosition() == lowerFeedArmFirstPosition){
+                lowerFeedArm.setPosition(lowerFeedArmSecondPosition);
+            } else if (currentGamepad2.b && !previousGamepad2.b && lowerFeedArm.getPosition() == lowerFeedArmSecondPosition){
+                 lowerFeedArm.setPosition(lowerFeedArmThirdPosition);
+            } else if (currentGamepad2.b && !previousGamepad2.b){
+                lowerFeedArm.setPosition(0);
             }
         }
 
@@ -116,6 +119,10 @@ public class MM_Launcher {
 
     private boolean haveArtifact(){
         return artifactAtTop;
+    }
+
+    public boolean lowerFeedArmReady(){
+        return lowerFeedArm.getPosition() == 0;
     }
 
 }
