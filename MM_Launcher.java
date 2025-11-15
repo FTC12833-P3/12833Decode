@@ -1,9 +1,7 @@
 package org.firstinspires.ftc.teamcode;
 
 import static org.firstinspires.ftc.teamcode.MM_OpMode.currentGamepad1;
-import static org.firstinspires.ftc.teamcode.MM_OpMode.currentGamepad2;
 import static org.firstinspires.ftc.teamcode.MM_OpMode.previousGamepad1;
-import static org.firstinspires.ftc.teamcode.MM_OpMode.previousGamepad2;
 
 import com.acmerobotics.dashboard.config.Config;
 import com.qualcomm.robotcore.hardware.CRServo;
@@ -30,9 +28,9 @@ public class MM_Launcher {
     private double LAUNCHER_ANGLE = 45;
     public static boolean runLauncher = false;
     public static double targetLauncherVelocity = 1;
-    public static double lowerFeedArmFirstPosition = .3;
-    public static double lowerFeedArmSecondPosition = .6;
-    public static double lowerFeedArmThirdPosition = .9;
+    public static double LOWER_FEED_ARM_POSITION_1 = .3;
+    public static double LOWER_FEED_ARM_POSITION_2 = .6;
+    public static double LOWER_FEED_ARM_POSITION_3 = .9;
 
     private final double FINAL_PROJECTILE_HEIGHT = 26.5; //height above launch height
     private final double LOWER_FEED_BAR_TOP_POSITION = .8;
@@ -56,6 +54,7 @@ public class MM_Launcher {
         launchMotorRight = opMode.hardwareMap.get(DcMotorEx.class, "launchMotorRight");
         launchMotorLeft.setDirection(DcMotorEx.Direction.REVERSE);
         lowerFeedArm = opMode.hardwareMap.get(Servo.class, "launcherFeeder");
+        lowerFeedArm.setPosition(0);
         mo = opMode.hardwareMap.get(CRServo.class, "upperFeedArm");
         peephole = opMode.hardwareMap.get(ColorSensor.class, "upperFeedSensor");
         peepholeDistance = opMode.hardwareMap.get(DistanceSensor.class, "upperFeedSensor");
@@ -70,17 +69,21 @@ public class MM_Launcher {
         opMode.multipleTelemetry.addData("launcherSpeedL", launchMotorLeft.getVelocity());
         opMode.multipleTelemetry.addData("launcherSpeedR", launchMotorRight.getVelocity());
 
-        if (launching){
-            if(currentGamepad1.b && !previousGamepad1.b && lowerFeedArm.getPosition() == 0){
-                lowerFeedArm.setPosition(lowerFeedArmFirstPosition);
-            } else if (currentGamepad1.b && !previousGamepad1.b && lowerFeedArm.getPosition() == lowerFeedArmFirstPosition){
-                lowerFeedArm.setPosition(lowerFeedArmSecondPosition);
-            } else if (currentGamepad1.b && !previousGamepad1.b && lowerFeedArm.getPosition() == lowerFeedArmSecondPosition){
-                 lowerFeedArm.setPosition(lowerFeedArmThirdPosition);
-            } else if (currentGamepad1.b && !previousGamepad1.b){
+        //if (launching){
+        if(currentGamepad1.b && !previousGamepad1.b) {
+
+            if (lowerFeedArm.getPosition() >= LOWER_FEED_ARM_POSITION_3) {
                 lowerFeedArm.setPosition(0);
+            } else if (lowerFeedArm.getPosition() >= LOWER_FEED_ARM_POSITION_2) {
+                lowerFeedArm.setPosition(LOWER_FEED_ARM_POSITION_3);
+            } else if (lowerFeedArm.getPosition() >= LOWER_FEED_ARM_POSITION_1) {
+                lowerFeedArm.setPosition(LOWER_FEED_ARM_POSITION_2);
+            } else {
+                lowerFeedArm.setPosition(LOWER_FEED_ARM_POSITION_1);
             }
         }
+            opMode.multipleTelemetry.addData("servo pos", lowerFeedArm.getPosition());
+       // }
 
         if (haveArtifact() || launching) { //TODO only set velocity once
             launchMotorLeft.setVelocity(targetLauncherVelocity);
