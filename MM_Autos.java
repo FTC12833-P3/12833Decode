@@ -88,6 +88,7 @@ public class MM_Autos extends MM_OpMode {
 
                     if (robot.drivetrain.driveDone()) {
                         motif = robot.drivetrain.navigation.visionPortal.motif();
+                        state = STATES.LAUNCH;
                     }
                 case DRIVE_TO_COLLECT:
                     if (state != previousState) {
