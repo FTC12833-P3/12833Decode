@@ -52,7 +52,6 @@ public class MM_Drivetrain {
 
         flMotor.setDirection(DcMotorEx.Direction.REVERSE);
         blMotor.setDirection(DcMotorEx.Direction.REVERSE);
-
     }
 
     public void driveWithSticks() {

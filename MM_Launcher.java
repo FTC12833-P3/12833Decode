@@ -28,9 +28,9 @@ public class MM_Launcher {
     private double LAUNCHER_ANGLE = 45;
     public static boolean runLauncher = false;
     public static double targetLauncherVelocity = 1;
-    public static double LOWER_FEED_ARM_POSITION_1 = .3;
-    public static double LOWER_FEED_ARM_POSITION_2 = .6;
-    public static double LOWER_FEED_ARM_POSITION_3 = .9;
+    public static double LOWER_FEED_ARM_POSITION_1 = .27;
+    public static double LOWER_FEED_ARM_POSITION_2 = .43;
+    public static double LOWER_FEED_ARM_POSITION_3 = .55;
 
     private final double FINAL_PROJECTILE_HEIGHT = 26.5; //height above launch height
     private final double LOWER_FEED_BAR_TOP_POSITION = .8;
