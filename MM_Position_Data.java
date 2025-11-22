@@ -26,14 +26,15 @@ public class MM_Position_Data {
         this.opMode = opMode;
         visionPortal = new MM_VisionPortal(opMode);
         odometryController = opMode.hardwareMap.get(GoBildaPinpointDriver.class, "odo");
-
-        odometryController.setOffsets(53.975, 3.175);
+        odometryController.setOffsets(19.275, 173.475);
         odometryController.setEncoderResolution(GoBildaPinpointDriver.GoBildaOdometryPods.goBILDA_SWINGARM_POD);
-        odometryController.setEncoderDirections(GoBildaPinpointDriver.EncoderDirection.FORWARD, GoBildaPinpointDriver.EncoderDirection.FORWARD);
+        odometryController.setEncoderDirections(GoBildaPinpointDriver.EncoderDirection.REVERSED, GoBildaPinpointDriver.EncoderDirection.FORWARD);
 
         if(opMode.getClass() == MM_Autos.class) {
             odometryController.resetPosAndIMU();
         }
+        odometryController.resetPosAndIMU(); //TODO remove this
+
 
         odometryController.update();
         currentPos = odometryController.getPosition();

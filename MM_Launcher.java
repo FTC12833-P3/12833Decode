@@ -18,22 +18,25 @@ public class MM_Launcher {
     private MM_OpMode opMode;
     private DcMotorEx launchMotorLeft;
     private DcMotorEx launchMotorRight;
-    private Servo lowerFeedArm;
-    private CRServo mo;
+    private Servo pusher;
+    private CRServo server;
     private ColorSensor peephole;
     private DistanceSensor peepholeDistance;
     private MM_Position projectileTarget = new MM_Position(-65, -65, 0); //blue goal pos
 
-    public static double LAUNCHER_CO_EFF = 1.76; //2.3 for 30A wheels
+    public static double LAUNCHER_CO_EFF = 2.5; //2.3 for 30A wheels
     private double LAUNCHER_ANGLE = 45;
     public static boolean runLauncher = false;
     public static double targetLauncherVelocity = 1;
-    public static double LOWER_FEED_ARM_POSITION_1 = .27;
-    public static double LOWER_FEED_ARM_POSITION_2 = .43;
-    public static double LOWER_FEED_ARM_POSITION_3 = .55;
+    public static double LOWER_FEED_ARM_POSITION_1 = .26;
+    public static double LOWER_FEED_ARM_POSITION_2 = .42;
+    public static double LOWER_FEED_ARM_POSITION_3 = .54;
 
     private final double FINAL_PROJECTILE_HEIGHT = 26.5; //height above launch height
     private final double LOWER_FEED_BAR_TOP_POSITION = .8;
+    public static double HYPOT_SPEED_THRESHOLD = 23;
+    public static double HYPOT_SPEED_CO_EFF = 1.5;
+
 
     private final double TICKS_PER_REV = 28;
     private final double WHEEL_DIAMETER = 77.75; //mm 75.75 for ordered wheels, 70.95 for custom
@@ -43,7 +46,7 @@ public class MM_Launcher {
     private final double SLOW_SPEED_CO_EFF = .25;
 
     private boolean artifactAtTop = true;
-    private boolean moIsReady = true;
+    private boolean serverIsReady = true;
     private boolean launching = false;
 
 
@@ -53,9 +56,9 @@ public class MM_Launcher {
         launchMotorLeft = opMode.hardwareMap.get(DcMotorEx.class, "launchMotorLeft");
         launchMotorRight = opMode.hardwareMap.get(DcMotorEx.class, "launchMotorRight");
         launchMotorLeft.setDirection(DcMotorEx.Direction.REVERSE);
-        lowerFeedArm = opMode.hardwareMap.get(Servo.class, "launcherFeeder");
-        lowerFeedArm.setPosition(0);
-        mo = opMode.hardwareMap.get(CRServo.class, "upperFeedArm");
+        pusher = opMode.hardwareMap.get(Servo.class, "launcherFeeder");
+        pusher.setPosition(0);
+        server = opMode.hardwareMap.get(CRServo.class, "upperFeedArm");
         peephole = opMode.hardwareMap.get(ColorSensor.class, "upperFeedSensor");
         peepholeDistance = opMode.hardwareMap.get(DistanceSensor.class, "upperFeedSensor");
         launchMotorLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
@@ -72,17 +75,17 @@ public class MM_Launcher {
         //if (launching){
         if(currentGamepad1.b && !previousGamepad1.b) {
 
-            if (lowerFeedArm.getPosition() >= LOWER_FEED_ARM_POSITION_3) {
-                lowerFeedArm.setPosition(0);
-            } else if (lowerFeedArm.getPosition() >= LOWER_FEED_ARM_POSITION_2) {
-                lowerFeedArm.setPosition(LOWER_FEED_ARM_POSITION_3);
-            } else if (lowerFeedArm.getPosition() >= LOWER_FEED_ARM_POSITION_1) {
-                lowerFeedArm.setPosition(LOWER_FEED_ARM_POSITION_2);
+            if (pusher.getPosition() >= LOWER_FEED_ARM_POSITION_3) {
+                pusher.setPosition(0);
+            } else if (pusher.getPosition() >= LOWER_FEED_ARM_POSITION_2) {
+                pusher.setPosition(LOWER_FEED_ARM_POSITION_3);
+            } else if (pusher.getPosition() >= LOWER_FEED_ARM_POSITION_1) {
+                pusher.setPosition(LOWER_FEED_ARM_POSITION_2);
             } else {
-                lowerFeedArm.setPosition(LOWER_FEED_ARM_POSITION_1);
+                pusher.setPosition(LOWER_FEED_ARM_POSITION_1);
             }
         }
-            opMode.multipleTelemetry.addData("servo pos", lowerFeedArm.getPosition());
+            opMode.multipleTelemetry.addData("servo pos", pusher.getPosition());
        // }
 
         if (haveArtifact() || launching) { //TODO only set velocity once
@@ -93,9 +96,9 @@ public class MM_Launcher {
             launchMotorRight.setVelocity(targetLauncherVelocity * SLOW_SPEED_CO_EFF);
         }
 
-        if (!launching && artifactAtTop && currentGamepad1.right_trigger > 0  && Math.abs(launchMotorLeft.getVelocity() - targetLauncherVelocity) < 50) {
+        if (pusher.getPosition() >= LOWER_FEED_ARM_POSITION_1 && !launching && artifactAtTop && currentGamepad1.right_trigger > 0  && Math.abs(launchMotorLeft.getVelocity() - targetLauncherVelocity) < 50) {
 //            lowerFeedArm.setPosition(LOWER_FEED_BAR_TOP_POSITION); TODO fix the lower feed arm
-            mo.setPower(1);
+            server.setPower(1);
             launching = true;
         }
         opMode.multipleTelemetry.addData("colors", "red %d, green %d, blue %d", peephole.red(), peephole.green(), peephole.blue());
@@ -103,11 +106,11 @@ public class MM_Launcher {
 
         if(launching) {
             if (peephole.red() < 350) {
-                moIsReady = false;
-            } else if (!moIsReady) {
-                moIsReady = true;
+                serverIsReady = false;
+            } else if (!serverIsReady) {
+                serverIsReady = true;
                 launching = false;
-                mo.setPower(0);
+                server.setPower(0);
             }
         }
     }
@@ -120,6 +123,12 @@ public class MM_Launcher {
         double metersPerSecond = Math.sqrt((9.81 * launchDistance) / Math.sin(LAUNCHER_ANGLE * 2));
         opMode.multipleTelemetry.addData("metersPerSecond", metersPerSecond);
         targetLauncherVelocity = Math.abs(metersPerSecond * TICKS_PER_METER) * LAUNCHER_CO_EFF;
+        if(Math.abs(Math.hypot(projectileTarget.getX() - opMode.robot.drivetrain.navigation.getX(),
+                 projectileTarget.getY() - opMode.robot.drivetrain.navigation.getY())) <= HYPOT_SPEED_THRESHOLD){
+            targetLauncherVelocity *= HYPOT_SPEED_CO_EFF;
+        }
+        opMode.multipleTelemetry.addData("hypot", Math.hypot(projectileTarget.getX() - opMode.robot.drivetrain.navigation.getX(),
+                projectileTarget.getY() - opMode.robot.drivetrain.navigation.getY()));
     }
 
     private boolean haveArtifact(){
@@ -127,7 +136,7 @@ public class MM_Launcher {
     }
 
     public boolean lowerFeedArmReady(){
-        return lowerFeedArm.getPosition() == 0;
+        return pusher.getPosition() == 0;
     }
 
 }
