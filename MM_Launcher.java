@@ -21,7 +21,8 @@ public class MM_Launcher {
     private Servo pusher;
     private CRServo server;
     private ColorSensor peephole;
-    private DistanceSensor peepholeDistance;
+    private ColorSensor launchSensor;
+
     private MM_Position projectileTarget = new MM_Position(-65, -65, 0); //blue goal pos
 
     public static double LAUNCHER_CO_EFF = 2.5; //2.3 for 30A wheels
@@ -45,7 +46,7 @@ public class MM_Launcher {
 
     private final double SLOW_SPEED_CO_EFF = .25;
 
-    private boolean artifactAtTop = true;
+    public boolean artifactAtTop = true;
     private boolean serverIsReady = true;
     private boolean launching = false;
 
@@ -60,20 +61,21 @@ public class MM_Launcher {
         pusher.setPosition(0);
         server = opMode.hardwareMap.get(CRServo.class, "upperFeedArm");
         peephole = opMode.hardwareMap.get(ColorSensor.class, "upperFeedSensor");
-        peepholeDistance = opMode.hardwareMap.get(DistanceSensor.class, "upperFeedSensor");
+        launchSensor = opMode.hardwareMap.get(ColorSensor.class, "launchSensor");
         launchMotorLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         launchMotorRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
     }
 
     public void runLauncher() {
         setTargetLauncherVelocity();
+        haveArtifact();
 
         opMode.multipleTelemetry.addData("launcherTargetSpeed", targetLauncherVelocity);
         opMode.multipleTelemetry.addData("launcherSpeedL", launchMotorLeft.getVelocity());
         opMode.multipleTelemetry.addData("launcherSpeedR", launchMotorRight.getVelocity());
 
         //if (launching){
-        if(currentGamepad1.b && !previousGamepad1.b) {
+        if(currentGamepad1.b && !previousGamepad1.b && !artifactAtTop) {
 
             if (pusher.getPosition() >= LOWER_FEED_ARM_POSITION_3) {
                 pusher.setPosition(0);
@@ -102,7 +104,6 @@ public class MM_Launcher {
             launching = true;
         }
         opMode.multipleTelemetry.addData("colors", "red %d, green %d, blue %d", peephole.red(), peephole.green(), peephole.blue());
-        opMode.multipleTelemetry.addData("Distance", peepholeDistance.getDistance(DistanceUnit.MM));
 
         if(launching) {
             if (peephole.red() < 350) {
@@ -132,7 +133,9 @@ public class MM_Launcher {
     }
 
     private boolean haveArtifact(){
-        return artifactAtTop;
+        artifactAtTop = launchSensor.red() <= 20;
+        opMode.multipleTelemetry.addData("red", launchSensor.red());
+        return true;
     }
 
     public boolean lowerFeedArmReady(){
