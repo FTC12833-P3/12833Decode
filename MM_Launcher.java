@@ -4,14 +4,12 @@ import static org.firstinspires.ftc.teamcode.MM_OpMode.currentGamepad1;
 import static org.firstinspires.ftc.teamcode.MM_OpMode.previousGamepad1;
 
 import com.acmerobotics.dashboard.config.Config;
+import com.qualcomm.robotcore.hardware.AnalogInput;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
-import com.qualcomm.robotcore.hardware.DistanceSensor;
 import com.qualcomm.robotcore.hardware.Servo;
-
-import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 
 @Config
 public class MM_Launcher {
@@ -20,8 +18,9 @@ public class MM_Launcher {
     private DcMotorEx launchMotorRight;
     private Servo pusher;
     private CRServo server;
-    private ColorSensor peephole;
+    //private ColorSensor peephole;
     private ColorSensor launchSensor;
+    private AnalogInput serverEncoder;
 
     private MM_Position projectileTarget = new MM_Position(-65, -65, 0); //blue goal pos
 
@@ -32,12 +31,12 @@ public class MM_Launcher {
     public static double LOWER_FEED_ARM_POSITION_1 = .26;
     public static double LOWER_FEED_ARM_POSITION_2 = .42;
     public static double LOWER_FEED_ARM_POSITION_3 = .54;
+    public static double AXON_ENCODER_CO_EFF = 1;
 
     private final double FINAL_PROJECTILE_HEIGHT = 26.5; //height above launch height
     private final double LOWER_FEED_BAR_TOP_POSITION = .8;
     public static double HYPOT_SPEED_THRESHOLD = 23;
     public static double HYPOT_SPEED_CO_EFF = 1.5;
-
 
     private final double TICKS_PER_REV = 28;
     private final double WHEEL_DIAMETER = 77.75; //mm 75.75 for ordered wheels, 70.95 for custom
@@ -49,7 +48,7 @@ public class MM_Launcher {
     public boolean artifactAtTop = true;
     private boolean serverIsReady = true;
     private boolean launching = false;
-
+    public static int serverStopPoint = 10;
 
     public MM_Launcher(MM_OpMode opMode) {
         this.opMode = opMode;
@@ -57,10 +56,11 @@ public class MM_Launcher {
         launchMotorLeft = opMode.hardwareMap.get(DcMotorEx.class, "launchMotorLeft");
         launchMotorRight = opMode.hardwareMap.get(DcMotorEx.class, "launchMotorRight");
         launchMotorLeft.setDirection(DcMotorEx.Direction.REVERSE);
-        pusher = opMode.hardwareMap.get(Servo.class, "launcherFeeder");
+        pusher = opMode.hardwareMap.get(Servo.class, "pusher");
         pusher.setPosition(0);
-        server = opMode.hardwareMap.get(CRServo.class, "upperFeedArm");
-        peephole = opMode.hardwareMap.get(ColorSensor.class, "upperFeedSensor");
+        server = opMode.hardwareMap.get(CRServo.class, "server");
+        serverEncoder = opMode.hardwareMap.get(AnalogInput.class, "serverEncoder");
+        //peephole = opMode.hardwareMap.get(ColorSensor.class, "upperFeedSensor");
         launchSensor = opMode.hardwareMap.get(ColorSensor.class, "launchSensor");
         launchMotorLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         launchMotorRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
@@ -68,11 +68,12 @@ public class MM_Launcher {
 
     public void runLauncher() {
         setTargetLauncherVelocity();
-        haveArtifact();
+        haveArtifactAtTop();
 
         opMode.multipleTelemetry.addData("launcherTargetSpeed", targetLauncherVelocity);
         opMode.multipleTelemetry.addData("launcherSpeedL", launchMotorLeft.getVelocity());
         opMode.multipleTelemetry.addData("launcherSpeedR", launchMotorRight.getVelocity());
+        opMode.multipleTelemetry.addData("servoEncoder", getAxonDegrees(serverEncoder));
 
         //if (launching){
         if(currentGamepad1.b && !previousGamepad1.b && !artifactAtTop) {
@@ -90,7 +91,7 @@ public class MM_Launcher {
             opMode.multipleTelemetry.addData("servo pos", pusher.getPosition());
        // }
 
-        if (haveArtifact() || launching) { //TODO only set velocity once
+        if (haveArtifactAtTop() || launching) { //TODO only set velocity once
             launchMotorLeft.setVelocity(targetLauncherVelocity);
             launchMotorRight.setVelocity(targetLauncherVelocity);
         } else {
@@ -103,10 +104,10 @@ public class MM_Launcher {
             server.setPower(1);
             launching = true;
         }
-        opMode.multipleTelemetry.addData("colors", "red %d, green %d, blue %d", peephole.red(), peephole.green(), peephole.blue());
+        //opMode.multipleTelemetry.addData("colors", "red %d, green %d, blue %d", peephole.red(), peephole.green(), peephole.blue());
 
         if(launching) {
-            if (peephole.red() < 350) {
+            if (getAxonDegrees(serverEncoder) < serverStopPoint) {
                 serverIsReady = false;
             } else if (!serverIsReady) {
                 serverIsReady = true;
@@ -132,9 +133,12 @@ public class MM_Launcher {
                 projectileTarget.getY() - opMode.robot.drivetrain.navigation.getY()));
     }
 
-    private boolean haveArtifact(){
-        artifactAtTop = launchSensor.red() <= 20;
+    private boolean haveArtifactAtTop(){
+        artifactAtTop = launchSensor.red() <= 15;
         opMode.multipleTelemetry.addData("red", launchSensor.red());
+        opMode.multipleTelemetry.addData("green", launchSensor.green());
+        opMode.multipleTelemetry.addData("blue", launchSensor.blue());
+        opMode.multipleTelemetry.addData("alpha", launchSensor.alpha());
         return true;
     }
 
@@ -142,5 +146,8 @@ public class MM_Launcher {
         return pusher.getPosition() == 0;
     }
 
+    private double getAxonDegrees(AnalogInput encoder){
+        return ((encoder.getVoltage() / 3.3) * 360);
+    }
 }
 
