@@ -24,13 +24,13 @@ public class MM_Launcher {
 
     private MM_Position projectileTarget = new MM_Position(-65, -65, 0); //blue goal pos
 
-    public static double LAUNCHER_CO_EFF = 2.5; //2.3 for 30A wheels
+    public static double LAUNCHER_CO_EFF = 2.25;
     private double LAUNCHER_ANGLE = 45;
     public static boolean runLauncher = false;
     public static double targetLauncherVelocity = 1;
-    public static double LOWER_FEED_ARM_POSITION_1 = .26;
-    public static double LOWER_FEED_ARM_POSITION_2 = .42;
-    public static double LOWER_FEED_ARM_POSITION_3 = .54;
+    public static double LOWER_FEED_ARM_POSITION_1 = .6;
+    public static double LOWER_FEED_ARM_POSITION_2 = .76;
+    public static double LOWER_FEED_ARM_POSITION_3 = .85;
     public static double AXON_ENCODER_CO_EFF = 1;
 
     private final double FINAL_PROJECTILE_HEIGHT = 26.5; //height above launch height
@@ -48,7 +48,7 @@ public class MM_Launcher {
     public boolean artifactAtTop = true;
     private boolean serverIsReady = true;
     private boolean launching = false;
-    public static int serverStopPoint = 10;
+    public static int serverStopPoint = 210;
 
     public MM_Launcher(MM_OpMode opMode) {
         this.opMode = opMode;
@@ -60,6 +60,7 @@ public class MM_Launcher {
         pusher.setPosition(0);
         server = opMode.hardwareMap.get(CRServo.class, "server");
         serverEncoder = opMode.hardwareMap.get(AnalogInput.class, "serverEncoder");
+        //setServerForInit(); TODO fix method to make it stop server at right place in init
         //peephole = opMode.hardwareMap.get(ColorSensor.class, "upperFeedSensor");
         launchSensor = opMode.hardwareMap.get(ColorSensor.class, "launchSensor");
         launchMotorLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
@@ -134,7 +135,7 @@ public class MM_Launcher {
     }
 
     private boolean haveArtifactAtTop(){
-        artifactAtTop = launchSensor.red() <= 15;
+        artifactAtTop = launchSensor.red() <= 10;
         opMode.multipleTelemetry.addData("red", launchSensor.red());
         opMode.multipleTelemetry.addData("green", launchSensor.green());
         opMode.multipleTelemetry.addData("blue", launchSensor.blue());
@@ -148,6 +149,16 @@ public class MM_Launcher {
 
     private double getAxonDegrees(AnalogInput encoder){
         return ((encoder.getVoltage() / 3.3) * 360);
+    }
+
+    private void setServerForInit(){
+        if (getAxonDegrees(serverEncoder) < serverStopPoint) {
+            serverIsReady = false;
+            server.setPower(1);
+        } else if (!serverIsReady) {
+            serverIsReady = true;
+            server.setPower(0);
+        }
     }
 }
 
