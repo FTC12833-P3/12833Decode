@@ -1,7 +1,9 @@
 package org.firstinspires.ftc.teamcode;
 
 import static org.firstinspires.ftc.teamcode.MM_OpMode.currentGamepad1;
+import static org.firstinspires.ftc.teamcode.MM_OpMode.currentGamepad2;
 import static org.firstinspires.ftc.teamcode.MM_OpMode.previousGamepad1;
+import static org.firstinspires.ftc.teamcode.MM_OpMode.previousGamepad2;
 
 import com.acmerobotics.dashboard.config.Config;
 import com.qualcomm.robotcore.hardware.AnalogInput;
@@ -77,7 +79,7 @@ public class MM_Launcher {
         opMode.multipleTelemetry.addData("servoEncoder", getAxonDegrees(serverEncoder));
 
         //if (launching){
-        if(currentGamepad1.b && !previousGamepad1.b && !artifactAtTop) {
+        if(currentGamepad2.b && !previousGamepad2.b && !artifactAtTop) {
 
             if (pusher.getPosition() >= LOWER_FEED_ARM_POSITION_3) {
                 pusher.setPosition(0);
@@ -100,7 +102,7 @@ public class MM_Launcher {
             launchMotorRight.setVelocity(targetLauncherVelocity * SLOW_SPEED_CO_EFF);
         }
 
-        if (pusher.getPosition() >= LOWER_FEED_ARM_POSITION_1 && !launching && artifactAtTop && currentGamepad1.right_trigger > 0  && Math.abs(launchMotorLeft.getVelocity() - targetLauncherVelocity) < 50) {
+        if (pusher.getPosition() >= LOWER_FEED_ARM_POSITION_1 && !launching && artifactAtTop && currentGamepad2.right_trigger > 0  && Math.abs(launchMotorLeft.getVelocity() - targetLauncherVelocity) < 50) {
 //            lowerFeedArm.setPosition(LOWER_FEED_BAR_TOP_POSITION); TODO fix the lower feed arm
             server.setPower(1);
             launching = true;
