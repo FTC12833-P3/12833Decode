@@ -11,7 +11,10 @@ import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
+import com.qualcomm.robotcore.hardware.DistanceSensor;
 import com.qualcomm.robotcore.hardware.Servo;
+
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 
 @Config
 public class MM_Launcher {
@@ -22,6 +25,13 @@ public class MM_Launcher {
     private CRServo server;
     //private ColorSensor peephole;
     private ColorSensor launchSensor;
+    private ColorSensor lowerLaunchSensor;
+    private DistanceSensor rightDistance;
+    private DistanceSensor leftDistance;
+    private DistanceSensor lowerLeftDistance;
+    private MM_PID_CONTROLLER serverPID;
+
+
     private AnalogInput serverEncoder;
 
     private MM_Position projectileTarget = new MM_Position(-65, -65, 0); //blue goal pos
@@ -40,6 +50,9 @@ public class MM_Launcher {
     public static double HYPOT_SPEED_THRESHOLD = 23;
     public static double HYPOT_SPEED_CO_EFF = 1.5;
 
+
+    public static double SERVER_P_CO_EFF = .03;
+
     private final double TICKS_PER_REV = 28;
     private final double WHEEL_DIAMETER = 77.75; //mm 75.75 for ordered wheels, 70.95 for custom
     private final double CIRCUMFERENCE = Math.PI * WHEEL_DIAMETER;
@@ -48,7 +61,7 @@ public class MM_Launcher {
     private final double SLOW_SPEED_CO_EFF = .25;
 
     public boolean artifactAtTop = true;
-    private boolean serverIsReady = true;
+    private boolean serverIsReady = false;
     private boolean launching = false;
     public static int serverStopPoint = 210;
 
@@ -65,6 +78,12 @@ public class MM_Launcher {
         //setServerForInit(); TODO fix method to make it stop server at right place in init
         //peephole = opMode.hardwareMap.get(ColorSensor.class, "upperFeedSensor");
         launchSensor = opMode.hardwareMap.get(ColorSensor.class, "launchSensor");
+        lowerLaunchSensor = opMode.hardwareMap.get(ColorSensor.class, "lowerLaunchSensor");
+        rightDistance = opMode.hardwareMap.get(DistanceSensor.class, "rightLaunchSensor");
+        leftDistance = opMode.hardwareMap.get(DistanceSensor.class, "launchSensor");
+        lowerLeftDistance = opMode.hardwareMap.get(DistanceSensor.class, "lowerLaunchSensor");
+        serverPID = new MM_PID_CONTROLLER(SERVER_P_CO_EFF, 0, 0);
+
         launchMotorLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         launchMotorRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
     }
@@ -77,6 +96,10 @@ public class MM_Launcher {
         opMode.multipleTelemetry.addData("launcherSpeedL", launchMotorLeft.getVelocity());
         opMode.multipleTelemetry.addData("launcherSpeedR", launchMotorRight.getVelocity());
         opMode.multipleTelemetry.addData("servoEncoder", getAxonDegrees(serverEncoder));
+        opMode.multipleTelemetry.addData("lowerLaunchSensor info", "red: %d green: %d blue: %d alpha: %d",lowerLaunchSensor.red(), lowerLaunchSensor.green(), lowerLaunchSensor.blue(), lowerLaunchSensor.alpha());
+        opMode.multipleTelemetry.addData("dist Left", leftDistance.getDistance(DistanceUnit.MM));
+        opMode.multipleTelemetry.addData("dist Right", rightDistance.getDistance(DistanceUnit.MM));
+        opMode.multipleTelemetry.addData("dist Lower Left", lowerLeftDistance.getDistance(DistanceUnit.MM));
 
         //if (launching){
         if(currentGamepad2.b && !previousGamepad2.b && !artifactAtTop) {
@@ -153,13 +176,16 @@ public class MM_Launcher {
         return ((encoder.getVoltage() / 3.3) * 360);
     }
 
-    private void setServerForInit(){
-        if (getAxonDegrees(serverEncoder) < serverStopPoint) {
-            serverIsReady = false;
-            server.setPower(1);
-        } else if (!serverIsReady) {
-            serverIsReady = true;
-            server.setPower(0);
+    public void setServerForInit(){
+        double error = getAxonDegrees(serverEncoder) - serverStopPoint;
+
+        if(!serverIsReady) {
+            if (getAxonDegrees(serverEncoder) < serverStopPoint) {
+                server.setPower(serverPID.getPID(error > 0? error: 0));
+            } else {
+                serverIsReady = true;
+                server.setPower(0);
+            }
         }
     }
 }

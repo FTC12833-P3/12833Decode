@@ -27,8 +27,6 @@ public abstract class MM_OpMode extends LinearOpMode {
         initialize();
 
         while (opModeInInit()){
-            RobotLog.d("hi");
-
             multipleTelemetry.addData("Status", "Initialized");
             multipleTelemetry.update();
 
@@ -38,10 +36,8 @@ public abstract class MM_OpMode extends LinearOpMode {
             previousGamepad2.copy(currentGamepad2);
             currentGamepad2.copy(gamepad2);
 
-
-                robot.drivetrain.navigation.updatePosition(true);
-
-
+            robot.drivetrain.navigation.updatePosition(true);
+            robot.launcher.setServerForInit();
         }
         runProcedures();
         if(isStopRequested()){
