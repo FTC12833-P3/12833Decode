@@ -34,7 +34,7 @@ public class MM_Launcher {
 
     private AnalogInput serverEncoder;
 
-    private MM_Position projectileTarget = new MM_Position(-65, -65, 0); //blue goal pos
+    private MM_Position projectileTarget = new MM_Position(-65 * MM_OpMode.alliance, -65 * MM_OpMode.alliance, 0); //blue goal pos
 
     public static double LAUNCHER_CO_EFF = 2.25;
     private double LAUNCHER_ANGLE = 45;
@@ -92,6 +92,7 @@ public class MM_Launcher {
         setTargetLauncherVelocity();
         haveArtifactAtTop();
 
+
         opMode.multipleTelemetry.addData("launcherTargetSpeed", targetLauncherVelocity);
         opMode.multipleTelemetry.addData("launcherSpeedL", launchMotorLeft.getVelocity());
         opMode.multipleTelemetry.addData("launcherSpeedR", launchMotorRight.getVelocity());
@@ -133,8 +134,10 @@ public class MM_Launcher {
         //opMode.multipleTelemetry.addData("colors", "red %d, green %d, blue %d", peephole.red(), peephole.green(), peephole.blue());
 
         if(launching) {
+            double serverError = getAxonDegrees(serverEncoder) - serverStopPoint;
             if (getAxonDegrees(serverEncoder) < serverStopPoint) {
                 serverIsReady = false;
+                server.setPower(serverPID.getPID(serverError > 0? serverError: 0));
             } else if (!serverIsReady) {
                 serverIsReady = true;
                 launching = false;

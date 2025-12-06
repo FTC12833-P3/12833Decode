@@ -40,7 +40,7 @@ public class MM_Autos extends MM_OpMode{
                     //TODO launch
                     if(state != previousState){
                         previousState = state;
-                        MM_Position_Data.targetPos.setAll(-47, -47, 45 );
+                        MM_Position_Data.targetPos.setAll(-47 * alliance, -47 * alliance, 45 * alliance);
                     } else if(robot.drivetrain.driveDone()) {
                         previousState = state;
                         state = STATES.DRIVE_TO_COLLECT;
@@ -56,7 +56,7 @@ public class MM_Autos extends MM_OpMode{
                     if (state != previousState){
                         if(collectCycle < 2) {
                             previousState = state;
-                            heading = -90;
+                            heading = 90;
                             prepareToSpline(collectSplines.get(collectCycle));
                         }
                     }
@@ -74,7 +74,7 @@ public class MM_Autos extends MM_OpMode{
                 case COLLECT:
                     if (state != previousState){
                         MM_Collector.runCollector = true;
-                        MM_Position_Data.targetPos.setY(MM_Position_Data.targetPos.getY() - 1);
+                        MM_Position_Data.targetPos.setY((MM_Position_Data.targetPos.getY() - 1 )* alliance);
                     }
 
                     if(robot.drivetrain.driveDone()){
@@ -97,7 +97,7 @@ public class MM_Autos extends MM_OpMode{
         spline.updateDistanceTraveled(currentSection);
         targetX = spline.getNextPoint(currentSection)[0];
         targetY = spline.getNextPoint(currentSection)[1];
-        MM_Position_Data.targetPos.setAll(targetX, targetY, heading);
+        MM_Position_Data.targetPos.setAll(targetX * alliance, targetY * alliance, heading * alliance);
         currentSection++;
     }
 

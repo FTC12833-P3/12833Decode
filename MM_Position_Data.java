@@ -66,7 +66,7 @@ public class MM_Position_Data {
                 if ((opMode.opModeInInit() && MM_OpMode.currentGamepad1.b && !MM_OpMode.previousGamepad1.b)) {
                     odometryController.setPosition(AprilTagPos);
                     if(opMode.opModeInInit()){
-                        MM_OpMode.alliance = MM_VisionPortal.startingTag == 20? -1: 1;
+                        MM_OpMode.alliance = MM_VisionPortal.startingTag == 20? 1: -1;
                     }
                 }
             } else { //just here for dashboard
