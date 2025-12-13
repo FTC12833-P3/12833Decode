@@ -31,22 +31,21 @@ public class MM_Launcher {
 
     private MM_Position projectileTarget = new MM_Position(-65, 65 * alliance, 0); //goal pos
 
-    public static double LAUNCH_ZONE_CO_EFF_AUDIENCE = 2.5;
-    public static double LAUNCH_ZONE_CO_EFF_FIELD_CENTER = 2.25;
-    public static double LAUNCH_ZONE_CO_EFF_GOAL_MID = 2.25;
-    public static double LAUNCH_ZONE_CO_EFF_GOAL_NEAR = 3.375;
+    public static double LAUNCH_ZONE_CO_EFF_AUDIENCE = 2.4;
+    public static double LAUNCH_ZONE_CO_EFF_FIELD_CENTER = 2.3;
+    public static double LAUNCH_ZONE_CO_EFF_GOAL_MID = 2.7;
+    public static double LAUNCH_ZONE_CO_EFF_GOAL_NEAR = 0;
 
-    public static double LAUNCH_ZONE_BOUNDARY_AUDIENCE = 100;
-    public static double LAUNCH_ZONE_BOUNDARY_FIELD_CENTER = 80;
-    public static double LAUNCH_ZONE_BOUNDARY_GOAL_MID = 52;
-    public static double LAUNCH_ZONE_BOUNDARY_GOAL_NEAR = 23;
+    public static double LAUNCH_ZONE_BOUNDARY_FIELD_CENTER = 100;
+    public static double LAUNCH_ZONE_BOUNDARY_GOAL_MID = 55;
+    public static double LAUNCH_ZONE_BOUNDARY_GOAL_NEAR = 45;
 
     private double LAUNCHER_ANGLE = 45;
     public static boolean runLauncher = false;
     public static double targetLauncherVelocity = 1;
     public static double LOWER_FEED_ARM_POSITION_1 = .6;
-    public static double LOWER_FEED_ARM_POSITION_2 = .76;
-    public static double LOWER_FEED_ARM_POSITION_3 = .85;
+    public static double LOWER_FEED_ARM_POSITION_2 = .73;
+    public static double LOWER_FEED_ARM_POSITION_3 = .84;
     public static double AXON_ENCODER_CO_EFF = 1;
 
     private final double FINAL_PROJECTILE_HEIGHT = 26.5; //height above launch height
@@ -168,7 +167,7 @@ public class MM_Launcher {
     }
 
     private boolean haveArtifactAtTop(){
-        artifactAtTop = topLeftDistance.getDistance(DistanceUnit.MM) < 35 || topRightDistance.getDistance(DistanceUnit.MM) < 45;
+        artifactAtTop = topLeftDistance.getDistance(DistanceUnit.MM) < 20 || topRightDistance.getDistance(DistanceUnit.MM) < 33;
         return true;
     }
 

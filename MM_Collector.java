@@ -18,7 +18,7 @@ public class MM_Collector {
     }
 
     public void runCollector(){
-        if(opMode.gamepad2.right_bumper && opMode.robot.launcher.lowerFeedArmReady() && !opMode.robot.launcher.artifactAtTop){
+        if(opMode.gamepad2.right_bumper && opMode.robot.launcher.lowerFeedArmReady() && !opMode.robot.launcher.have3Artifacts()){
             collector.setPower(COLLECT_POWER);
         } else if (opMode.gamepad2.left_bumper){
             collector.setPower(-COLLECT_POWER);
