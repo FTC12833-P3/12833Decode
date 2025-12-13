@@ -56,7 +56,6 @@ public class MM_Drivetrain {
 
         flMotor.setDirection(DcMotorEx.Direction.REVERSE);
         blMotor.setDirection(DcMotorEx.Direction.REVERSE);
-
     }
 
     public void driveWithSticks() {
@@ -131,6 +130,7 @@ public class MM_Drivetrain {
         double theta = moveAngle - navigation.getHeading() + 45;
 
         double PID = pidController.getPID(Math.hypot(xError, yError));
+        opMode.multipleTelemetry.addData("PIDpower", PID);
 
         flPower = (2 * Math.cos(Math.toRadians(theta)) * PID) - rotateVector;
         frPower = (2 * Math.sin(Math.toRadians(theta)) * PID) + rotateVector;

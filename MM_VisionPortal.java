@@ -49,7 +49,7 @@ public class MM_VisionPortal {
     }
 
     public Pose2D setPosFromApriltag(){
-        List<AprilTagDetection> detections = aprilTagProcessor.getDetections();
+        java.util.ArrayList<AprilTagDetection> detections = aprilTagProcessor.getDetections();
 
         if(!detections.isEmpty() && detections.get(0).ftcPose != null){
             opMode.multipleTelemetry.addData("xIntrins", round2Dec(detections.get(0).ftcPose.x));
@@ -61,19 +61,8 @@ public class MM_VisionPortal {
             return new Pose2D(DistanceUnit.INCH, detections.get(0).robotPose.getPosition().x,
                     detections.get(0).robotPose.getPosition().y, AngleUnit.DEGREES, detections.get(0).robotPose.getOrientation().getYaw());
         }
-
         return null;
     }
-
-    public int motif(){
-        List<AprilTagDetection> detections = aprilTagProcessor.getDetections();
-        if(!detections.isEmpty() && detections.get(0).id > 20 && detections.get(0).id < 24){
-            return detections.get(0).id - 21;
-        }
-        return -1;
-    }
-
-
 
     private void init(){
         final CameraStreamProcessor cameraStreamProcessor = new CameraStreamProcessor();
@@ -83,8 +72,8 @@ public class MM_VisionPortal {
                 .setDrawTagOutline(true)
                 .setDrawAxes(true)
                 .setDrawCubeProjection(true)
-                .setCameraPose(new Position(DistanceUnit.INCH, -5.75, -2, 11.5, 0L),
-                        new YawPitchRollAngles(AngleUnit.DEGREES, 90, -50, 0, 0L)) //for lerpierre new Position(DistanceUnit.INCH, -8, .5, -8.5, 0L), new YawPitchRollAngles(AngleUnit.DEGREES, 0, 30, 0, 0L)
+                .setCameraPose(new Position(DistanceUnit.INCH, 6.5, 0, 9.75, 0L),
+                        new YawPitchRollAngles(AngleUnit.DEGREES, -90, -90, 0, 0L)) //for lerpierre new Position(DistanceUnit.INCH, -8, .5, -8.5, 0L), new YawPitchRollAngles(AngleUnit.DEGREES, 0, 30, 0, 0L)
                 .build();
 
         visionPortal = new VisionPortal.Builder()
@@ -97,7 +86,6 @@ public class MM_VisionPortal {
                 .build();
 
         FtcDashboard.getInstance().startCameraStream(cameraStreamProcessor, 0);
-
 
 //        limelight = opMode.hardwareMap.get(Limelight3A.class, "limelight");
 //

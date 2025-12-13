@@ -1,7 +1,5 @@
 package org.firstinspires.ftc.teamcode;
 
-import static org.firstinspires.ftc.teamcode.MM_OpMode.currentGamepad2;
-
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 
 public class MM_Collector {
@@ -18,7 +16,7 @@ public class MM_Collector {
     }
 
     public void runCollector(){
-        if(opMode.gamepad2.right_bumper){
+        if(opMode.gamepad2.right_bumper && opMode.robot.launcher.lowerFeedArmReady() && !opMode.robot.launcher.lowerSensorTriggered()){
             collector.setPower(COLLECT_POWER);
         } else if (opMode.gamepad2.left_bumper){
             collector.setPower(-COLLECT_POWER);
@@ -28,7 +26,7 @@ public class MM_Collector {
     }
     
     public void autoRunCollector(){
-        if(runCollector){
+        if(runCollector && !opMode.robot.launcher.lowerSensorTriggered()){
             collector.setPower(COLLECT_POWER);
         } else if (reverseCollector){
             collector.setPower(-COLLECT_POWER);

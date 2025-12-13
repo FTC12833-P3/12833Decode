@@ -10,11 +10,11 @@ public class MM_Position {
     }
 
     public double getX(){
-        return x;
+        return x; //unit is inches
     }
 
     public double getY(){
-        return y;
+        return y; //unit is inches
     }
 
     public double getHeading(){
