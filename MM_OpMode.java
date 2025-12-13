@@ -18,7 +18,7 @@ public abstract class MM_OpMode extends LinearOpMode {
     public MultipleTelemetry multipleTelemetry = new MultipleTelemetry(this.telemetry, FtcDashboard.getInstance().getTelemetry());
 
     public static String scoringLocation = "";
-    public static int alliance = -1;
+    public static int alliance = -1; //default = blue
     public MM_Spline currentSpline = null;
 
     public void runOpMode(){
@@ -38,6 +38,8 @@ public abstract class MM_OpMode extends LinearOpMode {
 
             robot.drivetrain.navigation.updatePosition(true);
             robot.launcher.setServerForInit();
+
+            //multipleTelemetry.addData("alliance", alliance == -1? "blue": "red");
         }
         runProcedures();
         if(isStopRequested()){

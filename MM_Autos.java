@@ -87,13 +87,10 @@ public class MM_Autos extends MM_OpMode{
             robot.drivetrain.autoRunDrivetrain();
             robot.collector.autoRunCollector();
             multipleTelemetry.update();
-
         }
     }
 
-
     public void setNextSplinePoint(MM_Spline spline){
-
         spline.updateDistanceTraveled(currentSection);
         targetX = spline.getNextPoint(currentSection)[0];
         targetY = spline.getNextPoint(currentSection)[1];

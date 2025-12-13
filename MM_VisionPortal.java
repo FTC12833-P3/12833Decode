@@ -49,7 +49,7 @@ public class MM_VisionPortal {
     }
 
     public Pose2D setPosFromApriltag(){
-        List<AprilTagDetection> detections = aprilTagProcessor.getDetections();
+        java.util.ArrayList<AprilTagDetection> detections = aprilTagProcessor.getDetections();
 
         if(!detections.isEmpty() && detections.get(0).ftcPose != null){
             opMode.multipleTelemetry.addData("xIntrins", round2Dec(detections.get(0).ftcPose.x));
@@ -61,11 +61,8 @@ public class MM_VisionPortal {
             return new Pose2D(DistanceUnit.INCH, detections.get(0).robotPose.getPosition().x,
                     detections.get(0).robotPose.getPosition().y, AngleUnit.DEGREES, detections.get(0).robotPose.getOrientation().getYaw());
         }
-
         return null;
     }
-
-
 
     private void init(){
         final CameraStreamProcessor cameraStreamProcessor = new CameraStreamProcessor();
@@ -89,7 +86,6 @@ public class MM_VisionPortal {
                 .build();
 
         FtcDashboard.getInstance().startCameraStream(cameraStreamProcessor, 0);
-
 
 //        limelight = opMode.hardwareMap.get(Limelight3A.class, "limelight");
 //

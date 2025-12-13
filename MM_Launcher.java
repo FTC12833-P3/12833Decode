@@ -1,14 +1,11 @@
 package org.firstinspires.ftc.teamcode;
 
-import static org.firstinspires.ftc.teamcode.MM_OpMode.currentGamepad1;
 import static org.firstinspires.ftc.teamcode.MM_OpMode.currentGamepad2;
-import static org.firstinspires.ftc.teamcode.MM_OpMode.previousGamepad1;
 import static org.firstinspires.ftc.teamcode.MM_OpMode.previousGamepad2;
 
 import com.acmerobotics.dashboard.config.Config;
 import com.qualcomm.robotcore.hardware.AnalogInput;
 import com.qualcomm.robotcore.hardware.CRServo;
-import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DistanceSensor;
@@ -23,20 +20,26 @@ public class MM_Launcher {
     private DcMotorEx launchMotorRight;
     private Servo pusher;
     private CRServo server;
-    //private ColorSensor peephole;
-    private ColorSensor launchSensor;
-    private ColorSensor lowerLaunchSensor;
-    private DistanceSensor rightDistance;
-    private DistanceSensor leftDistance;
-    private DistanceSensor lowerLeftDistance;
-    private MM_PID_CONTROLLER serverPID;
-
+    private DistanceSensor topRightDistance;
+    private DistanceSensor topLeftDistance;
+    private DistanceSensor bottomLeftDistance;
+    private DistanceSensor bottomRightDistance;
+    //public static MM_PID_CONTROLLER serverPID;
 
     private AnalogInput serverEncoder;
 
-    private MM_Position projectileTarget = new MM_Position(-65 * MM_OpMode.alliance, -65 * MM_OpMode.alliance, 0); //blue goal pos
+    private MM_Position projectileTarget = new MM_Position(-65, 65 * MM_OpMode.alliance, 0); //goal pos
 
-    public static double LAUNCHER_CO_EFF = 2.25;
+    public static double LAUNCH_ZONE_CO_EFF_AUDIENCE = 2.5;
+    public static double LAUNCH_ZONE_CO_EFF_FIELD_CENTER = 2.25;
+    public static double LAUNCH_ZONE_CO_EFF_GOAL_MID = 2.25;
+    public static double LAUNCH_ZONE_CO_EFF_GOAL_NEAR = 3.375;
+
+    public static double LAUNCH_ZONE_BOUNDARY_AUDIENCE = 100;
+    public static double LAUNCH_ZONE_BOUNDARY_FIELD_CENTER = 80;
+    public static double LAUNCH_ZONE_BOUNDARY_GOAL_MID = 52;
+    public static double LAUNCH_ZONE_BOUNDARY_GOAL_NEAR = 23;
+
     private double LAUNCHER_ANGLE = 45;
     public static boolean runLauncher = false;
     public static double targetLauncherVelocity = 1;
@@ -47,9 +50,6 @@ public class MM_Launcher {
 
     private final double FINAL_PROJECTILE_HEIGHT = 26.5; //height above launch height
     private final double LOWER_FEED_BAR_TOP_POSITION = .8;
-    public static double HYPOT_SPEED_THRESHOLD = 23;
-    public static double HYPOT_SPEED_CO_EFF = 1.5;
-
 
     public static double SERVER_P_CO_EFF = .03;
 
@@ -76,13 +76,11 @@ public class MM_Launcher {
         server = opMode.hardwareMap.get(CRServo.class, "server");
         serverEncoder = opMode.hardwareMap.get(AnalogInput.class, "serverEncoder");
         //setServerForInit(); TODO fix method to make it stop server at right place in init
-        //peephole = opMode.hardwareMap.get(ColorSensor.class, "upperFeedSensor");
-        launchSensor = opMode.hardwareMap.get(ColorSensor.class, "launchSensor");
-        lowerLaunchSensor = opMode.hardwareMap.get(ColorSensor.class, "lowerLaunchSensor");
-        rightDistance = opMode.hardwareMap.get(DistanceSensor.class, "rightLaunchSensor");
-        leftDistance = opMode.hardwareMap.get(DistanceSensor.class, "launchSensor");
-        lowerLeftDistance = opMode.hardwareMap.get(DistanceSensor.class, "lowerLaunchSensor");
-        serverPID = new MM_PID_CONTROLLER(SERVER_P_CO_EFF, 0, 0);
+        topLeftDistance = opMode.hardwareMap.get(DistanceSensor.class, "topLeftDistance");
+        topRightDistance = opMode.hardwareMap.get(DistanceSensor.class, "topRightDistance");
+        bottomLeftDistance = opMode.hardwareMap.get(DistanceSensor.class, "bottomLeftDistance");
+        bottomRightDistance = opMode.hardwareMap.get(DistanceSensor.class, "bottomRightDistance");
+        //serverPID = new MM_PID_CONTROLLER(SERVER_P_CO_EFF, 0, 0);
 
         launchMotorLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         launchMotorRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
@@ -92,19 +90,17 @@ public class MM_Launcher {
         setTargetLauncherVelocity();
         haveArtifactAtTop();
 
-
         opMode.multipleTelemetry.addData("launcherTargetSpeed", targetLauncherVelocity);
         opMode.multipleTelemetry.addData("launcherSpeedL", launchMotorLeft.getVelocity());
         opMode.multipleTelemetry.addData("launcherSpeedR", launchMotorRight.getVelocity());
         opMode.multipleTelemetry.addData("servoEncoder", getAxonDegrees(serverEncoder));
-        opMode.multipleTelemetry.addData("lowerLaunchSensor info", "red: %d green: %d blue: %d alpha: %d",lowerLaunchSensor.red(), lowerLaunchSensor.green(), lowerLaunchSensor.blue(), lowerLaunchSensor.alpha());
-        opMode.multipleTelemetry.addData("dist Left", leftDistance.getDistance(DistanceUnit.MM));
-        opMode.multipleTelemetry.addData("dist Right", rightDistance.getDistance(DistanceUnit.MM));
-        opMode.multipleTelemetry.addData("dist Lower Left", lowerLeftDistance.getDistance(DistanceUnit.MM));
+        opMode.multipleTelemetry.addData("dist Left", topLeftDistance.getDistance(DistanceUnit.MM));
+        opMode.multipleTelemetry.addData("dist Right", topRightDistance.getDistance(DistanceUnit.MM));
+        opMode.multipleTelemetry.addData("dist Lower Left", bottomLeftDistance.getDistance(DistanceUnit.MM));
+        opMode.multipleTelemetry.addData("dist Lower Right", bottomRightDistance.getDistance(DistanceUnit.MM));
 
         //if (launching){
         if(currentGamepad2.b && !previousGamepad2.b && !artifactAtTop) {
-
             if (pusher.getPosition() >= LOWER_FEED_ARM_POSITION_3) {
                 pusher.setPosition(0);
             } else if (pusher.getPosition() >= LOWER_FEED_ARM_POSITION_2) {
@@ -114,6 +110,9 @@ public class MM_Launcher {
             } else {
                 pusher.setPosition(LOWER_FEED_ARM_POSITION_1);
             }
+        }
+        if (currentGamepad2.y){
+            pusher.setPosition(0);
         }
             opMode.multipleTelemetry.addData("servo pos", pusher.getPosition());
        // }
@@ -134,10 +133,10 @@ public class MM_Launcher {
         //opMode.multipleTelemetry.addData("colors", "red %d, green %d, blue %d", peephole.red(), peephole.green(), peephole.blue());
 
         if(launching) {
-            double serverError = getAxonDegrees(serverEncoder) - serverStopPoint;
-            if (getAxonDegrees(serverEncoder) < serverStopPoint) {
+            double serverError = Math.abs(getAxonDegrees(serverEncoder) - serverStopPoint);
+            if (serverError < 10) {
                 serverIsReady = false;
-                server.setPower(serverPID.getPID(serverError > 0? serverError: 0));
+                server.setPower(serverError * SERVER_P_CO_EFF);
             } else if (!serverIsReady) {
                 serverIsReady = true;
                 launching = false;
@@ -148,27 +147,31 @@ public class MM_Launcher {
 
     private void setTargetLauncherVelocity() {
         double launchDistance = Math.abs(Math.hypot(projectileTarget.getX() - opMode.robot.drivetrain.navigation.getX(),
-                projectileTarget.getY() - opMode.robot.drivetrain.navigation.getY())) * 0.0254;
-        opMode.multipleTelemetry.addData("launchDistance", launchDistance);
-        //double metersPerSecond = Math.sqrt(Math.abs((launchDistance * Math.tan(LAUNCHER_ANGLE) - (9.81 * Math.pow(launchDistance, 2)) )/ (2 * FINAL_PROJECTILE_HEIGHT * Math.pow(Math.cos(LAUNCHER_ANGLE), 2))));
-        double metersPerSecond = Math.sqrt((9.81 * launchDistance) / Math.sin(LAUNCHER_ANGLE * 2));
-        opMode.multipleTelemetry.addData("metersPerSecond", metersPerSecond);
-        targetLauncherVelocity = Math.abs(metersPerSecond * TICKS_PER_METER) * LAUNCHER_CO_EFF;
-        if(Math.abs(Math.hypot(projectileTarget.getX() - opMode.robot.drivetrain.navigation.getX(),
-                 projectileTarget.getY() - opMode.robot.drivetrain.navigation.getY())) <= HYPOT_SPEED_THRESHOLD){
-            targetLauncherVelocity *= HYPOT_SPEED_CO_EFF;
+                projectileTarget.getY() - opMode.robot.drivetrain.navigation.getY())); // unit is inches
+        double metersPerSecond = Math.sqrt((9.81 * launchDistance * 0.0254) / Math.sin(LAUNCHER_ANGLE * 2));
+        double ticksPerSecond = Math.abs(metersPerSecond * TICKS_PER_METER);
+
+        if(launchDistance <= LAUNCH_ZONE_BOUNDARY_GOAL_NEAR){
+            targetLauncherVelocity = ticksPerSecond * LAUNCH_ZONE_CO_EFF_GOAL_NEAR;
+        } else if (launchDistance <= LAUNCH_ZONE_BOUNDARY_GOAL_MID) {
+            targetLauncherVelocity = ticksPerSecond * LAUNCH_ZONE_CO_EFF_GOAL_MID;
+        } else if (launchDistance <= LAUNCH_ZONE_BOUNDARY_FIELD_CENTER) {
+            targetLauncherVelocity = ticksPerSecond * LAUNCH_ZONE_CO_EFF_FIELD_CENTER;
+        } else {
+            targetLauncherVelocity = ticksPerSecond * LAUNCH_ZONE_CO_EFF_AUDIENCE;
         }
-        opMode.multipleTelemetry.addData("hypot", Math.hypot(projectileTarget.getX() - opMode.robot.drivetrain.navigation.getX(),
-                projectileTarget.getY() - opMode.robot.drivetrain.navigation.getY()));
+
+        opMode.multipleTelemetry.addData("launchDistance (inches)", launchDistance);
+        opMode.multipleTelemetry.addData("metersPerSecond", metersPerSecond);
     }
 
     private boolean haveArtifactAtTop(){
-        artifactAtTop = launchSensor.red() <= 10;
-        opMode.multipleTelemetry.addData("red", launchSensor.red());
-        opMode.multipleTelemetry.addData("green", launchSensor.green());
-        opMode.multipleTelemetry.addData("blue", launchSensor.blue());
-        opMode.multipleTelemetry.addData("alpha", launchSensor.alpha());
+        artifactAtTop = topLeftDistance.getDistance(DistanceUnit.MM) < 35 || topRightDistance.getDistance(DistanceUnit.MM) < 45;
         return true;
+    }
+
+    public boolean have3Artifacts(){
+        return bottomLeftDistance.getDistance(DistanceUnit.MM) < 35 || bottomRightDistance.getDistance(DistanceUnit.MM) < 35;
     }
 
     public boolean lowerFeedArmReady(){
@@ -180,11 +183,11 @@ public class MM_Launcher {
     }
 
     public void setServerForInit(){
-        double error = getAxonDegrees(serverEncoder) - serverStopPoint;
+        double serverError = Math.abs(getAxonDegrees(serverEncoder) - serverStopPoint);
 
         if(!serverIsReady) {
             if (getAxonDegrees(serverEncoder) < serverStopPoint) {
-                server.setPower(serverPID.getPID(error > 0? error: 0));
+                server.setPower(serverError * SERVER_P_CO_EFF);
             } else {
                 serverIsReady = true;
                 server.setPower(0);

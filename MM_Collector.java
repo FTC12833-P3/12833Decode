@@ -28,7 +28,7 @@ public class MM_Collector {
     }
     
     public void autoRunCollector(){
-        if(runCollector){
+        if(runCollector && !opMode.robot.launcher.have3Artifacts()){
             collector.setPower(COLLECT_POWER);
         } else if (reverseCollector){
             collector.setPower(-COLLECT_POWER);
