@@ -22,7 +22,7 @@ public class MM_Position_Data {
     public MM_Spline splineToCollectFirstSpikeMark = new MM_Spline(new double[]{-47, -47, -27, -12}, new double[]{-47, -31, -17, -33}, MM_Autos.SPLINE_DETAIL_LEVEL, true);
     public MM_Spline splineToCollectSecondSpikeMark = new MM_Spline(new double[]{-47, -11, -1, -12}, new double[]{-47, -13, -16, -33}, MM_Autos.SPLINE_DETAIL_LEVEL, true);
 
-    MM_Position_Data(MM_OpMode opMode){
+    MM_Position_Data(MM_OpMode opMode) {
         this.opMode = opMode;
         visionPortal = new MM_VisionPortal(opMode);
         odometryController = opMode.hardwareMap.get(GoBildaPinpointDriver.class, "odo");
@@ -30,7 +30,7 @@ public class MM_Position_Data {
         odometryController.setEncoderResolution(GoBildaPinpointDriver.GoBildaOdometryPods.goBILDA_SWINGARM_POD);
         odometryController.setEncoderDirections(GoBildaPinpointDriver.EncoderDirection.REVERSED, GoBildaPinpointDriver.EncoderDirection.FORWARD);
 
-        if(opMode.getClass() == MM_Autos.class) {
+        if (opMode.getClass() == MM_Autos.class) {
             odometryController.resetPosAndIMU();
         }
         odometryController.resetPosAndIMU(); //TODO remove this
@@ -41,22 +41,15 @@ public class MM_Position_Data {
         targetPos.setAll(0, 0, 0);
     }
 
-    public void updatePosition(){
-        updatePosition(false);
-    }
 
-    public void updatePosition(boolean useApriltag){
+    public void updatePosition() {
         currentPos = odometryController.getUpdatedPositon();
 
         opMode.multipleTelemetry.addData("xOdom", round2Dec(getX()));
         opMode.multipleTelemetry.addData("yOdom", round2Dec(getY()));
         opMode.multipleTelemetry.addData("yawOdom", round2Dec(getHeading()));
 
-        if (useApriltag) {
-            opMode.multipleTelemetry.addData("usingApriltags", "");
-            if (AprilTagPos != null) {
-                pastExtrinsicY = AprilTagPos.getY(DistanceUnit.INCH);
-            }
+        if(MM_OpMode.currentGamepad1.dpad_down) {
             AprilTagPos = visionPortal.setPosFromApriltag();
             if (AprilTagPos != null) {
                 opMode.multipleTelemetry.addData("xApril", round2Dec(AprilTagPos.getX(DistanceUnit.INCH)));
@@ -65,9 +58,10 @@ public class MM_Position_Data {
 
                 if (MM_OpMode.currentGamepad1.b && !MM_OpMode.previousGamepad1.b) {
                     odometryController.setPosition(AprilTagPos);
-                    if(opMode.opModeInInit()){
-                        MM_OpMode.alliance = MM_VisionPortal.startingTag == 20? -1: 1; //blue = -1
+                    if (opMode.opModeInInit()) {
+                        MM_OpMode.alliance = MM_VisionPortal.startingTag == 20 ? -1 : 1; //blue = -1
                     }
+                    opMode.robot.launcher.updateProjectileTarget();
                 }
             } else { //just here for dashboard
                 opMode.multipleTelemetry.addData("xApril", "");
@@ -75,28 +69,27 @@ public class MM_Position_Data {
                 opMode.multipleTelemetry.addData("yawApril", "");
             }
         }
-
         currentPos = odometryController.getUpdatedPositon();
     }
 
 
-        private double round2Dec ( double inDouble){
+    private double round2Dec(double inDouble) {
         return Math.round(inDouble * 100) / 100.0;
     }
 
-        public double getX () {
+    public double getX() {
         return currentPos.getX(DistanceUnit.INCH);
     }
 
-        public double getY () {
+    public double getY() {
         return currentPos.getY(DistanceUnit.INCH);
     }
 
-        public double getHeading () {
+    public double getHeading() {
         return currentPos.getHeading(AngleUnit.DEGREES);
     }
 
-        public void setPosition ( double xPos, double yPos, double yawPos){
+    public void setPosition(double xPos, double yPos, double yawPos) {
         odometryController.setPosition(new Pose2D(DistanceUnit.INCH, xPos, yPos, AngleUnit.DEGREES, yawPos));
     }
 

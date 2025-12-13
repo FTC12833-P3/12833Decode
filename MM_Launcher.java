@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode;
 
+import static org.firstinspires.ftc.teamcode.MM_OpMode.alliance;
 import static org.firstinspires.ftc.teamcode.MM_OpMode.currentGamepad2;
 import static org.firstinspires.ftc.teamcode.MM_OpMode.previousGamepad2;
 
@@ -28,7 +29,7 @@ public class MM_Launcher {
 
     private AnalogInput serverEncoder;
 
-    private MM_Position projectileTarget = new MM_Position(-65, 65 * MM_OpMode.alliance, 0); //goal pos
+    private MM_Position projectileTarget = new MM_Position(-65, 65 * alliance, 0); //goal pos
 
     public static double LAUNCH_ZONE_CO_EFF_AUDIENCE = 2.5;
     public static double LAUNCH_ZONE_CO_EFF_FIELD_CENTER = 2.25;
@@ -51,7 +52,7 @@ public class MM_Launcher {
     private final double FINAL_PROJECTILE_HEIGHT = 26.5; //height above launch height
     private final double LOWER_FEED_BAR_TOP_POSITION = .8;
 
-    public static double SERVER_P_CO_EFF = .03;
+    public static double SERVER_P_CO_EFF = .007;
 
     private final double TICKS_PER_REV = 28;
     private final double WHEEL_DIAMETER = 77.75; //mm 75.75 for ordered wheels, 70.95 for custom
@@ -94,6 +95,7 @@ public class MM_Launcher {
         opMode.multipleTelemetry.addData("launcherSpeedL", launchMotorLeft.getVelocity());
         opMode.multipleTelemetry.addData("launcherSpeedR", launchMotorRight.getVelocity());
         opMode.multipleTelemetry.addData("servoEncoder", getAxonDegrees(serverEncoder));
+        opMode.multipleTelemetry.addData("serverSpeed", server.getPower());
         opMode.multipleTelemetry.addData("dist Left", topLeftDistance.getDistance(DistanceUnit.MM));
         opMode.multipleTelemetry.addData("dist Right", topRightDistance.getDistance(DistanceUnit.MM));
         opMode.multipleTelemetry.addData("dist Lower Left", bottomLeftDistance.getDistance(DistanceUnit.MM));
@@ -134,7 +136,7 @@ public class MM_Launcher {
 
         if(launching) {
             double serverError = Math.abs(getAxonDegrees(serverEncoder) - serverStopPoint);
-            if (serverError < 10) {
+            if (serverError > 20) {
                 serverIsReady = false;
                 server.setPower(serverError * SERVER_P_CO_EFF);
             } else if (!serverIsReady) {
@@ -193,6 +195,10 @@ public class MM_Launcher {
                 server.setPower(0);
             }
         }
+    }
+
+    public void updateProjectileTarget(){
+        projectileTarget.setY(65 * alliance);
     }
 }
 

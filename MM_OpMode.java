@@ -36,10 +36,10 @@ public abstract class MM_OpMode extends LinearOpMode {
             previousGamepad2.copy(currentGamepad2);
             currentGamepad2.copy(gamepad2);
 
-            robot.drivetrain.navigation.updatePosition(true);
+            robot.drivetrain.navigation.updatePosition();
             robot.launcher.setServerForInit();
 
-            //multipleTelemetry.addData("alliance", alliance == -1? "blue": "red");
+            multipleTelemetry.addData("alliance", alliance == -1? "blue": "red");
         }
         runProcedures();
         if(isStopRequested()){
