@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode;
 
 import static org.firstinspires.ftc.teamcode.MM_OpMode.alliance;
+import static org.firstinspires.ftc.teamcode.MM_OpMode.currentGamepad1;
 import static org.firstinspires.ftc.teamcode.MM_OpMode.currentGamepad2;
 import static org.firstinspires.ftc.teamcode.MM_OpMode.previousGamepad2;
 
@@ -28,6 +29,7 @@ public class MM_Launcher {
     //public static MM_PID_CONTROLLER serverPID;
 
     private AnalogInput serverEncoder;
+    private AnalogInput pusherEncoder;
 
     private MM_Position projectileTarget = new MM_Position(-65, 65 * alliance, 0); //goal pos
 
@@ -72,6 +74,7 @@ public class MM_Launcher {
         launchMotorRight = opMode.hardwareMap.get(DcMotorEx.class, "launchMotorRight");
         launchMotorLeft.setDirection(DcMotorEx.Direction.REVERSE);
         pusher = opMode.hardwareMap.get(Servo.class, "pusher");
+        pusherEncoder = opMode.hardwareMap.get(AnalogInput.class, "pusherEncoder");
         pusher.setPosition(0);
         server = opMode.hardwareMap.get(CRServo.class, "server");
         serverEncoder = opMode.hardwareMap.get(AnalogInput.class, "serverEncoder");
@@ -101,7 +104,7 @@ public class MM_Launcher {
         opMode.multipleTelemetry.addData("dist Lower Right", bottomRightDistance.getDistance(DistanceUnit.MM));
 
         //if (launching){
-        if(currentGamepad2.b && !previousGamepad2.b && !artifactAtTop) {
+        if(!artifactAtTop && currentGamepad2.b && !previousGamepad2.b) {
             if (pusher.getPosition() >= LOWER_FEED_ARM_POSITION_3) {
                 pusher.setPosition(0);
             } else if (pusher.getPosition() >= LOWER_FEED_ARM_POSITION_2) {
@@ -171,12 +174,12 @@ public class MM_Launcher {
         return true;
     }
 
-    public boolean have3Artifacts(){
+    public boolean lowerSensorTriggered(){
         return bottomLeftDistance.getDistance(DistanceUnit.MM) < 35 || bottomRightDistance.getDistance(DistanceUnit.MM) < 35;
     }
 
     public boolean lowerFeedArmReady(){
-        return pusher.getPosition() == 0;
+        return getAxonDegrees(pusherEncoder) < 1;
     }
 
     private double getAxonDegrees(AnalogInput encoder){
