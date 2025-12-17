@@ -1,7 +1,6 @@
 package org.firstinspires.ftc.teamcode;
 
 import static org.firstinspires.ftc.teamcode.MM_OpMode.alliance;
-import static org.firstinspires.ftc.teamcode.MM_OpMode.currentGamepad1;
 import static org.firstinspires.ftc.teamcode.MM_OpMode.currentGamepad2;
 import static org.firstinspires.ftc.teamcode.MM_OpMode.previousGamepad2;
 
@@ -12,6 +11,7 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DistanceSensor;
 import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 
@@ -30,6 +30,7 @@ public class MM_Launcher {
 
     private AnalogInput serverEncoder;
     private AnalogInput pusherEncoder;
+    private ElapsedTime launchTime = new ElapsedTime();
 
     private MM_Position projectileTarget = new MM_Position(-65, 65 * alliance, 0); //goal pos
 
@@ -43,8 +44,8 @@ public class MM_Launcher {
     public static double LAUNCH_ZONE_BOUNDARY_GOAL_NEAR = 45;
 
     private double LAUNCHER_ANGLE = 45;
-    public static boolean runLauncher = false;
-    public static double targetLauncherVelocity = 1;
+    public static boolean scoreArtifacts = false;
+    public static double targetLauncherVelocity = 10000;
     public static double LOWER_FEED_ARM_POSITION_1 = .6;
     public static double LOWER_FEED_ARM_POSITION_2 = .73;
     public static double LOWER_FEED_ARM_POSITION_3 = .84;
@@ -146,6 +147,50 @@ public class MM_Launcher {
                 launching = false;
                 server.setPower(0);
             }
+        }
+    }
+
+    public void autoRunLauncher(){
+        setTargetLauncherVelocity();
+        launchMotorLeft.setVelocity(targetLauncherVelocity);
+        launchMotorRight.setVelocity(targetLauncherVelocity);
+
+        if(scoreArtifacts && opMode.robot.drivetrain.driveDone()){
+
+            if(!launching) {
+                if (pusher.getPosition() >= LOWER_FEED_ARM_POSITION_3) {
+                    pusher.setPosition(0);
+                    launchTime.reset();
+                    launching = true;
+                } else {
+                    if (pusher.getPosition() < .1) {
+                        pusher.setPosition(LOWER_FEED_ARM_POSITION_1);
+                    } else if (pusher.getPosition() >= LOWER_FEED_ARM_POSITION_2) {
+                        pusher.setPosition(LOWER_FEED_ARM_POSITION_3);
+                    } else if (pusher.getPosition() >= LOWER_FEED_ARM_POSITION_1) {
+                        pusher.setPosition(LOWER_FEED_ARM_POSITION_2);
+                    }
+                    launching = true;
+                }
+            }
+
+            if(Math.abs(launchMotorLeft.getVelocity() - targetLauncherVelocity) < 50){
+                if(getAxonDegrees(pusherEncoder) / 360 >= pusher.getPosition()) {
+                    double serverError = Math.abs(getAxonDegrees(serverEncoder) - serverStopPoint);
+                    if (serverError > 20) {
+                        serverIsReady = false;
+                        server.setPower(serverError * SERVER_P_CO_EFF);
+                    } else if (!serverIsReady) {
+                        serverIsReady = true;
+                        launching = false;
+                        server.setPower(0);
+                        if(pusher.getPosition() < .1){
+                            scoreArtifacts = false;
+                        }
+                    }
+                }
+            }
+
         }
     }
 

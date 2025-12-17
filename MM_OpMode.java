@@ -82,6 +82,7 @@ public abstract class MM_OpMode extends LinearOpMode {
         runProcedures();
         if(isStopRequested()){
             //TODO add any static variables reset code here
+            MM_Launcher.scoreArtifacts = false;
         }
     }
 

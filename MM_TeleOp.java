@@ -17,7 +17,7 @@ public class MM_TeleOp extends MM_OpMode{
             robot.drivetrain.driveWithSticks();
             robot.collector.runCollector();
             robot.launcher.runLauncher();
-            MM_Launcher.runLauncher = true;
+            MM_Launcher.scoreArtifacts = true;
             robot.drivetrain.navigation.updatePosition();
             multipleTelemetry.addData("alliance", alliance == -1? "blue": "red");
 
