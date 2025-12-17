@@ -179,7 +179,7 @@ public class MM_Launcher {
     }
 
     public boolean lowerFeedArmReady(){
-        return getAxonDegrees(pusherEncoder) < 1;
+        return getAxonDegrees(pusherEncoder) < 190;
     }
 
     private double getAxonDegrees(AnalogInput encoder){

@@ -40,7 +40,7 @@ public class MM_Autos extends MM_OpMode{
                     //TODO launch
                     if(state != previousState){
                         previousState = state;
-                        MM_Position_Data.targetPos.setAll(-47 * alliance, -47 * alliance, 45 * alliance);
+                        MM_Position_Data.targetPos.setAll(-47, 47 * alliance, -45 * alliance);
                     } else if(robot.drivetrain.driveDone()) {
                         previousState = state;
                         state = STATES.DRIVE_TO_COLLECT;
@@ -74,18 +74,18 @@ public class MM_Autos extends MM_OpMode{
                 case COLLECT:
                     if (state != previousState){
                         MM_Collector.runCollector = true;
-                        MM_Position_Data.targetPos.setY((MM_Position_Data.targetPos.getY() - 1 )* alliance);
-                    }
-
-                    if(robot.drivetrain.driveDone()){
-                        MM_Collector.runCollector = false;
+                        MM_Position_Data.targetPos.setY((MM_Position_Data.targetPos.getY() - 1 ));
                         previousState = state;
+                    } else if(robot.drivetrain.driveDone()){
+
                         state = STATES.SCORE;
                     }
 
             }
             robot.drivetrain.autoRunDrivetrain();
             robot.collector.autoRunCollector();
+
+            multipleTelemetry.addData("dCoeff", MM_PID_CONTROLLER.D_COEFF);
             multipleTelemetry.update();
         }
     }
@@ -94,7 +94,7 @@ public class MM_Autos extends MM_OpMode{
         spline.updateDistanceTraveled(currentSection);
         targetX = spline.getNextPoint(currentSection)[0];
         targetY = spline.getNextPoint(currentSection)[1];
-        MM_Position_Data.targetPos.setAll(targetX * alliance, targetY * alliance, heading * alliance);
+        MM_Position_Data.targetPos.setAll(targetX, -targetY * alliance, -heading * alliance);
         currentSection++;
     }
 
@@ -102,15 +102,15 @@ public class MM_Autos extends MM_OpMode{
         spline.resetDistanceTraveled();
         currentSpline = spline;
         setNextSplinePoint(spline);
-        MM_Drivetrain.X_ERROR_THRESHOLD = 4;
-        MM_Drivetrain.Y_ERROR_THRESHOLD = 4;
+        MM_Drivetrain.xErrorThreshold= 4;
+        MM_Drivetrain.yErrorThreshold = 4;
         MM_PID_CONTROLLER.D_COEFF = 0;
         currentSection -= 1;
     }
     public boolean splineDone(){
         if(currentSection == MM_Autos.SPLINE_DETAIL_LEVEL + 1){
-            MM_Drivetrain.X_ERROR_THRESHOLD = 1.5;
-            MM_Drivetrain.Y_ERROR_THRESHOLD = 1.5;
+            MM_Drivetrain.xErrorThreshold = MM_Drivetrain.X_ERROR_THRESHOLD;
+            MM_Drivetrain.yErrorThreshold = MM_Drivetrain.Y_ERROR_THRESHOLD;
             MM_PID_CONTROLLER.D_COEFF = 30;
             currentSection = 0;
             currentSpline = null;

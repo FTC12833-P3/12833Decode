@@ -7,8 +7,8 @@ import com.qualcomm.robotcore.hardware.Gamepad;
 
 public abstract class MM_OpMode extends LinearOpMode {
     MM_Robot robot = null;
-    public static int BLUE = 1;
-    public static int RED = -1;
+    public static int BLUE = -1;
+    public static int RED = 1;
 
     public static String GOAL_SIDE = "Goal Side";
     public static String AUDIENCE_SIDE = "Audience Side";

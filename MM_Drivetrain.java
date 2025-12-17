@@ -20,13 +20,11 @@ public class MM_Drivetrain {
 
     private static final double SLOW_MODE_POWER = .5;
 
+    public static double xErrorThreshold = 1.5; //TODO fix threshold values (used to be .5)
+    public static double yErrorThreshold = 1.5;
     public static double headingErrorThreshold = 3;
     public static double rotatePCoEff = .05;
 
-    public static double xErrorThreshold = 1.5; //TODO fix threshold values (used to be .5)
-    public static double yErrorThreshold = 1.5;
-
-    public static final double HEADING_ERROR_THRESHOLD = 3;
     public static final double ROTATE_P_CO_EFF = .05;
 
     public static final double X_ERROR_THRESHOLD = 1.5;
