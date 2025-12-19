@@ -39,7 +39,7 @@ public class MM_Autos extends MM_OpMode {
                 case DRIVE_TO_SCORE:
                     if (state != previousState) {
                         previousState = state;
-                        MM_Position_Data.targetPos.setAll(-18, 18 * alliance, 135 * alliance);
+                        MM_Position_Data.targetPos.setAll(-20, 20 * alliance, 135 * alliance);
 
                     } else if (robot.drivetrain.driveDone()) {
                         state = STATES.SCORE;

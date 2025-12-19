@@ -130,22 +130,33 @@ public class MM_Launcher {
             launchMotorRight.setVelocity(targetLauncherVelocity * SLOW_SPEED_CO_EFF);
         }
 
-        if (pusher.getPosition() >= LOWER_FEED_ARM_POSITION_1 && !launching && artifactAtTop && currentGamepad2.right_trigger > 0  && Math.abs(launchMotorLeft.getVelocity() - targetLauncherVelocity) < 50) {
-//            lowerFeedArm.setPosition(LOWER_FEED_BAR_TOP_POSITION); TODO fix the lower feed arm
-            server.setPower(1);
-            launching = true;
-        }
-        //opMode.multipleTelemetry.addData("colors", "red %d, green %d, blue %d", peephole.red(), peephole.green(), peephole.blue());
-
-        if(launching) {
-            double serverError = Math.abs(getAxonDegrees(serverEncoder) - serverStopPoint);
-            if (serverError > 20) {
-                serverIsReady = false;
-                server.setPower(serverError * SERVER_P_CO_EFF);
-            } else if (!serverIsReady) {
-                serverIsReady = true;
-                launching = false;
+        if (opMode.gamepad2.dpad_left || opMode.gamepad2.dpad_right || opMode.gamepad2.dpad_up) {
+            if (opMode.gamepad2.dpad_left) {
+                server.setPower(-0.2);
+            } else if (opMode.gamepad2.dpad_right) {
+                server.setPower(0.2);
+            } else {
                 server.setPower(0);
+            }
+        } else {
+            if (pusher.getPosition() >= LOWER_FEED_ARM_POSITION_1 && !launching && artifactAtTop && currentGamepad2.right_trigger > 0 && Math.abs(launchMotorLeft.getVelocity() - targetLauncherVelocity) < 50) {
+//            lowerFeedArm.setPosition(LOWER_FEED_BAR_TOP_POSITION); TODO fix the lower feed arm
+                server.setPower(1);
+                launching = true;
+            }
+
+            //opMode.multipleTelemetry.addData("colors", "red %d, green %d, blue %d", peephole.red(), peephole.green(), peephole.blue());
+
+            if (launching) {
+                double serverError = Math.abs(getAxonDegrees(serverEncoder) - serverStopPoint);
+                if (serverError > 20) {
+                    serverIsReady = false;
+                    server.setPower(serverError * SERVER_P_CO_EFF);
+                } else if (!serverIsReady) {
+                    serverIsReady = true;
+                    launching = false;
+                    server.setPower(0);
+                }
             }
         }
     }
