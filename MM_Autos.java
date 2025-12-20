@@ -60,27 +60,35 @@ public class MM_Autos extends MM_OpMode {
                     break;
                 case DRIVE_TO_COLLECT:
                     if (state != previousState) {
+                        MM_Position_Data.targetPos.setHeading(-90 * alliance);
+                        previousState = state;
                         if (collectCycle < 2) {
-                            previousState = state;
-                            heading = 90;
-                            prepareToSpline(collectSplines.get(collectCycle));
+
+                            //heading = 90;
+                            //prepareToSpline(collectSplines.get(collectCycle));
                         }
                     }
 
-                    if (robot.drivetrain.driveDone()) {
-                        setNextSplinePoint(currentSpline);
-                    }
-                    multipleTelemetry.addData("currentTargetX", MM_Position_Data.targetPos.getX());
-
-                    if (splineDone()) {
+                    if (robot.drivetrain.driveDone() && MM_Position_Data.targetPos.getX() == -14) {
+                        //setNextSplinePoint(currentSpline);
                         previousState = state;
                         state = STATES.COLLECT;
+                        MM_Drivetrain.rotatePCoEff = MM_Drivetrain.ROTATE_P_CO_EFF;
+                    } else if (robot.drivetrain.driveDone()){
+                        MM_Position_Data.targetPos.setAll(-14, 33 * alliance, -90 * alliance);
                     }
+                    multipleTelemetry.addData("currentTargetX", MM_Position_Data.targetPos.getX());
+                    MM_Collector.runCollector = true;
+
+//                    if (splineDone()) {
+//
+//                    }
                     break;
                 case COLLECT:
+
+                    MM_Position_Data.targetPos.setAll(-14, (48 * alliance), -90 * alliance);
+
                     if (state != previousState) {
-                        MM_Collector.runCollector = true;
-                        MM_Position_Data.targetPos.setY((MM_Position_Data.targetPos.getY() - 1));
                         previousState = state;
                     } else if (robot.drivetrain.driveDone()) {
 
