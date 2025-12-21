@@ -30,7 +30,7 @@ public abstract class MM_OpMode extends LinearOpMode {
     boolean spike1 = true;
     boolean spike2 = true;
     boolean spike3 = true;
-    boolean eliminationMatch = false;
+    boolean eliminationMatch = true;
     boolean scoreFastest = true;
     boolean scoreGoalOnly = false;
     boolean[] settings = {allSpikes, spike1, spike2, spike3, eliminationMatch, scoreFastest, };
