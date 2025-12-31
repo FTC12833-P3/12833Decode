@@ -14,7 +14,7 @@ public class MM_Position_Data {
     public MM_VisionPortal visionPortal;
     public GoBildaPinpointDriver odometryController;
 
-    private Pose2D currentPos;
+    private static Pose2D currentPos;
     private Pose2D AprilTagPos;
     public double pastExtrinsicY;
 
@@ -34,8 +34,8 @@ public class MM_Position_Data {
         if (opMode.getClass() == MM_Autos.class) {
             odometryController.resetPosAndIMU();
         }
-        odometryController.resetPosAndIMU(); //TODO remove this
 
+        odometryController.setPosition(currentPos);
 
         odometryController.update();
         currentPos = odometryController.getPosition();
