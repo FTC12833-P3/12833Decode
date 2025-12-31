@@ -105,7 +105,7 @@ public class MM_Launcher {
         opMode.multipleTelemetry.addData("dist Lower Right", bottomRightDistance.getDistance(DistanceUnit.MM));
 
         //if (launching){
-        if(!artifactAtTop && currentGamepad2.b && !previousGamepad2.b) {
+        if (!artifactAtTop && currentGamepad2.b && !previousGamepad2.b) {
             if (pusher.getPosition() >= LOWER_FEED_ARM_POSITION_3) {
                 pusher.setPosition(0);
             } else if (pusher.getPosition() >= LOWER_FEED_ARM_POSITION_2) {
@@ -116,11 +116,11 @@ public class MM_Launcher {
                 pusher.setPosition(LOWER_FEED_ARM_POSITION_1);
             }
         }
-        if (currentGamepad2.y){
+        if (currentGamepad2.y) {
             pusher.setPosition(0);
         }
-            opMode.multipleTelemetry.addData("servo pos", pusher.getPosition());
-       // }
+        opMode.multipleTelemetry.addData("servo pos", pusher.getPosition());
+        // }
 
         if (haveArtifactAtTop() || launching) { //TODO only set velocity once
             launchMotorLeft.setVelocity(targetLauncherVelocity);
@@ -130,15 +130,15 @@ public class MM_Launcher {
             launchMotorRight.setVelocity(targetLauncherVelocity * SLOW_SPEED_CO_EFF);
         }
 
-        if (opMode.gamepad2.dpad_left || opMode.gamepad2.dpad_right || opMode.gamepad2.dpad_up) {
-            if (opMode.gamepad2.dpad_left) {
-                server.setPower(-0.2);
-            } else if (opMode.gamepad2.dpad_right) {
-                server.setPower(0.2);
-            } else {
+
+        if (opMode.gamepad2.dpad_left) {
+            server.setPower(-0.2);
+        } else if (opMode.gamepad2.dpad_right) {
+            server.setPower(0.2);
+        } else {
+            if(Math.abs(server.getPower()) > 0) {
                 server.setPower(0);
             }
-        } else {
             if (pusher.getPosition() >= LOWER_FEED_ARM_POSITION_1 && !launching && artifactAtTop && currentGamepad2.right_trigger > 0 && Math.abs(launchMotorLeft.getVelocity() - targetLauncherVelocity) < 50) {
 //            lowerFeedArm.setPosition(LOWER_FEED_BAR_TOP_POSITION); TODO fix the lower feed arm
                 server.setPower(1);
@@ -161,14 +161,14 @@ public class MM_Launcher {
         }
     }
 
-    public void autoRunLauncher(){
+    public void autoRunLauncher() {
         setTargetLauncherVelocity();
         launchMotorLeft.setVelocity(targetLauncherVelocity);
         launchMotorRight.setVelocity(targetLauncherVelocity);
 
-        if(scoreArtifacts && opMode.robot.drivetrain.driveDone()){
+        if (scoreArtifacts && opMode.robot.drivetrain.driveDone()) {
 
-            if(!launching) {
+            if (!launching) {
                 if (pusher.getPosition() >= LOWER_FEED_ARM_POSITION_3) {
                     pusher.setPosition(0);
                     launchTime.reset();
@@ -185,8 +185,8 @@ public class MM_Launcher {
                 }
             }
 
-            if(Math.abs(launchMotorLeft.getVelocity() - targetLauncherVelocity) < 50){
-                if(getAxonDegrees(pusherEncoder) / 360 >= pusher.getPosition()) {
+            if (Math.abs(launchMotorLeft.getVelocity() - targetLauncherVelocity) < 50) {
+                if (getAxonDegrees(pusherEncoder) / 360 >= pusher.getPosition()) {
                     double serverError = Math.abs(getAxonDegrees(serverEncoder) - serverStopPoint);
                     if (serverError > 20) {
                         serverIsReady = false;
@@ -195,7 +195,7 @@ public class MM_Launcher {
                         serverIsReady = true;
                         launching = false;
                         server.setPower(0);
-                        if(pusher.getPosition() < .1){
+                        if (pusher.getPosition() < .1) {
                             scoreArtifacts = false;
                         }
                     }
@@ -211,7 +211,7 @@ public class MM_Launcher {
         double metersPerSecond = Math.sqrt((9.81 * launchDistance * 0.0254) / Math.sin(LAUNCHER_ANGLE * 2));
         double ticksPerSecond = Math.abs(metersPerSecond * TICKS_PER_METER);
 
-        if(launchDistance <= LAUNCH_ZONE_BOUNDARY_GOAL_NEAR){
+        if (launchDistance <= LAUNCH_ZONE_BOUNDARY_GOAL_NEAR) {
             targetLauncherVelocity = ticksPerSecond * LAUNCH_ZONE_CO_EFF_GOAL_NEAR;
         } else if (launchDistance <= LAUNCH_ZONE_BOUNDARY_GOAL_MID) {
             targetLauncherVelocity = ticksPerSecond * LAUNCH_ZONE_CO_EFF_GOAL_MID;
@@ -225,27 +225,27 @@ public class MM_Launcher {
         opMode.multipleTelemetry.addData("metersPerSecond", metersPerSecond);
     }
 
-    private boolean haveArtifactAtTop(){
+    private boolean haveArtifactAtTop() {
         artifactAtTop = topLeftDistance.getDistance(DistanceUnit.MM) < 20 || topRightDistance.getDistance(DistanceUnit.MM) < 33;
         return true;
     }
 
-    public boolean lowerSensorTriggered(){
+    public boolean lowerSensorTriggered() {
         return bottomLeftDistance.getDistance(DistanceUnit.MM) < 35 || bottomRightDistance.getDistance(DistanceUnit.MM) < 35;
     }
 
-    public boolean lowerFeedArmReady(){
+    public boolean lowerFeedArmReady() {
         return getAxonDegrees(pusherEncoder) < 190;
     }
 
-    private double getAxonDegrees(AnalogInput encoder){
+    private double getAxonDegrees(AnalogInput encoder) {
         return ((encoder.getVoltage() / 3.3) * 360);
     }
 
-    public void setServerForInit(){
+    public void setServerForInit() {
         double serverError = Math.abs(getAxonDegrees(serverEncoder) - serverStopPoint);
 
-        if(!serverIsReady) {
+        if (!serverIsReady) {
             if (getAxonDegrees(serverEncoder) < serverStopPoint) {
                 server.setPower(serverError * SERVER_P_CO_EFF);
             } else {
@@ -255,7 +255,7 @@ public class MM_Launcher {
         }
     }
 
-    public void updateProjectileTarget(){
+    public void updateProjectileTarget() {
         projectileTarget.setY(65 * alliance);
     }
 }
