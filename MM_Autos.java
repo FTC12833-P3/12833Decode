@@ -7,6 +7,7 @@ import java.util.List;
 
 @Autonomous(name = "autos", group = "MM")
 public class MM_Autos extends MM_OpMode {
+    public static final int REGULAR_DRIVE_D_CO_EFF = 30;
     public static int SPLINE_DETAIL_LEVEL = 20;
 
     private enum STATES {
@@ -100,7 +101,7 @@ public class MM_Autos extends MM_OpMode {
             robot.collector.autoRunCollector();
             robot.launcher.autoRunLauncher();
 
-            multipleTelemetry.addData("dCoeff", MM_PID_CONTROLLER.D_COEFF);
+            multipleTelemetry.addData("dCoeff", MM_Drivetrain.DrivePidController.getD_COEFF());
             multipleTelemetry.update();
         }
     }
@@ -119,7 +120,7 @@ public class MM_Autos extends MM_OpMode {
         setNextSplinePoint(spline);
         MM_Drivetrain.xErrorThreshold = 4;
         MM_Drivetrain.yErrorThreshold = 4;
-        MM_PID_CONTROLLER.D_COEFF = 0;
+        MM_Drivetrain.DrivePidController.setD_COEFF(0);
         currentSection -= 1;
     }
 
@@ -127,7 +128,8 @@ public class MM_Autos extends MM_OpMode {
         if (currentSection == MM_Autos.SPLINE_DETAIL_LEVEL + 1) {
             MM_Drivetrain.xErrorThreshold = MM_Drivetrain.X_ERROR_THRESHOLD;
             MM_Drivetrain.yErrorThreshold = MM_Drivetrain.Y_ERROR_THRESHOLD;
-            MM_PID_CONTROLLER.D_COEFF = 30;
+            MM_Drivetrain.DrivePidController.setD_COEFF(REGULAR_DRIVE_D_CO_EFF);
+
             currentSection = 0;
             currentSpline = null;
             return true;
