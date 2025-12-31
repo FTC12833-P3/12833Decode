@@ -32,7 +32,7 @@ public class MM_Launcher {
     private AnalogInput pusherEncoder;
     private ElapsedTime launchTime = new ElapsedTime();
 
-    private MM_Position projectileTarget = new MM_Position(-65, 65 * alliance, 0); //goal pos
+    public static final MM_Position projectileTarget = new MM_Position(-65, 65 * alliance, 0); //goal pos
 
     public static double LAUNCH_ZONE_CO_EFF_AUDIENCE = 2.4;
     public static double LAUNCH_ZONE_CO_EFF_FIELD_CENTER = 2.35;

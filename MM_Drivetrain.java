@@ -43,6 +43,9 @@ public class MM_Drivetrain {
     private double blPower;
     private double brPower;
     private boolean slowMode = false;
+    private boolean positonLocked = false;
+    private boolean rotateLocked = false;
+
 
     private double pidError;
     private double xError = 0;
@@ -63,9 +66,42 @@ public class MM_Drivetrain {
     }
 
     public void driveWithSticks() {
+        if(currentGamepad1.y && !previousGamepad1.y){
+            navigation.updatePosition();
+            positonLocked = !positonLocked;
+            MM_Position_Data.targetPos.setAll(navigation.getX(), navigation.getY(), calculateDesiredAngle());
+        }
+        if(currentGamepad1.x && previousGamepad1.x){
+            rotateLocked = !rotateLocked;
+        }
+        if(positonLocked){
+            rotateLocked = false;
+            navigation.updatePosition();
+            xError = MM_Position_Data.targetPos.getX() - navigation.getX();
+            yError = MM_Position_Data.targetPos.getY() - navigation.getY();
+            headingError = getNormalizedHeadingError();
+
+            if(tuningDrivePID){
+                DrivePidController.setP_COEFF(tuningDrivePCoEff);
+                DrivePidController.setD_COEFF(tuningDriveDCoEff);
+            }
+
+            double rotateVector = headingError * rotatePCoEff;
+            double moveAngle = Math.toDegrees(Math.atan2(yError, xError));
+            double theta = moveAngle - navigation.getHeading() + 45;
+
+            double PID = DrivePidController.getPID(Math.hypot(xError, yError));
+        }
         double drivePower = -opMode.gamepad1.left_stick_y;
         double strafePower = opMode.gamepad1.left_stick_x;
         double rotatePower = -opMode.gamepad1.right_stick_x;
+
+        if(rotateLocked){
+            navigation.updatePosition();
+            MM_Position_Data.targetPos.setHeading(calculateDesiredAngle());
+            headingError = getNormalizedHeadingError();
+            rotatePower = headingError * ROTATE_P_CO_EFF;
+        }
 
         if (currentGamepad1.a && !previousGamepad1.a && !currentGamepad1.start) {
             slowMode = !slowMode;
@@ -167,5 +203,11 @@ public class MM_Drivetrain {
 
         error = (error >= 180) ? error - 360 : ((error <= -180) ? error + 360 : error); // a nested ternary to determine error
         return error;
+    }
+    private double calculateDesiredAngle(){
+        double xError = MM_Launcher.projectileTarget.getX() - navigation.getX();
+        double yError = MM_Launcher.projectileTarget.getY() - navigation.getY();
+
+        return Math.atan2(xError, yError);
     }
 }
