@@ -71,7 +71,7 @@ public class MM_Drivetrain {
             positonLocked = !positonLocked;
             MM_Position_Data.targetPos.setAll(navigation.getX(), navigation.getY(), calculateDesiredAngle());
         }
-        if(currentGamepad1.x && previousGamepad1.x){
+        if(currentGamepad1.x && !previousGamepad1.x){
             rotateLocked = !rotateLocked;
         }
         if(positonLocked){
