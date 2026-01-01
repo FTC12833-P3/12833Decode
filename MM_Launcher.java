@@ -33,6 +33,10 @@ public class MM_Launcher {
     private ElapsedTime launchTime = new ElapsedTime();
 
     private MM_Position projectileTarget = new MM_Position(-65, 65 * alliance, 0); //goal pos
+    public static double SERVER_P_CO_EFF = .007;
+    public static double SERVER_D_CO_EFF = .0;
+
+    public static MM_PID_CONTROLLER MoPIDController = new MM_PID_CONTROLLER(SERVER_P_CO_EFF, 0, SERVER_D_CO_EFF);
 
     public static double LAUNCH_ZONE_CO_EFF_AUDIENCE = 2.4;
     public static double LAUNCH_ZONE_CO_EFF_FIELD_CENTER = 2.35;
@@ -54,7 +58,11 @@ public class MM_Launcher {
     private final double FINAL_PROJECTILE_HEIGHT = 26.5; //height above launch height
     private final double LOWER_FEED_BAR_TOP_POSITION = .8;
 
-    public static double SERVER_P_CO_EFF = .007;
+
+
+    public static double TUNING_SERVER_P_CO_EFF = .007;
+    public static double TUNING_SERVER_D_CO_EFF = .007;
+    public static boolean tuningServerCoEffs = false;
 
     private final double TICKS_PER_REV = 28;
     private final double WHEEL_DIAMETER = 77.75; //mm 75.75 for ordered wheels, 70.95 for custom
@@ -93,6 +101,11 @@ public class MM_Launcher {
     public void runLauncher() {
         setTargetLauncherVelocity();
         haveArtifactAtTop();
+
+        if(tuningServerCoEffs){
+            MoPIDController.setP_COEFF(TUNING_SERVER_P_CO_EFF);
+            MoPIDController.setD_COEFF(TUNING_SERVER_D_CO_EFF);
+        }
 
         opMode.multipleTelemetry.addData("launcherTargetSpeed", targetLauncherVelocity);
         opMode.multipleTelemetry.addData("launcherSpeedL", launchMotorLeft.getVelocity());
@@ -147,11 +160,19 @@ public class MM_Launcher {
 
             //opMode.multipleTelemetry.addData("colors", "red %d, green %d, blue %d", peephole.red(), peephole.green(), peephole.blue());
 
-            if (launching) {
+            if (launching || tuningServerCoEffs) {
                 double serverError = Math.abs(getAxonDegrees(serverEncoder) - serverStopPoint);
-                if (serverError > 20) {
+                opMode.multipleTelemetry.addData("servertarget", serverStopPoint);
+
+                if(tuningServerCoEffs){
+                    serverIsReady = true;
+                    serverError = getAxonDegrees(serverEncoder) - serverStopPoint;
+                }
+
+                opMode.multipleTelemetry.addData("serverError", serverError);
+                if (Math.abs(serverError) > 20) {
                     serverIsReady = false;
-                    server.setPower(serverError * SERVER_P_CO_EFF);
+                    server.setPower(MoPIDController.getPID(serverError));
                 } else if (!serverIsReady) {
                     serverIsReady = true;
                     launching = false;
