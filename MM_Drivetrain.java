@@ -43,7 +43,7 @@ public class MM_Drivetrain {
     private double blPower;
     private double brPower;
     private boolean slowMode = false;
-    private boolean positonLocked = false;
+    private boolean positionLocked = false;
     private boolean rotateLocked = false;
 
 
@@ -72,7 +72,7 @@ public class MM_Drivetrain {
 
         if(currentGamepad1.y && !previousGamepad1.y){ //toggle lock position
             navigation.updatePosition();
-            positonLocked = !positonLocked;
+            positionLocked = !positionLocked;
             MM_Position_Data.targetPos.setAll(navigation.getX(), navigation.getY(), navigation.getHeading());
         }
 
@@ -88,7 +88,7 @@ public class MM_Drivetrain {
             rotatePower = headingError * ROTATE_P_CO_EFF;
         }
 
-        if(positonLocked){
+        if(positionLocked){
             navigation.updatePosition();
             xError = MM_Position_Data.targetPos.getX() - navigation.getX();
             yError = MM_Position_Data.targetPos.getY() - navigation.getY();
@@ -115,7 +115,7 @@ public class MM_Drivetrain {
         if (currentGamepad1.a && !previousGamepad1.a && !currentGamepad1.start) {
             slowMode = !slowMode;
         }
-        if (!positonLocked) {
+        if (!positionLocked) {
             flPower = drivePower + strafePower - rotatePower;
             frPower = drivePower - strafePower + rotatePower;
             blPower = drivePower - strafePower - rotatePower;
