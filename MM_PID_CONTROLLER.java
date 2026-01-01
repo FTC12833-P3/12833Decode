@@ -7,9 +7,9 @@ public class MM_PID_CONTROLLER {
     MM_OpMode opMode;
     private final ElapsedTime loopTime = new ElapsedTime();
 
-    public static double P_COEFF = 0.02083;
+    private double P_COEFF;
     //public static double I_COEFF;
-    public static double D_COEFF = 0;
+    private double D_COEFF;
 
     private double prevError = 0;
 
@@ -33,6 +33,22 @@ public class MM_PID_CONTROLLER {
 
         prevError = error;
         return P + I + D;
+    }
+
+    public double getP_COEFF(){
+        return P_COEFF;
+    }
+
+    public double getD_COEFF(){
+        return D_COEFF;
+    }
+
+    public void setP_COEFF(double newPCoEff){
+        P_COEFF = newPCoEff;
+    }
+
+    public void setD_COEFF(double newDCoEff){
+        D_COEFF = newDCoEff;
     }
 
     public double getD() {
