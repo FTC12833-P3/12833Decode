@@ -69,17 +69,13 @@ public class MM_Autos extends MM_OpMode {
                         }
                     }
 
-                    if (robot.drivetrain.driveDone() && ((MM_Position_Data.targetPos.getX() == -12 && collectCycle == 1) || (collectCycle == 2 && MM_Position_Data.targetPos.getX() == 12))){
+                    if (robot.drivetrain.driveDone() && MM_Position_Data.targetPos.getX() == -15) {
                         //setNextSplinePoint(currentSpline);
                         previousState = state;
                         state = STATES.COLLECT;
                         MM_Drivetrain.rotatePCoEff = MM_Drivetrain.ROTATE_P_CO_EFF;
                     } else if (robot.drivetrain.driveDone()){
-                        if(collectCycle == 1) {
-                            MM_Position_Data.targetPos.setAll(-12, 33 * alliance, -90 * alliance);
-                        } else {
-                            MM_Position_Data.targetPos.setAll(12, 33 * alliance, -90 * alliance);
-                        }
+                        MM_Position_Data.targetPos.setAll(-15, 33 * alliance, -90 * alliance);
                     }
                     multipleTelemetry.addData("currentTargetX", MM_Position_Data.targetPos.getX());
                     MM_Collector.runCollector = true;
@@ -89,12 +85,8 @@ public class MM_Autos extends MM_OpMode {
 //                    }
                     break;
                 case COLLECT:
-                    if (collectCycle == 1) {
-                        MM_Position_Data.targetPos.setAll(-12, (48 * alliance), -90 * alliance);
-                    } else {
-                        MM_Position_Data.targetPos.setAll(12, (48 * alliance), -90 * alliance);
 
-                    }
+                    MM_Position_Data.targetPos.setAll(-15, (56 * alliance), -90 * alliance);
 
                     if (state != previousState) {
                         previousState = state;
