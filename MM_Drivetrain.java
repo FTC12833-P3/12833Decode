@@ -99,6 +99,7 @@ public class MM_Drivetrain {
         if(rotateLocked){
             navigation.updatePosition();
             MM_Position_Data.targetPos.setHeading(calculateDesiredAngle());
+            opMode.multipleTelemetry.addData("targetAngle", MM_Position_Data.targetPos.getHeading());
             headingError = getNormalizedHeadingError();
             rotatePower = headingError * ROTATE_P_CO_EFF;
         }
@@ -207,7 +208,11 @@ public class MM_Drivetrain {
     private double calculateDesiredAngle(){
         double xError = MM_Launcher.projectileTarget.getX() - navigation.getX();
         double yError = MM_Launcher.projectileTarget.getY() - navigation.getY();
+        double angle = Math.toDegrees(Math.atan2(xError, yError)) + 180;
+        opMode.multipleTelemetry.addData("desiredAngle", angle);
+        opMode.multipleTelemetry.addData("launchXError", xError);
+        opMode.multipleTelemetry.addData("launchYError", yError);
 
-        return Math.atan2(xError, yError);
+        return angle;
     }
 }
