@@ -66,35 +66,19 @@ public class MM_Drivetrain {
     }
 
     public void driveWithSticks() {
-        if(currentGamepad1.y && !previousGamepad1.y){
-            navigation.updatePosition();
-            positonLocked = !positonLocked;
-            MM_Position_Data.targetPos.setAll(navigation.getX(), navigation.getY(), calculateDesiredAngle());
-        }
-        if(currentGamepad1.x && !previousGamepad1.x){
-            rotateLocked = !rotateLocked;
-        }
-        if(positonLocked){
-            rotateLocked = false;
-            navigation.updatePosition();
-            xError = MM_Position_Data.targetPos.getX() - navigation.getX();
-            yError = MM_Position_Data.targetPos.getY() - navigation.getY();
-            headingError = getNormalizedHeadingError();
-
-            if(tuningDrivePID){
-                DrivePidController.setP_COEFF(tuningDrivePCoEff);
-                DrivePidController.setD_COEFF(tuningDriveDCoEff);
-            }
-
-            double rotateVector = headingError * rotatePCoEff;
-            double moveAngle = Math.toDegrees(Math.atan2(yError, xError));
-            double theta = moveAngle - navigation.getHeading() + 45;
-
-            double PID = DrivePidController.getPID(Math.hypot(xError, yError));
-        }
         double drivePower = -opMode.gamepad1.left_stick_y;
         double strafePower = opMode.gamepad1.left_stick_x;
         double rotatePower = -opMode.gamepad1.right_stick_x;
+
+        if(currentGamepad1.y && !previousGamepad1.y){ //toggle lock position
+            navigation.updatePosition();
+            positonLocked = !positonLocked;
+            MM_Position_Data.targetPos.setAll(navigation.getX(), navigation.getY(), navigation.getHeading());
+        }
+
+        if(currentGamepad1.x && !previousGamepad1.x){
+            rotateLocked = !rotateLocked;
+        }
 
         if(rotateLocked){
             navigation.updatePosition();
@@ -104,14 +88,39 @@ public class MM_Drivetrain {
             rotatePower = headingError * ROTATE_P_CO_EFF;
         }
 
+        if(positonLocked){
+            navigation.updatePosition();
+            xError = MM_Position_Data.targetPos.getX() - navigation.getX();
+            yError = MM_Position_Data.targetPos.getY() - navigation.getY();
+            if(!rotateLocked) {
+                headingError = getNormalizedHeadingError();
+            }
+
+            if(tuningDrivePID){
+                DrivePidController.setP_COEFF(tuningDrivePCoEff);
+                DrivePidController.setD_COEFF(tuningDriveDCoEff);
+            }
+
+            double moveAngle = Math.toDegrees(Math.atan2(yError, xError));
+            double theta = moveAngle - navigation.getHeading() + 45;
+
+            double PID = DrivePidController.getPID(Math.hypot(xError, yError));
+
+            flPower = (2 * Math.cos(Math.toRadians(theta)) * PID) - rotatePower;
+            frPower = (2 * Math.sin(Math.toRadians(theta)) * PID) + rotatePower;
+            blPower = (2 * Math.sin(Math.toRadians(theta)) * PID) - rotatePower; //I double checked these lines.
+            brPower = (2 * Math.cos(Math.toRadians(theta)) * PID) + rotatePower;
+        }
+
         if (currentGamepad1.a && !previousGamepad1.a && !currentGamepad1.start) {
             slowMode = !slowMode;
         }
-
-        flPower = drivePower + strafePower - rotatePower;
-        frPower = drivePower - strafePower + rotatePower;
-        blPower = drivePower - strafePower - rotatePower;
-        brPower = drivePower + strafePower + rotatePower;
+        if (!positonLocked) {
+            flPower = drivePower + strafePower - rotatePower;
+            frPower = drivePower - strafePower + rotatePower;
+            blPower = drivePower - strafePower - rotatePower;
+            brPower = drivePower + strafePower + rotatePower;
+        }
         setDrivePowers();
     }
 
