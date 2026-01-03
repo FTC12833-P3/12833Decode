@@ -171,9 +171,9 @@ public class MM_Launcher {
             //opMode.multipleTelemetry.addData("colors", "red %d, green %d, blue %d", peephole.red(), peephole.green(), peephole.blue());
 
             if (launching) {
-                if (serverError > 20) {
+                if (Math.abs(serverError) > 10) {
                     serverIsReady = false;
-                    server.setPower(Math.abs(serverPIDController.getPID(serverError)));
+                    server.setPower(Math.abs(serverPIDController.getPID(getAxonDegrees(serverEncoder) < serverStopPoint? serverError: serverStopPoint + (360 - getAxonDegrees(serverEncoder)))));
                 } else if (!serverIsReady) {
                     serverIsReady = true;
                     launching = false;
