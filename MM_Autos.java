@@ -55,7 +55,7 @@ public class MM_Autos extends MM_OpMode {
                         if (collectCycle >= 1) {
                             notDone = false;
                         }
-                        collectCycle++;
+                        if(settings[])
                     }
                     break;
                 case DRIVE_TO_COLLECT:
