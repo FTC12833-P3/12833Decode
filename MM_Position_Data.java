@@ -33,9 +33,10 @@ public class MM_Position_Data {
 
         if (opMode.getClass() == MM_Autos.class) {
             odometryController.resetPosAndIMU();
-        }
+        } else {
+            odometryController.setPosition(currentPos);
 
-        odometryController.setPosition(currentPos);
+        }
 
         odometryController.update();
         currentPos = odometryController.getPosition();
