@@ -1,7 +1,9 @@
 package org.firstinspires.ftc.teamcode;
 
 import static org.firstinspires.ftc.teamcode.MM_OpMode.alliance;
+import static org.firstinspires.ftc.teamcode.MM_OpMode.currentGamepad1;
 import static org.firstinspires.ftc.teamcode.MM_OpMode.currentGamepad2;
+import static org.firstinspires.ftc.teamcode.MM_OpMode.previousGamepad1;
 import static org.firstinspires.ftc.teamcode.MM_OpMode.previousGamepad2;
 
 import com.acmerobotics.dashboard.config.Config;
@@ -18,6 +20,9 @@ import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 @Config
 public class MM_Launcher {
     private MM_OpMode opMode;
+
+    public static boolean testMode;
+
     private DcMotorEx launchMotorLeft;
     private DcMotorEx launchMotorRight;
     private Servo pusher;
@@ -100,8 +105,8 @@ public class MM_Launcher {
     public void runLauncher() {
         setTargetLauncherVelocity();
         haveArtifactAtTop();
+        double serverError = getAxonDegrees(serverEncoder) - serverStopPoint;
         if(tuningServerCoEffs) {
-            double serverError = getAxonDegrees(serverEncoder) - serverStopPoint;
             serverPIDController.setP_COEFF(serverTuningPCoEff);
             serverPIDController.setD_COEFF(serverTuningDCoEff);
 
@@ -154,27 +159,30 @@ public class MM_Launcher {
         } else if (opMode.gamepad2.dpad_right) {
             server.setPower(0.2);
         } else {
-            if(Math.abs(server.getPower()) > 0) {
+            if(Math.abs(server.getPower()) > 0 && !launching) {
                 //server.setPower(0);
             }
-            if (pusher.getPosition() >= LOWER_FEED_ARM_POSITION_1 && !launching && artifactAtTop && currentGamepad2.right_trigger > 0 && Math.abs(launchMotorLeft.getVelocity() - targetLauncherVelocity) < 50) {
+            if ((pusher.getPosition() >= LOWER_FEED_ARM_POSITION_1 && !launching && artifactAtTop && currentGamepad2.right_trigger > 0 && Math.abs(launchMotorLeft.getVelocity() - targetLauncherVelocity) < 50) || (testMode && currentGamepad2.a && !previousGamepad2.a)) {
 //            lowerFeedArm.setPosition(LOWER_FEED_BAR_TOP_POSITION); TODO fix the lower feed arm
-                //server.setPower(1);
+                server.setPower(1);
                 launching = true;
             }
 
             //opMode.multipleTelemetry.addData("colors", "red %d, green %d, blue %d", peephole.red(), peephole.green(), peephole.blue());
 
             if (launching) {
-//                if (serverError > 20) {
-//                    serverIsReady = false;
-//                    server.setPower(serverError * SERVER_P_CO_EFF);
-//                } else if (!serverIsReady) {
-//                    serverIsReady = true;
-//                    launching = false;
-//                    server.setPower(0);
-//                }
+                if (serverError > 20) {
+                    serverIsReady = false;
+                    server.setPower(Math.abs(serverPIDController.getPID(serverError)));
+                } else if (!serverIsReady) {
+                    serverIsReady = true;
+                    launching = false;
+                    server.setPower(0);
+                }
+            } else {
+                server.setPower(serverPIDController.getPID(serverError));
             }
+
         }
     }
 
