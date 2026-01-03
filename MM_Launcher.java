@@ -54,7 +54,14 @@ public class MM_Launcher {
     private final double FINAL_PROJECTILE_HEIGHT = 26.5; //height above launch height
     private final double LOWER_FEED_BAR_TOP_POSITION = .8;
 
-    public static double SERVER_P_CO_EFF = .007;
+    private static double SERVER_P_CO_EFF = -.0035;
+    private static double SERVER_D_CO_EFF = -0.35;
+
+    public static double serverTuningPCoEff = SERVER_P_CO_EFF;
+    public static double serverTuningDCoEff = SERVER_D_CO_EFF;
+    public static boolean tuningServerCoEffs;
+
+    private static MM_PID_CONTROLLER serverPIDController = new MM_PID_CONTROLLER(SERVER_P_CO_EFF, 0 , SERVER_D_CO_EFF);
 
     private final double TICKS_PER_REV = 28;
     private final double WHEEL_DIAMETER = 77.75; //mm 75.75 for ordered wheels, 70.95 for custom
@@ -93,6 +100,17 @@ public class MM_Launcher {
     public void runLauncher() {
         setTargetLauncherVelocity();
         haveArtifactAtTop();
+        if(tuningServerCoEffs) {
+            double serverError = getAxonDegrees(serverEncoder) - serverStopPoint;
+            serverPIDController.setP_COEFF(serverTuningPCoEff);
+            serverPIDController.setD_COEFF(serverTuningDCoEff);
+
+            server.setPower(serverPIDController.getPID(serverError));
+            opMode.multipleTelemetry.addData("serverError", serverError);
+            opMode.multipleTelemetry.addData("serverP", serverPIDController.getP());
+            opMode.multipleTelemetry.addData("serverD", serverPIDController.getD());
+            opMode.multipleTelemetry.addData("serverTarget", serverStopPoint);
+        }
 
         opMode.multipleTelemetry.addData("launcherTargetSpeed", targetLauncherVelocity);
         opMode.multipleTelemetry.addData("launcherSpeedL", launchMotorLeft.getVelocity());
@@ -137,26 +155,25 @@ public class MM_Launcher {
             server.setPower(0.2);
         } else {
             if(Math.abs(server.getPower()) > 0) {
-                server.setPower(0);
+                //server.setPower(0);
             }
             if (pusher.getPosition() >= LOWER_FEED_ARM_POSITION_1 && !launching && artifactAtTop && currentGamepad2.right_trigger > 0 && Math.abs(launchMotorLeft.getVelocity() - targetLauncherVelocity) < 50) {
 //            lowerFeedArm.setPosition(LOWER_FEED_BAR_TOP_POSITION); TODO fix the lower feed arm
-                server.setPower(1);
+                //server.setPower(1);
                 launching = true;
             }
 
             //opMode.multipleTelemetry.addData("colors", "red %d, green %d, blue %d", peephole.red(), peephole.green(), peephole.blue());
 
             if (launching) {
-                double serverError = Math.abs(getAxonDegrees(serverEncoder) - serverStopPoint);
-                if (serverError > 20) {
-                    serverIsReady = false;
-                    server.setPower(serverError * SERVER_P_CO_EFF);
-                } else if (!serverIsReady) {
-                    serverIsReady = true;
-                    launching = false;
-                    server.setPower(0);
-                }
+//                if (serverError > 20) {
+//                    serverIsReady = false;
+//                    server.setPower(serverError * SERVER_P_CO_EFF);
+//                } else if (!serverIsReady) {
+//                    serverIsReady = true;
+//                    launching = false;
+//                    server.setPower(0);
+//                }
             }
         }
     }
