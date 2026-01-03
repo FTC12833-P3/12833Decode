@@ -33,10 +33,6 @@ public class MM_Launcher {
     private ElapsedTime launchTime = new ElapsedTime();
 
     private MM_Position projectileTarget = new MM_Position(-65, 65 * alliance, 0); //goal pos
-    public static double SERVER_P_CO_EFF = .007;
-    public static double SERVER_D_CO_EFF = .0;
-
-    public static MM_PID_CONTROLLER MoPIDController = new MM_PID_CONTROLLER(SERVER_P_CO_EFF, 0, SERVER_D_CO_EFF);
 
     public static double LAUNCH_ZONE_CO_EFF_AUDIENCE = 2.4;
     public static double LAUNCH_ZONE_CO_EFF_FIELD_CENTER = 2.35;
@@ -58,11 +54,14 @@ public class MM_Launcher {
     private final double FINAL_PROJECTILE_HEIGHT = 26.5; //height above launch height
     private final double LOWER_FEED_BAR_TOP_POSITION = .8;
 
+    private static double SERVER_P_CO_EFF = -.0035;
+    private static double SERVER_D_CO_EFF = -0.35;
 
+    public static double serverTuningPCoEff = SERVER_P_CO_EFF;
+    public static double serverTuningDCoEff = SERVER_D_CO_EFF;
+    public static boolean tuningServerCoEffs;
 
-    public static double TUNING_SERVER_P_CO_EFF = .007;
-    public static double TUNING_SERVER_D_CO_EFF = .007;
-    public static boolean tuningServerCoEffs = false;
+    private static MM_PID_CONTROLLER serverPIDController = new MM_PID_CONTROLLER(SERVER_P_CO_EFF, 0 , SERVER_D_CO_EFF);
 
     private final double TICKS_PER_REV = 28;
     private final double WHEEL_DIAMETER = 77.75; //mm 75.75 for ordered wheels, 70.95 for custom
@@ -101,10 +100,16 @@ public class MM_Launcher {
     public void runLauncher() {
         setTargetLauncherVelocity();
         haveArtifactAtTop();
+        if(tuningServerCoEffs) {
+            double serverError = getAxonDegrees(serverEncoder) - serverStopPoint;
+            serverPIDController.setP_COEFF(serverTuningPCoEff);
+            serverPIDController.setD_COEFF(serverTuningDCoEff);
 
-        if(tuningServerCoEffs){
-            MoPIDController.setP_COEFF(TUNING_SERVER_P_CO_EFF);
-            MoPIDController.setD_COEFF(TUNING_SERVER_D_CO_EFF);
+            server.setPower(serverPIDController.getPID(serverError));
+            opMode.multipleTelemetry.addData("serverError", serverError);
+            opMode.multipleTelemetry.addData("serverP", serverPIDController.getP());
+            opMode.multipleTelemetry.addData("serverD", serverPIDController.getD());
+            opMode.multipleTelemetry.addData("serverTarget", serverStopPoint);
         }
 
         opMode.multipleTelemetry.addData("launcherTargetSpeed", targetLauncherVelocity);
@@ -150,34 +155,25 @@ public class MM_Launcher {
             server.setPower(0.2);
         } else {
             if(Math.abs(server.getPower()) > 0) {
-                server.setPower(0);
+                //server.setPower(0);
             }
             if (pusher.getPosition() >= LOWER_FEED_ARM_POSITION_1 && !launching && artifactAtTop && currentGamepad2.right_trigger > 0 && Math.abs(launchMotorLeft.getVelocity() - targetLauncherVelocity) < 50) {
 //            lowerFeedArm.setPosition(LOWER_FEED_BAR_TOP_POSITION); TODO fix the lower feed arm
-                server.setPower(1);
+                //server.setPower(1);
                 launching = true;
             }
 
             //opMode.multipleTelemetry.addData("colors", "red %d, green %d, blue %d", peephole.red(), peephole.green(), peephole.blue());
 
-            if (launching || tuningServerCoEffs) {
-                double serverError = Math.abs(getAxonDegrees(serverEncoder) - serverStopPoint);
-                opMode.multipleTelemetry.addData("servertarget", serverStopPoint);
-
-                if(tuningServerCoEffs){
-                    serverIsReady = true;
-                    serverError = getAxonDegrees(serverEncoder) - serverStopPoint;
-                }
-
-                opMode.multipleTelemetry.addData("serverError", serverError);
-                if (Math.abs(serverError) > 20) {
-                    serverIsReady = false;
-                    server.setPower(MoPIDController.getPID(serverError));
-                } else if (!serverIsReady) {
-                    serverIsReady = true;
-                    launching = false;
-                    server.setPower(0);
-                }
+            if (launching) {
+//                if (serverError > 20) {
+//                    serverIsReady = false;
+//                    server.setPower(serverError * SERVER_P_CO_EFF);
+//                } else if (!serverIsReady) {
+//                    serverIsReady = true;
+//                    launching = false;
+//                    server.setPower(0);
+//                }
             }
         }
     }
