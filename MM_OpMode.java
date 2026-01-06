@@ -24,7 +24,9 @@ public abstract class MM_OpMode extends LinearOpMode {
 
     public static String scoringLocation = "";
     public static int alliance = -1; //default = blue
+    public static int motif = -1;
     public MM_Spline currentSpline = null;
+
 
     boolean goalSide = true;
     boolean allSpikes = true;
@@ -33,11 +35,13 @@ public abstract class MM_OpMode extends LinearOpMode {
     boolean spike3 = true;
     boolean eliminationMatch = true;
 
-    private enum SETTINGS {
+    public enum SETTINGS {
         ALL_SPIKES,
         SPIKE_1,
         SPIKE_2,
         SPIKE_3,
+        ELIMINATION_MATCH,
+        GOAL_SIDE
     }
 
     boolean[] settings = {allSpikes, spike1, spike2, spike3, eliminationMatch, goalSide};

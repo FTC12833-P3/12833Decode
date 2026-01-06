@@ -13,7 +13,8 @@ public class MM_Autos extends MM_OpMode {
         DRIVE_TO_SCORE,
         SCORE,
         DRIVE_TO_COLLECT,
-        COLLECT
+        COLLECT,
+        LOOK_AT_MOTIF
     }
 
     STATES previousState = null;
@@ -55,8 +56,19 @@ public class MM_Autos extends MM_OpMode {
                         if (collectCycle >= 1) {
                             notDone = false;
                         }
-                        if(settings[])
+                        if(settings[SETTINGS.ELIMINATION_MATCH.ordinal()]){
+                            state = STATES.LOOK_AT_MOTIF;
+                        }
                     }
+                    break;
+                case LOOK_AT_MOTIF:
+                    if(state != previousState){
+                        previousState = state;
+                        MM_Position_Data.targetPos.setHeading(150 * alliance);
+                    }
+
+                    if(robot.drivetrain.navigation.visionPortal)
+
                     break;
                 case DRIVE_TO_COLLECT:
                     if (state != previousState) {
