@@ -51,9 +51,10 @@ public class MM_Launcher {
     private double LAUNCHER_ANGLE = 45;
     public static boolean scoreArtifacts = false;
     public static double targetLauncherVelocity = 10000;
-    public static double LOWER_FEED_ARM_POSITION_1 = .6;
-    public static double LOWER_FEED_ARM_POSITION_2 = .73;
-    public static double LOWER_FEED_ARM_POSITION_3 = .84;
+    public final double PUSHER_BOTTOM_POSITION = .5005;
+    public static double LOWER_FEED_ARM_POSITION_1 = .65;
+    public static double LOWER_FEED_ARM_POSITION_2 = .8;
+    public static double LOWER_FEED_ARM_POSITION_3 = .88;
     public static double AXON_ENCODER_CO_EFF = 1;
 
     private final double FINAL_PROJECTILE_HEIGHT = 26.5; //height above launch height
@@ -78,7 +79,7 @@ public class MM_Launcher {
     public boolean artifactAtTop = true;
     private boolean serverIsReady = false;
     private boolean launching = false;
-    public static int serverStopPoint = 210;
+    public static int serverStopPoint = 320;
 
     public MM_Launcher(MM_OpMode opMode) {
         this.opMode = opMode;
@@ -88,7 +89,7 @@ public class MM_Launcher {
         launchMotorLeft.setDirection(DcMotorEx.Direction.REVERSE);
         pusher = opMode.hardwareMap.get(Servo.class, "pusher");
         pusherEncoder = opMode.hardwareMap.get(AnalogInput.class, "pusherEncoder");
-        pusher.setPosition(0);
+        pusher.setPosition(PUSHER_BOTTOM_POSITION);
         server = opMode.hardwareMap.get(CRServo.class, "server");
         serverEncoder = opMode.hardwareMap.get(AnalogInput.class, "serverEncoder");
         //setServerForInit(); TODO fix method to make it stop server at right place in init
@@ -130,7 +131,7 @@ public class MM_Launcher {
         //if (launching){
         if (!artifactAtTop && currentGamepad2.b && !previousGamepad2.b) {
             if (pusher.getPosition() >= LOWER_FEED_ARM_POSITION_3) {
-                pusher.setPosition(0);
+                pusher.setPosition(PUSHER_BOTTOM_POSITION);
             } else if (pusher.getPosition() >= LOWER_FEED_ARM_POSITION_2) {
                 pusher.setPosition(LOWER_FEED_ARM_POSITION_3);
             } else if (pusher.getPosition() >= LOWER_FEED_ARM_POSITION_1) {
@@ -171,7 +172,7 @@ public class MM_Launcher {
             //opMode.multipleTelemetry.addData("colors", "red %d, green %d, blue %d", peephole.red(), peephole.green(), peephole.blue());
 
             if (launching) {
-                if (Math.abs(serverError) > 10) {
+                if (Math.abs(serverError) > 30) {
                     serverIsReady = false;
                     server.setPower(Math.abs(serverPIDController.getPID(getAxonDegrees(serverEncoder) < serverStopPoint? serverError: serverStopPoint + (360 - getAxonDegrees(serverEncoder)))));
                 } else if (!serverIsReady) {
@@ -195,7 +196,7 @@ public class MM_Launcher {
 
             if (!launching) {
                 if (pusher.getPosition() >= LOWER_FEED_ARM_POSITION_3) {
-                    pusher.setPosition(0);
+                    pusher.setPosition(PUSHER_BOTTOM_POSITION);
                     launchTime.reset();
                     launching = true;
                 } else {
@@ -213,7 +214,7 @@ public class MM_Launcher {
             if (Math.abs(launchMotorLeft.getVelocity() - targetLauncherVelocity) < 50) {
                 if (getAxonDegrees(pusherEncoder) / 360 >= pusher.getPosition()) {
                     double serverError = Math.abs(getAxonDegrees(serverEncoder) - serverStopPoint);
-                    if (serverError > 20) {
+                    if (serverError > 30) {
                         serverIsReady = false;
                         server.setPower(serverError * SERVER_P_CO_EFF);
                     } else if (!serverIsReady) {
