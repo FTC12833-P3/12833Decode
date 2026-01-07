@@ -51,9 +51,9 @@ public class MM_Launcher {
     private double LAUNCHER_ANGLE = 45;
     public static boolean scoreArtifacts = false;
     public static double targetLauncherVelocity = 10000;
-    public final double PUSHER_BOTTOM_POSITION = .5005;
+    public final double PUSHER_BOTTOM_POSITION = .501;
     public static double LOWER_FEED_ARM_POSITION_1 = .65;
-    public static double LOWER_FEED_ARM_POSITION_2 = .8;
+    public static double LOWER_FEED_ARM_POSITION_2 = .768;
     public static double LOWER_FEED_ARM_POSITION_3 = .88;
     public static double AXON_ENCODER_CO_EFF = 1;
 
@@ -130,18 +130,18 @@ public class MM_Launcher {
 
         //if (launching){
         if (!artifactAtTop && currentGamepad2.b && !previousGamepad2.b) {
-            if (pusher.getPosition() >= LOWER_FEED_ARM_POSITION_3) {
+            if (pusher.getPosition() >= LOWER_FEED_ARM_POSITION_3 -.01) {
                 pusher.setPosition(PUSHER_BOTTOM_POSITION);
-            } else if (pusher.getPosition() >= LOWER_FEED_ARM_POSITION_2) {
+            } else if (pusher.getPosition() >= LOWER_FEED_ARM_POSITION_2 -.01) {
                 pusher.setPosition(LOWER_FEED_ARM_POSITION_3);
-            } else if (pusher.getPosition() >= LOWER_FEED_ARM_POSITION_1) {
+            } else if (pusher.getPosition() >= LOWER_FEED_ARM_POSITION_1 -.01) {
                 pusher.setPosition(LOWER_FEED_ARM_POSITION_2);
             } else {
                 pusher.setPosition(LOWER_FEED_ARM_POSITION_1);
             }
         }
         if (currentGamepad2.y) {
-            pusher.setPosition(0);
+            pusher.setPosition(PUSHER_BOTTOM_POSITION);
         }
         opMode.multipleTelemetry.addData("servo pos", pusher.getPosition());
         // }
@@ -163,22 +163,25 @@ public class MM_Launcher {
             if(Math.abs(server.getPower()) > 0 && !launching) {
                 //server.setPower(0);
             }
-            if ((pusher.getPosition() >= LOWER_FEED_ARM_POSITION_1 && !launching && artifactAtTop && currentGamepad2.right_trigger > 0 && Math.abs(launchMotorLeft.getVelocity() - targetLauncherVelocity) < 50) || (testMode && currentGamepad2.a && !previousGamepad2.a)) {
+            if ((pusher.getPosition() >= LOWER_FEED_ARM_POSITION_1 - .1 && !launching && artifactAtTop && currentGamepad2.right_trigger > 0 && Math.abs(launchMotorLeft.getVelocity() - targetLauncherVelocity) < 50) || (testMode && currentGamepad2.a && !previousGamepad2.a)) {
 //            lowerFeedArm.setPosition(LOWER_FEED_BAR_TOP_POSITION); TODO fix the lower feed arm
                 server.setPower(1);
                 launching = true;
             }
+            opMode.multipleTelemetry.addData("launching", launching);
+            opMode.multipleTelemetry.addData("artifact at top",artifactAtTop);
+            opMode.multipleTelemetry.addData("launchError", launchMotorLeft.getVelocity() - targetLauncherVelocity);
+            opMode.multipleTelemetry.addData("controller right trigger", currentGamepad2.right_trigger);
 
             //opMode.multipleTelemetry.addData("colors", "red %d, green %d, blue %d", peephole.red(), peephole.green(), peephole.blue());
 
             if (launching) {
-                if (Math.abs(serverError) > 30) {
+                server.setPower(Math.abs(serverPIDController.getPID(getAxonDegrees(serverEncoder) < serverStopPoint ? serverError : serverStopPoint + (360 - getAxonDegrees(serverEncoder)))));
+                if(getAxonDegrees(serverEncoder) < 100) {
                     serverIsReady = false;
-                    server.setPower(Math.abs(serverPIDController.getPID(getAxonDegrees(serverEncoder) < serverStopPoint? serverError: serverStopPoint + (360 - getAxonDegrees(serverEncoder)))));
-                } else if (!serverIsReady) {
+                } else if (!serverIsReady && getAxonDegrees(serverEncoder) > 180) {
                     serverIsReady = true;
                     launching = false;
-                    server.setPower(0);
                 }
             } else {
                 server.setPower(serverPIDController.getPID(serverError));
@@ -261,7 +264,8 @@ public class MM_Launcher {
     }
 
     public boolean lowerFeedArmReady() {
-        return getAxonDegrees(pusherEncoder) < 190;
+        opMode.multipleTelemetry.addData("encoder pos", getAxonDegrees(pusherEncoder));
+        return getAxonDegrees(pusherEncoder) < 200;
     }
 
     private double getAxonDegrees(AnalogInput encoder) {
