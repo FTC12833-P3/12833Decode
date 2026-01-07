@@ -71,7 +71,9 @@ public class MM_VisionPortal {
             opMode.multipleTelemetry.addData("xIntrins", round2Dec(detections.get(0).ftcPose.x));
             opMode.multipleTelemetry.addData("yIntrins", round2Dec(detections.get(0).ftcPose.y));
             opMode.multipleTelemetry.addData("yawIntrins", round2Dec(detections.get(0).ftcPose.yaw));
-            MM_OpMode.motif = detections.get(0).id;
+            MM_OpMode.motif = detections.get(0).id - 21;
+        } else {
+            MM_OpMode.motif = -2;
         }
     }
 

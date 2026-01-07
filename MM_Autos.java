@@ -25,6 +25,7 @@ public class MM_Autos extends MM_OpMode {
     double heading;
     int collectCycle = -1; //negative one to account for the first score state
     boolean notDone = true;
+    boolean motifDone = false;
     List<MM_Spline> collectSplines;
 
     private STATES state = STATES.DRIVE_TO_SCORE;
@@ -56,8 +57,30 @@ public class MM_Autos extends MM_OpMode {
                         if (collectCycle >= 1) {
                             notDone = false;
                         }
-                        if(settings[SETTINGS.ELIMINATION_MATCH.ordinal()]){
-                            state = STATES.LOOK_AT_MOTIF;
+                        if(!eliminationMatch){
+                            if (motif == -1) {
+                                state = STATES.LOOK_AT_MOTIF;
+                            } else if (!allSpikes){
+                                if(spike1 && motif != 0 && collectCycle < 0){
+                                    collectCycle = 0;
+                                } else if (spike2 && motif != 1 && collectCycle < 1){
+                                    collectCycle = 1;
+                                } else if (spike3 && motif != 2 && collectCycle < 2){
+                                    collectCycle = 2;
+                                } else {
+                                    notDone = false;
+                                }
+                            }
+                        } else {
+                            if(allSpikes) {
+                                collectCycle++;
+                            } else if (spike1 && collectCycle < 0){
+                                collectCycle = 0;
+                            } else if (spike2 && collectCycle < 1){
+                                collectCycle = 1;
+                            } else if (collectCycle < 2){
+                                collectCycle = 2;
+                            }
                         }
                     }
                     break;
@@ -67,7 +90,13 @@ public class MM_Autos extends MM_OpMode {
                         MM_Position_Data.targetPos.setHeading(150 * alliance);
                     }
 
-                    if(robot.drivetrain.navigation.visionPortal)
+                    if(robot.drivetrain.driveDone()){
+                        robot.drivetrain.navigation.visionPortal.setMotif();
+                        if(motif != -2) {
+                            collectCycle = Math.abs(motif - 2);
+                        }
+                        state = STATES.COLLECT;
+                    }
 
                     break;
                 case DRIVE_TO_COLLECT:
@@ -103,7 +132,10 @@ public class MM_Autos extends MM_OpMode {
                     if (state != previousState) {
                         previousState = state;
                     } else if (robot.drivetrain.driveDone()) {
-
+                        if(!motifDone){
+                            motifDone = true;
+                            collectCycle = -1;
+                        }
                         state = STATES.DRIVE_TO_SCORE;
                     }
 
