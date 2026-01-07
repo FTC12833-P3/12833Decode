@@ -217,7 +217,7 @@ public class MM_Drivetrain {
     private double calculateDesiredAngle(){
         double xError = MM_Launcher.projectileTarget.getX() - navigation.getX();
         double yError = MM_Launcher.projectileTarget.getY() - navigation.getY();
-        double angle = Math.toDegrees(Math.atan2(xError, yError)) + 180;
+        double angle = Math.toDegrees(Math.atan2(xError, yError)) - 180;
         opMode.multipleTelemetry.addData("desiredAngle", angle);
         opMode.multipleTelemetry.addData("launchXError", xError);
         opMode.multipleTelemetry.addData("launchYError", yError);
