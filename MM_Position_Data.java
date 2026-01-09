@@ -19,8 +19,8 @@ public class MM_Position_Data {
     public double pastExtrinsicY;
 
     public static MM_Position targetPos = new MM_Position(0, 0, 0);
-    public MM_Spline splineToCollectFirstSpikeMark = new MM_Spline(new double[]{-12, -11, -11, -12}, new double[]{-12, -14, -25, -33}, MM_Autos.SPLINE_DETAIL_LEVEL, true);
-    public MM_Spline splineToCollectSecondSpikeMark = new MM_Spline(new double[]{-47, -11, -1, 18}, new double[]{-47, -13, -16, -33}, MM_Autos.SPLINE_DETAIL_LEVEL, true);
+    public MM_Spline splineToCollectFirstSpikeMark = new MM_Spline(new double[]{-20, -1.4, 14.7, 12}, new double[]{20 * MM_OpMode.alliance, 17.7 * MM_OpMode.alliance, 20.3 * MM_OpMode.alliance, 33 * MM_OpMode.alliance}, MM_Autos.SPLINE_DETAIL_LEVEL, true);
+    public MM_Spline splineToCollectSecondSpikeMark = new MM_Spline(new double[]{-20, -11, -1, 18}, new double[]{-20, -13, -16, -33}, MM_Autos.SPLINE_DETAIL_LEVEL, true);
     public MM_Spline splineToCollectThirdSpikeMark = new MM_Spline(new double[]{-12, 15, 36, 36}, new double[]{-12, -16, -16, -33}, MM_Autos.SPLINE_DETAIL_LEVEL, true);
 
     MM_Position_Data(MM_OpMode opMode) {

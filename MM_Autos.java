@@ -27,6 +27,7 @@ public class MM_Autos extends MM_OpMode {
     int collectCycle = -1; //negative one to account for the first score state
     boolean notDone = true;
     boolean motifDone = false;
+    boolean rotateDone = true;
     List<MM_Spline> collectSplines;
 
     private STATES state = STATES.DRIVE_TO_SCORE;
@@ -103,32 +104,35 @@ public class MM_Autos extends MM_OpMode {
                 case DRIVE_TO_COLLECT:
                     if (state != previousState) {
                         MM_Position_Data.targetPos.setHeading(-90 * alliance);
-                        previousState = state;
-                        if (collectCycle < 2) {
-
-                            //heading = 90;
-                            //prepareToSpline(collectSplines.get(collectCycle));
+                        if(collectCycle == 0) {
+                            rotateDone = false;
+                        } else {
+                            rotateDone = true;
                         }
+                        previousState = state;
+                        prepareToSpline(collectSplines.get(collectCycle));
                     }
 
-                    if (robot.drivetrain.driveDone() && MM_Position_Data.targetPos.getX() == -15) {
-                        //setNextSplinePoint(currentSpline);
+                    if (robot.drivetrain.driveDone() && rotateDone) {
                         previousState = state;
-                        state = STATES.COLLECT;
-                        MM_Drivetrain.rotatePCoEff = MM_Drivetrain.ROTATE_P_CO_EFF;
-                    } else if (robot.drivetrain.driveDone()){
+                        if(collectCycle == 0 || splineDone()) {
+                            state = STATES.COLLECT;
+                        } else {
+                            setNextSplinePoint(currentSpline);
+
+                        }
+                    } else if (robot.drivetrain.driveDone() && collectCycle == 0){
                         MM_Position_Data.targetPos.setAll(-15, 33 * alliance, -90 * alliance);
+                        rotateDone = true;
                     }
+                    multipleTelemetry.addData("currentCycle", collectCycle);
                     multipleTelemetry.addData("currentTargetX", MM_Position_Data.targetPos.getX());
                     MM_Collector.runCollector = true;
 
-//                    if (splineDone()) {
-//
-//                    }
                     break;
                 case COLLECT:
 
-                    MM_Position_Data.targetPos.setAll(-15, (56 * alliance), -90 * alliance);
+                    MM_Position_Data.targetPos.setY(56 * alliance);
 
                     if (state != previousState) {
                         previousState = state;

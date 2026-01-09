@@ -51,10 +51,10 @@ public class MM_Launcher {
     private double LAUNCHER_ANGLE = 45;
     public static boolean scoreArtifacts = false;
     public static double targetLauncherVelocity = 10000;
-    public final double PUSHER_BOTTOM_POSITION = .501;
+    public static double PUSHER_BOTTOM_POSITION = .2;
     public static double LOWER_FEED_ARM_POSITION_1 = .65;
-    public static double LOWER_FEED_ARM_POSITION_2 = .768;
-    public static double LOWER_FEED_ARM_POSITION_3 = .88;
+    public static double LOWER_FEED_ARM_POSITION_2 = .77;
+    public static double LOWER_FEED_ARM_POSITION_3 = .885;
     public static double AXON_ENCODER_CO_EFF = 1;
 
     private final double FINAL_PROJECTILE_HEIGHT = 26.5; //height above launch height
@@ -195,6 +195,7 @@ public class MM_Launcher {
         launchMotorLeft.setVelocity(targetLauncherVelocity);
         launchMotorRight.setVelocity(targetLauncherVelocity);
 
+
         if (scoreArtifacts && opMode.robot.drivetrain.driveDone()) {
 
             if (!launching) {
@@ -203,32 +204,41 @@ public class MM_Launcher {
                     launchTime.reset();
                     launching = true;
                 } else {
-                    if (pusher.getPosition() < .1) {
+                    if (pusher.getPosition() <= PUSHER_BOTTOM_POSITION + .01) {
                         pusher.setPosition(LOWER_FEED_ARM_POSITION_1);
-                    } else if (pusher.getPosition() >= LOWER_FEED_ARM_POSITION_2) {
+                    } else if (pusher.getPosition() >= LOWER_FEED_ARM_POSITION_2 - .01) {
                         pusher.setPosition(LOWER_FEED_ARM_POSITION_3);
-                    } else if (pusher.getPosition() >= LOWER_FEED_ARM_POSITION_1) {
+                    } else if (pusher.getPosition() >= LOWER_FEED_ARM_POSITION_1 - .01) {
                         pusher.setPosition(LOWER_FEED_ARM_POSITION_2);
                     }
                     launching = true;
                 }
             }
+            opMode.multipleTelemetry.addData("launching", launching);
+            opMode.multipleTelemetry.addData("servoEncoder", getAxonDegrees(serverEncoder));
+            opMode.multipleTelemetry.addData("serverisready", serverIsReady);
 
-            if (Math.abs(launchMotorLeft.getVelocity() - targetLauncherVelocity) < 50) {
-                if (getAxonDegrees(pusherEncoder) / 360 >= pusher.getPosition()) {
-                    double serverError = Math.abs(getAxonDegrees(serverEncoder) - serverStopPoint);
-                    if (serverError > 30) {
+
+            double serverError = Math.abs(getAxonDegrees(serverEncoder) - serverStopPoint);
+
+            if (Math.abs(launchMotorLeft.getVelocity() - targetLauncherVelocity) < 50 && launching) {
+                if (getAxonDegrees(pusherEncoder) / 360 >= pusher.getPosition() - .01 && pusher.getPosition() >= PUSHER_BOTTOM_POSITION -.01) {
+                    server.setPower(Math.abs(serverPIDController.getPID(getAxonDegrees(serverEncoder) < serverStopPoint ? serverError : serverStopPoint + (360 - getAxonDegrees(serverEncoder)))));
+                    if(getAxonDegrees(serverEncoder) < 100) {
                         serverIsReady = false;
-                        server.setPower(serverError * SERVER_P_CO_EFF);
-                    } else if (!serverIsReady) {
+                    } else if (!serverIsReady && getAxonDegrees(serverEncoder) > 180) {
                         serverIsReady = true;
                         launching = false;
-                        server.setPower(0);
-                        if (pusher.getPosition() < .1) {
+                        if (pusher.getPosition() <= PUSHER_BOTTOM_POSITION + .01) {
                             scoreArtifacts = false;
+                            server.setPower(0);
                         }
                     }
+
                 }
+            } else {
+                server.setPower(0);
+
             }
 
         }
