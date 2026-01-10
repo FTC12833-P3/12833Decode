@@ -64,6 +64,19 @@ public class MM_VisionPortal {
         return null;
     }
 
+    public void setMotif(){
+        java.util.ArrayList<AprilTagDetection> detections = aprilTagProcessor.getDetections();
+
+        if(!detections.isEmpty() && detections.get(0).ftcPose != null){
+            opMode.multipleTelemetry.addData("xIntrins", round2Dec(detections.get(0).ftcPose.x));
+            opMode.multipleTelemetry.addData("yIntrins", round2Dec(detections.get(0).ftcPose.y));
+            opMode.multipleTelemetry.addData("yawIntrins", round2Dec(detections.get(0).ftcPose.yaw));
+            MM_OpMode.motif = detections.get(0).id - 21;
+        } else {
+            MM_OpMode.motif = -2;
+        }
+    }
+
     private void init(){
         final CameraStreamProcessor cameraStreamProcessor = new CameraStreamProcessor();
 
