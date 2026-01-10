@@ -195,14 +195,12 @@ public class MM_Launcher {
         launchMotorLeft.setVelocity(targetLauncherVelocity);
         launchMotorRight.setVelocity(targetLauncherVelocity);
 
-
         if (scoreArtifacts && opMode.robot.drivetrain.driveDone()) {
 
             if (!launching) {
-                if (pusher.getPosition() >= LOWER_FEED_ARM_POSITION_3) {
+                if (pusher.getPosition() >= LOWER_FEED_ARM_POSITION_3 - .02) {
                     pusher.setPosition(PUSHER_BOTTOM_POSITION);
-                    launchTime.reset();
-                    launching = true;
+                    scoreArtifacts = false;
                 } else {
                     if (pusher.getPosition() <= PUSHER_BOTTOM_POSITION + .01) {
                         pusher.setPosition(LOWER_FEED_ARM_POSITION_1);
@@ -219,7 +217,7 @@ public class MM_Launcher {
             opMode.multipleTelemetry.addData("serverisready", serverIsReady);
 
 
-            double serverError = Math.abs(getAxonDegrees(serverEncoder) - serverStopPoint);
+            double serverError = getAxonDegrees(serverEncoder) - serverStopPoint;
 
             if (Math.abs(launchMotorLeft.getVelocity() - targetLauncherVelocity) < 50 && launching) {
                 if (getAxonDegrees(pusherEncoder) / 360 >= pusher.getPosition() - .01 && pusher.getPosition() >= PUSHER_BOTTOM_POSITION -.01) {
@@ -229,18 +227,15 @@ public class MM_Launcher {
                     } else if (!serverIsReady && getAxonDegrees(serverEncoder) > 180) {
                         serverIsReady = true;
                         launching = false;
-                        if (pusher.getPosition() <= PUSHER_BOTTOM_POSITION + .01) {
-                            scoreArtifacts = false;
-                            server.setPower(0);
-                        }
                     }
 
                 }
             } else {
-                server.setPower(0);
-
+                serverPIDController.getPID(serverError);
             }
 
+        } else {
+            server.setPower(0);
         }
     }
 

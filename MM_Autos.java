@@ -23,7 +23,7 @@ public class MM_Autos extends MM_OpMode {
     int currentSection = 0;
     double targetX;
     double targetY;
-    double heading;
+    double targetHeading;
     int collectCycle = -1; //negative one to account for the first score state
     boolean notDone = true;
     boolean motifDone = false;
@@ -35,7 +35,7 @@ public class MM_Autos extends MM_OpMode {
     @Override
     public void runProcedures() {
 
-        collectSplines = Arrays.asList(robot.drivetrain.navigation.splineToCollectFirstSpikeMark, robot.drivetrain.navigation.splineToCollectSecondSpikeMark);
+        collectSplines = Arrays.asList(null, robot.drivetrain.navigation.splineToCollectFirstSpikeMark, robot.drivetrain.navigation.splineToCollectSecondSpikeMark);
         robot.drivetrain.enableBrakes();
 
         while (opModeIsActive() && notDone) {
@@ -74,6 +74,7 @@ public class MM_Autos extends MM_OpMode {
                                 }
                             }
                         } else {
+                            motifDone = true;
                             if(allSpikes) {
                                 collectCycle++;
                             } else if (spike1 && collectCycle < 0){
@@ -104,20 +105,22 @@ public class MM_Autos extends MM_OpMode {
                 case DRIVE_TO_COLLECT:
                     if (state != previousState) {
                         MM_Position_Data.targetPos.setHeading(-90 * alliance);
+                        targetHeading = -90 * alliance;
                         if(collectCycle == 0) {
                             rotateDone = false;
                         } else {
                             rotateDone = true;
+                            prepareToSpline(collectSplines.get(collectCycle));
+
                         }
                         previousState = state;
-                        prepareToSpline(collectSplines.get(collectCycle));
                     }
 
                     if (robot.drivetrain.driveDone() && rotateDone) {
                         previousState = state;
-                        if(collectCycle == 0 || splineDone()) {
+                        if(collectCycle == 0 || (currentSpline != null && splineDone())) {
                             state = STATES.COLLECT;
-                        } else {
+                        } else if (currentSpline != null){
                             setNextSplinePoint(currentSpline);
 
                         }
@@ -125,14 +128,13 @@ public class MM_Autos extends MM_OpMode {
                         MM_Position_Data.targetPos.setAll(-15, 33 * alliance, -90 * alliance);
                         rotateDone = true;
                     }
-                    multipleTelemetry.addData("currentCycle", collectCycle);
                     multipleTelemetry.addData("currentTargetX", MM_Position_Data.targetPos.getX());
                     MM_Collector.runCollector = true;
 
                     break;
                 case COLLECT:
 
-                    MM_Position_Data.targetPos.setY(56 * alliance);
+                    MM_Position_Data.targetPos.setY(54 * alliance);
 
                     if (state != previousState) {
                         previousState = state;
@@ -149,6 +151,7 @@ public class MM_Autos extends MM_OpMode {
             robot.collector.autoRunCollector();
             robot.launcher.autoRunLauncher();
 
+            multipleTelemetry.addData("currentCycle", collectCycle);
             multipleTelemetry.addData("dCoeff", MM_Drivetrain.DrivePidController.getD_COEFF());
             multipleTelemetry.update();
         }
@@ -158,7 +161,7 @@ public class MM_Autos extends MM_OpMode {
         spline.updateDistanceTraveled(currentSection);
         targetX = spline.getNextPoint(currentSection)[0];
         targetY = spline.getNextPoint(currentSection)[1];
-        MM_Position_Data.targetPos.setAll(targetX, -targetY * alliance, -heading * alliance);
+        MM_Position_Data.targetPos.setAll(targetX, -targetY * alliance, -targetHeading * alliance);
         currentSection++;
     }
 
