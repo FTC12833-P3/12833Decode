@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode;
 
+import static org.firstinspires.ftc.teamcode.MM_OpMode.alliance;
 import static org.firstinspires.ftc.teamcode.MM_OpMode.currentGamepad1;
 import static org.firstinspires.ftc.teamcode.MM_OpMode.previousGamepad1;
 
@@ -215,9 +216,9 @@ public class MM_Drivetrain {
         return error;
     }
     private double calculateDesiredAngle(){
-        double xError = MM_Launcher.projectileTarget.getX() - navigation.getX();
-        double yError = MM_Launcher.projectileTarget.getY() - navigation.getY();
-        double angle = Math.toDegrees(Math.atan2(xError, yError)) - 180;
+        double xError = -MM_Launcher.projectileTarget.getX() - navigation.getX();
+        double yError = -MM_Launcher.projectileTarget.getY() - navigation.getY();
+        double angle = Math.toDegrees(Math.atan2(xError, yError)) + 180;
         opMode.multipleTelemetry.addData("desiredAngle", angle);
         opMode.multipleTelemetry.addData("launchXError", xError);
         opMode.multipleTelemetry.addData("launchYError", yError);

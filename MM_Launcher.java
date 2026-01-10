@@ -106,6 +106,11 @@ public class MM_Launcher {
     public void runLauncher() {
         setTargetLauncherVelocity();
         haveArtifactAtTop();
+
+        if(currentGamepad2.left_trigger > 0){
+            pusher.setPosition(LOWER_FEED_ARM_POSITION_3);
+        }
+
         double serverError = getAxonDegrees(serverEncoder) - serverStopPoint;
         if(tuningServerCoEffs) {
             serverPIDController.setP_COEFF(serverTuningPCoEff);

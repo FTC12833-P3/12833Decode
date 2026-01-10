@@ -1,12 +1,16 @@
 package org.firstinspires.ftc.teamcode;
 
+import static org.firstinspires.ftc.teamcode.MM_OpMode.currentGamepad2;
+import static org.firstinspires.ftc.teamcode.MM_OpMode.previousGamepad1;
+import static org.firstinspires.ftc.teamcode.MM_OpMode.previousGamepad2;
+
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 
 public class MM_Collector {
     MM_OpMode opMode;
     DcMotorEx collector;
 
-    private final double COLLECT_POWER = 1;
+    private static double COLLECT_POWER = 1;
     public static boolean runCollector = false;
     public static boolean reverseCollector = false;
 
@@ -22,6 +26,10 @@ public class MM_Collector {
             collector.setPower(-COLLECT_POWER);
         } else {
             collector.setPower(0);
+        }
+
+        if(currentGamepad2.a && !previousGamepad2.a){
+            COLLECT_POWER = COLLECT_POWER == 1? .2: 1;
         }
     }
     
