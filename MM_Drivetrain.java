@@ -11,7 +11,8 @@ import com.qualcomm.robotcore.hardware.DcMotorEx;
 public class MM_Drivetrain {
     MM_OpMode opMode;
     MM_Position_Data navigation;
-    public static MM_PID_CONTROLLER DrivePidController = new MM_PID_CONTROLLER(0.2, 0, 30); //TODO find correct PID coefficients
+    public static MM_PID_CONTROLLER drivePidController = new MM_PID_CONTROLLER(0.2, 0, 30); //TODO find correct PID coefficients
+    public static MM_PID_CONTROLLER rotatePidController = new MM_PID_CONTROLLER(0.105, 0, 2.8); //TODO find correct PID coefficients
 
     private final DcMotorEx flMotor;
     private final DcMotorEx frMotor;
@@ -130,15 +131,15 @@ public class MM_Drivetrain {
         headingError = getNormalizedHeadingError();
 
         if(tuningDrivePID){
-            DrivePidController.setP_COEFF(tuningDrivePCoEff);
-            DrivePidController.setD_COEFF(tuningDriveDCoEff);
+            rotatePidController.setP_COEFF(tuningDrivePCoEff);
+            rotatePidController.setD_COEFF(tuningDriveDCoEff);
         }
 
-        double rotateVector = headingError * rotatePCoEff;
+        double rotateVector = rotatePidController.getPID(headingError);
         double moveAngle = Math.toDegrees(Math.atan2(yError, xError));
         double theta = moveAngle - navigation.getHeading() + 45;
 
-        double PID = DrivePidController.getPID(Math.hypot(xError, yError));
+        double PID = drivePidController.getPID(Math.hypot(xError, yError));
         opMode.multipleTelemetry.addData("PIDpower", PID);
 
         flPower = (2 * Math.cos(Math.toRadians(theta)) * PID) - rotateVector;
@@ -152,9 +153,9 @@ public class MM_Drivetrain {
         opMode.multipleTelemetry.addData("zXError", xError);
         opMode.multipleTelemetry.addData("zYError", yError);
         opMode.multipleTelemetry.addData("zTheta", theta);
-        opMode.multipleTelemetry.addData("D", DrivePidController.getD());
-        opMode.multipleTelemetry.addData("rate of change of hypot error", DrivePidController.getD() / DrivePidController.getD_COEFF());
-        opMode.multipleTelemetry.addData("P", DrivePidController.getP());
+        opMode.multipleTelemetry.addData("D", drivePidController.getD());
+        opMode.multipleTelemetry.addData("rate of change of hypot error", drivePidController.getD() / drivePidController.getD_COEFF());
+        opMode.multipleTelemetry.addData("P", drivePidController.getP());
         opMode.multipleTelemetry.addData("hypot error", Math.hypot(xError, yError));
     }
 

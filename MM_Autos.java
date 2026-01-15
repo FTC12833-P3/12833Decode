@@ -152,7 +152,7 @@ public class MM_Autos extends MM_OpMode {
             robot.launcher.autoRunLauncher();
 
             multipleTelemetry.addData("currentCycle", collectCycle);
-            multipleTelemetry.addData("dCoeff", MM_Drivetrain.DrivePidController.getD_COEFF());
+            multipleTelemetry.addData("dCoeff", MM_Drivetrain.drivePidController.getD_COEFF());
             multipleTelemetry.update();
         }
     }
@@ -171,7 +171,7 @@ public class MM_Autos extends MM_OpMode {
         setNextSplinePoint(spline);
         MM_Drivetrain.xErrorThreshold = 4;
         MM_Drivetrain.yErrorThreshold = 4;
-        MM_Drivetrain.DrivePidController.setD_COEFF(0);
+        MM_Drivetrain.drivePidController.setD_COEFF(0);
         currentSection -= 1;
     }
 
@@ -179,7 +179,7 @@ public class MM_Autos extends MM_OpMode {
         if (currentSection == MM_Autos.SPLINE_DETAIL_LEVEL + 1) {
             MM_Drivetrain.xErrorThreshold = MM_Drivetrain.X_ERROR_THRESHOLD;
             MM_Drivetrain.yErrorThreshold = MM_Drivetrain.Y_ERROR_THRESHOLD;
-            MM_Drivetrain.DrivePidController.setD_COEFF(REGULAR_DRIVE_D_CO_EFF);
+            MM_Drivetrain.drivePidController.setD_COEFF(REGULAR_DRIVE_D_CO_EFF);
 
             currentSection = 0;
             currentSpline = null;
