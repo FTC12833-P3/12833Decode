@@ -1,6 +1,5 @@
 package org.firstinspires.ftc.teamcode;
 
-import static org.firstinspires.ftc.teamcode.MM_OpMode.alliance;
 import static org.firstinspires.ftc.teamcode.MM_OpMode.currentGamepad1;
 import static org.firstinspires.ftc.teamcode.MM_OpMode.previousGamepad1;
 
@@ -13,6 +12,7 @@ public class MM_Drivetrain {
     MM_OpMode opMode;
     MM_Position_Data navigation;
     public static MM_PID_CONTROLLER drivePidController = new MM_PID_CONTROLLER(0.2, 0, 30); //TODO find correct PID coefficients
+
     public static MM_PID_CONTROLLER rotatePidController = new MM_PID_CONTROLLER(0.105, 0, 2.8); //TODO find correct PID coefficients
 
     private final DcMotorEx flMotor;
@@ -99,14 +99,14 @@ public class MM_Drivetrain {
             }
 
             if(tuningDrivePID){
-                DrivePidController.setP_COEFF(tuningDrivePCoEff);
-                DrivePidController.setD_COEFF(tuningDriveDCoEff);
+                drivePidController.setP_COEFF(tuningDrivePCoEff);
+                drivePidController.setD_COEFF(tuningDriveDCoEff);
             }
 
             double moveAngle = Math.toDegrees(Math.atan2(yError, xError));
             double theta = moveAngle - navigation.getHeading() + 45;
 
-            double PID = DrivePidController.getPID(Math.hypot(xError, yError));
+            double PID = drivePidController.getPID(Math.hypot(xError, yError));
 
             flPower = (2 * Math.cos(Math.toRadians(theta)) * PID) - rotatePower;
             frPower = (2 * Math.sin(Math.toRadians(theta)) * PID) + rotatePower;

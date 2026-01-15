@@ -77,6 +77,7 @@ public class MM_Launcher {
     public boolean artifactAtTop = true;
     private boolean serverIsReady = false;
     private boolean launching = false;
+    private boolean attemptedShot;
     public static int serverStopPoint = 120;
 
     public MM_Launcher(MM_OpMode opMode) {
@@ -204,32 +205,50 @@ public class MM_Launcher {
         setTargetLauncherVelocity();
         launchMotorLeft.setVelocity(targetLauncherVelocity);
         launchMotorRight.setVelocity(targetLauncherVelocity);
+        double serverError = getAxonDegrees(serverEncoder) - serverStopPoint;
 
         if (scoreArtifacts && opMode.robot.drivetrain.driveDone()) {
 
-            if (!launching) {
-                if (pusher.getPosition() >= PUSHER_POSITION_3 - .02) {
+            if(!attemptedShot) {
+                if (serverStopPoint < 300) { //rapid fire
+                    serverStopPoint = 300;
+                } else if (serverStopPoint == 300 && Math.abs(getAxonDegrees(serverEncoder) - serverStopPoint) < 150) {
+                    pusher.setPosition(PUSHER_POSITION_3);
+                    serverStopPoint = 301;
+                } else if (Math.abs(getAxonDegrees(pusherEncoder) / 360 - PUSHER_POSITION_3) < .01) {
+                    serverStopPoint = 120;
+                    attemptedShot = true;
                     pusher.setPosition(PUSHER_BOTTOM_POSITION);
-                    scoreArtifacts = false;
-                } else {
-                    if (pusher.getPosition() <= PUSHER_BOTTOM_POSITION + .01) {
-                        pusher.setPosition(PUSHER_POSITION_1);
-                    } else if (pusher.getPosition() >= PUSHER_POSITION_2 - .03) {
-                        pusher.setPosition(PUSHER_POSITION_3);
-                    } else if (pusher.getPosition() >= PUSHER_POSITION_1 - .01) {
-                        pusher.setPosition(PUSHER_POSITION_2);
-                    }
-                    launching = true;
                 }
             }
+
+            if(attemptedShot && getAxonDegrees(pusherEncoder) / 360 < .53 + .01){
+                attemptedShot = false;
+                scoreArtifacts = false;
+            }
+
+//            if (!launching) {
+//                if (pusher.getPosition() >= PUSHER_POSITION_3 - .02) {
+//                    pusher.setPosition(PUSHER_BOTTOM_POSITION);
+//                    scoreArtifacts = false;
+//                } else {
+//                    if (pusher.getPosition() <= PUSHER_BOTTOM_POSITION + .01) {
+//                        pusher.setPosition(PUSHER_POSITION_1);
+//                    } else if (pusher.getPosition() >= PUSHER_POSITION_2 - .03) {
+//                        pusher.setPosition(PUSHER_POSITION_3);
+//                    } else if (pusher.getPosition() >= PUSHER_POSITION_1 - .01) {
+//                        pusher.setPosition(PUSHER_POSITION_2);
+//                    }
+//                    launching = true;
+//                }
+//            }
             opMode.multipleTelemetry.addData("launching", launching);
             opMode.multipleTelemetry.addData("servoEncoder", getAxonDegrees(serverEncoder));
             opMode.multipleTelemetry.addData("serverisready", serverIsReady);
-            opMode.multipleTelemetry.addData("servo pos", pusher.getPosition());
+            opMode.multipleTelemetry.addData("servo pos", getAxonDegrees(pusherEncoder) / 360);
 
 
 
-            double serverError = getAxonDegrees(serverEncoder) - serverStopPoint;
 
             if (Math.abs(launchMotorLeft.getVelocity() - targetLauncherVelocity) < 50 && launching) {
                 if (getAxonDegrees(pusherEncoder) / 360 >= pusher.getPosition() - .02 && pusher.getPosition() >= PUSHER_BOTTOM_POSITION -.02) {
@@ -240,15 +259,15 @@ public class MM_Launcher {
 
                 }
             } else {
-                serverPIDController.getPID(serverError);
+                server.setPower(serverPIDController.getPID(serverError));
             }
-            if (!serverIsReady && server.getPower() < .7 && launching) {
-                serverIsReady = true;
-                launching = false;
-            }
+//            if (!serverIsReady && server.getPower() < .7 && launching) {
+//                serverIsReady = true;
+//                launching = false;
+//            }
 
         } else {
-            server.setPower(0);
+            server.setPower(serverPIDController.getPID(serverError));
         }
     }
 
