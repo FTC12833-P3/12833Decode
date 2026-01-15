@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode;
 
+import static org.firstinspires.ftc.teamcode.MM_OpMode.alliance;
 import static org.firstinspires.ftc.teamcode.MM_OpMode.currentGamepad1;
 import static org.firstinspires.ftc.teamcode.MM_OpMode.previousGamepad1;
 
@@ -44,6 +45,9 @@ public class MM_Drivetrain {
     private double blPower;
     private double brPower;
     private boolean slowMode = false;
+    private boolean positionLocked = false;
+    private boolean rotateLocked = false;
+
 
     private double pidError;
     private double xError = 0;
@@ -68,14 +72,57 @@ public class MM_Drivetrain {
         double strafePower = opMode.gamepad1.left_stick_x;
         double rotatePower = -opMode.gamepad1.right_stick_x;
 
+        if(currentGamepad1.y && !previousGamepad1.y){ //toggle lock position
+            navigation.updatePosition();
+            positionLocked = !positionLocked;
+            MM_Position_Data.targetPos.setAll(navigation.getX(), navigation.getY(), navigation.getHeading());
+        }
+
+        if(currentGamepad1.x && !previousGamepad1.x){
+            rotateLocked = !rotateLocked;
+        }
+
+        if(rotateLocked){
+            navigation.updatePosition();
+            MM_Position_Data.targetPos.setHeading(calculateDesiredAngle());
+            opMode.multipleTelemetry.addData("targetAngle", MM_Position_Data.targetPos.getHeading());
+            headingError = getNormalizedHeadingError();
+            rotatePower = headingError * ROTATE_P_CO_EFF;
+        }
+
+        if(positionLocked){
+            navigation.updatePosition();
+            xError = MM_Position_Data.targetPos.getX() - navigation.getX();
+            yError = MM_Position_Data.targetPos.getY() - navigation.getY();
+            if(!rotateLocked) {
+                headingError = getNormalizedHeadingError();
+            }
+
+            if(tuningDrivePID){
+                DrivePidController.setP_COEFF(tuningDrivePCoEff);
+                DrivePidController.setD_COEFF(tuningDriveDCoEff);
+            }
+
+            double moveAngle = Math.toDegrees(Math.atan2(yError, xError));
+            double theta = moveAngle - navigation.getHeading() + 45;
+
+            double PID = DrivePidController.getPID(Math.hypot(xError, yError));
+
+            flPower = (2 * Math.cos(Math.toRadians(theta)) * PID) - rotatePower;
+            frPower = (2 * Math.sin(Math.toRadians(theta)) * PID) + rotatePower;
+            blPower = (2 * Math.sin(Math.toRadians(theta)) * PID) - rotatePower; //I double checked these lines.
+            brPower = (2 * Math.cos(Math.toRadians(theta)) * PID) + rotatePower;
+        }
+
         if (currentGamepad1.a && !previousGamepad1.a && !currentGamepad1.start) {
             slowMode = !slowMode;
         }
-
-        flPower = drivePower + strafePower - rotatePower;
-        frPower = drivePower - strafePower + rotatePower;
-        blPower = drivePower - strafePower - rotatePower;
-        brPower = drivePower + strafePower + rotatePower;
+        if (!positionLocked) {
+            flPower = drivePower + strafePower - rotatePower;
+            frPower = drivePower - strafePower + rotatePower;
+            blPower = drivePower - strafePower - rotatePower;
+            brPower = drivePower + strafePower + rotatePower;
+        }
         setDrivePowers();
     }
 
@@ -168,5 +215,15 @@ public class MM_Drivetrain {
 
         error = (error >= 180) ? error - 360 : ((error <= -180) ? error + 360 : error); // a nested ternary to determine error
         return error;
+    }
+    private double calculateDesiredAngle(){
+        double xError = -MM_Launcher.projectileTarget.getX() - navigation.getX();
+        double yError = -MM_Launcher.projectileTarget.getY() - navigation.getY();
+        double angle = Math.toDegrees(Math.atan2(xError, yError)) + 180;
+        opMode.multipleTelemetry.addData("desiredAngle", angle);
+        opMode.multipleTelemetry.addData("launchXError", xError);
+        opMode.multipleTelemetry.addData("launchYError", yError);
+
+        return angle;
     }
 }

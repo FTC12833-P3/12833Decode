@@ -1,9 +1,7 @@
 package org.firstinspires.ftc.teamcode;
 
 import static org.firstinspires.ftc.teamcode.MM_OpMode.alliance;
-import static org.firstinspires.ftc.teamcode.MM_OpMode.currentGamepad1;
 import static org.firstinspires.ftc.teamcode.MM_OpMode.currentGamepad2;
-import static org.firstinspires.ftc.teamcode.MM_OpMode.previousGamepad1;
 import static org.firstinspires.ftc.teamcode.MM_OpMode.previousGamepad2;
 
 import com.acmerobotics.dashboard.config.Config;
@@ -37,7 +35,7 @@ public class MM_Launcher {
     private AnalogInput pusherEncoder;
     private ElapsedTime launchTime = new ElapsedTime();
 
-    private MM_Position projectileTarget = new MM_Position(-65, 65 * alliance, 0); //goal pos
+    public static final MM_Position projectileTarget = new MM_Position(-65, 65 * alliance, 0); //goal pos
 
     public static double LAUNCH_ZONE_CO_EFF_AUDIENCE = 2.4;
     public static double LAUNCH_ZONE_CO_EFF_FIELD_CENTER = 2.35;
@@ -52,9 +50,9 @@ public class MM_Launcher {
     public static boolean scoreArtifacts = false;
     public static double targetLauncherVelocity = 10000;
     public static double PUSHER_BOTTOM_POSITION = .2;
-    public static double LOWER_FEED_ARM_POSITION_1 = .65;
-    public static double LOWER_FEED_ARM_POSITION_2 = .77;
-    public static double LOWER_FEED_ARM_POSITION_3 = .885;
+    public static double PUSHER_POSITION_1 = .65;
+    public static double PUSHER_POSITION_2 = .77;
+    public static double PUSHER_POSITION_3 = .885;
     public static double AXON_ENCODER_CO_EFF = 1;
 
     private final double FINAL_PROJECTILE_HEIGHT = 26.5; //height above launch height
@@ -79,7 +77,7 @@ public class MM_Launcher {
     public boolean artifactAtTop = true;
     private boolean serverIsReady = false;
     private boolean launching = false;
-    public static int serverStopPoint = 320;
+    public static int serverStopPoint = 120;
 
     public MM_Launcher(MM_OpMode opMode) {
         this.opMode = opMode;
@@ -106,6 +104,17 @@ public class MM_Launcher {
     public void runLauncher() {
         setTargetLauncherVelocity();
         haveArtifactAtTop();
+
+        if(currentGamepad2.left_trigger > 0){ //rapid fire
+            serverStopPoint = 300;
+        }
+        if(serverStopPoint == 300 && Math.abs(getAxonDegrees(serverEncoder) - serverStopPoint) < 150){
+            pusher.setPosition(PUSHER_POSITION_3);
+            serverStopPoint = 301;
+        } else if(Math.abs(getAxonDegrees(pusherEncoder) / 360 - PUSHER_POSITION_3) < .01){
+            serverStopPoint = 120;
+        }
+
         double serverError = getAxonDegrees(serverEncoder) - serverStopPoint;
         if(tuningServerCoEffs) {
             serverPIDController.setP_COEFF(serverTuningPCoEff);
@@ -115,10 +124,9 @@ public class MM_Launcher {
             opMode.multipleTelemetry.addData("serverError", serverError);
             opMode.multipleTelemetry.addData("serverP", serverPIDController.getP());
             opMode.multipleTelemetry.addData("serverD", serverPIDController.getD());
-            opMode.multipleTelemetry.addData("serverTarget", serverStopPoint);
         }
 
-
+        opMode.multipleTelemetry.addData("serverTarget", serverStopPoint);
 
         opMode.multipleTelemetry.addData("launcherTargetSpeed", targetLauncherVelocity);
         opMode.multipleTelemetry.addData("launcherSpeedL", launchMotorLeft.getVelocity());
@@ -132,14 +140,14 @@ public class MM_Launcher {
 
         //if (launching){
         if (!artifactAtTop && currentGamepad2.b && !previousGamepad2.b) {
-            if (pusher.getPosition() >= LOWER_FEED_ARM_POSITION_3 -.01) {
+            if (pusher.getPosition() >= PUSHER_POSITION_3 -.01) {
                 pusher.setPosition(PUSHER_BOTTOM_POSITION);
-            } else if (pusher.getPosition() >= LOWER_FEED_ARM_POSITION_2 -.01) {
-                pusher.setPosition(LOWER_FEED_ARM_POSITION_3);
-            } else if (pusher.getPosition() >= LOWER_FEED_ARM_POSITION_1 -.01) {
-                pusher.setPosition(LOWER_FEED_ARM_POSITION_2);
+            } else if (pusher.getPosition() >= PUSHER_POSITION_2 -.01) {
+                pusher.setPosition(PUSHER_POSITION_3);
+            } else if (pusher.getPosition() >= PUSHER_POSITION_1 -.01) {
+                pusher.setPosition(PUSHER_POSITION_2);
             } else {
-                pusher.setPosition(LOWER_FEED_ARM_POSITION_1);
+                pusher.setPosition(PUSHER_POSITION_1);
             }
         }
         if (currentGamepad2.y) {
@@ -165,7 +173,7 @@ public class MM_Launcher {
             if(Math.abs(server.getPower()) > 0 && !launching) {
                 //server.setPower(0);
             }
-            if ((pusher.getPosition() >= LOWER_FEED_ARM_POSITION_1 - .1 && !launching && artifactAtTop && currentGamepad2.right_trigger > 0 && Math.abs(launchMotorLeft.getVelocity() - targetLauncherVelocity) < 50) || (testMode && currentGamepad2.a && !previousGamepad2.a)) {
+            if ((pusher.getPosition() >= PUSHER_POSITION_1 - .1 && !launching && artifactAtTop && currentGamepad2.right_trigger > 0 && Math.abs(launchMotorLeft.getVelocity() - targetLauncherVelocity) < 50) || (testMode && currentGamepad2.a && !previousGamepad2.a)) {
 //            lowerFeedArm.setPosition(LOWER_FEED_BAR_TOP_POSITION); TODO fix the lower feed arm
                 server.setPower(1);
                 launching = true;
@@ -200,16 +208,16 @@ public class MM_Launcher {
         if (scoreArtifacts && opMode.robot.drivetrain.driveDone()) {
 
             if (!launching) {
-                if (pusher.getPosition() >= LOWER_FEED_ARM_POSITION_3 - .02) {
+                if (pusher.getPosition() >= PUSHER_POSITION_3 - .02) {
                     pusher.setPosition(PUSHER_BOTTOM_POSITION);
                     scoreArtifacts = false;
                 } else {
                     if (pusher.getPosition() <= PUSHER_BOTTOM_POSITION + .01) {
-                        pusher.setPosition(LOWER_FEED_ARM_POSITION_1);
-                    } else if (pusher.getPosition() >= LOWER_FEED_ARM_POSITION_2 - .03) {
-                        pusher.setPosition(LOWER_FEED_ARM_POSITION_3);
-                    } else if (pusher.getPosition() >= LOWER_FEED_ARM_POSITION_1 - .01) {
-                        pusher.setPosition(LOWER_FEED_ARM_POSITION_2);
+                        pusher.setPosition(PUSHER_POSITION_1);
+                    } else if (pusher.getPosition() >= PUSHER_POSITION_2 - .03) {
+                        pusher.setPosition(PUSHER_POSITION_3);
+                    } else if (pusher.getPosition() >= PUSHER_POSITION_1 - .01) {
+                        pusher.setPosition(PUSHER_POSITION_2);
                     }
                     launching = true;
                 }
