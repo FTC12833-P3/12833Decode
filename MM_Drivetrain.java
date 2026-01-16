@@ -184,7 +184,7 @@ public class MM_Drivetrain {
 
         double rotateVector = rotatePidController.getPID(headingError);
         double moveAngle = Math.toDegrees(Math.atan2(yError, xError));
-        double theta = moveAngle - navigation.getHeading() + 45;
+        double theta = moveAngle - (navigation.getHeading() + 45);
 
         double PID = drivePidController.getPID(Math.hypot(xError, yError));
         opMode.multipleTelemetry.addData("PIDpower", PID);

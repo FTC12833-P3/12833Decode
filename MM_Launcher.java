@@ -35,7 +35,7 @@ public class MM_Launcher {
     private AnalogInput pusherEncoder;
     private ElapsedTime launchTime = new ElapsedTime();
 
-    public static final MM_Position projectileTarget = new MM_Position(-65, 65 * alliance, 0); //goal pos
+    public static final MM_Position projectileTarget = new MM_Position(-62, 62 * alliance, 0); //goal pos
 
     public static double LAUNCH_ZONE_CO_EFF_AUDIENCE = 2.4;
     public static double LAUNCH_ZONE_CO_EFF_FIELD_CENTER = 2.35;
@@ -107,11 +107,11 @@ public class MM_Launcher {
         haveArtifactAtTop();
 
         if(currentGamepad2.left_trigger > 0){ //rapid fire
-            serverStopPoint = 300;
+            serverStopPoint = 280;
         }
-        if(serverStopPoint == 300 && Math.abs(getAxonDegrees(serverEncoder) - serverStopPoint) < 150){
+        if(serverStopPoint == 280 && Math.abs(getAxonDegrees(serverEncoder) - serverStopPoint) < 150){
             pusher.setPosition(PUSHER_POSITION_3);
-            serverStopPoint = 301;
+            serverStopPoint = 281;
         } else if(Math.abs(getAxonDegrees(pusherEncoder) / 360 - PUSHER_POSITION_3) < .01){
             serverStopPoint = 120;
         }
