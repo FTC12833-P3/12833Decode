@@ -28,6 +28,11 @@ public class MM_Autos extends MM_OpMode {
     boolean notDone = true;
     boolean motifDone = false;
     boolean rotateDone = true;
+    boolean preparedToReleaseGate = false;
+    boolean collected = false;
+    boolean releasedGate = false;
+
+
     List<MM_Spline> collectSplines;
 
     private STATES state = STATES.DRIVE_TO_SCORE;
@@ -51,6 +56,9 @@ public class MM_Autos extends MM_OpMode {
                     }
                     break;
                 case SCORE:
+                    if (collected){
+                        collected = false;
+                    }
                     if (state != previousState) {
                         previousState = state;
                         MM_Launcher.scoreArtifacts = true;
@@ -107,7 +115,9 @@ public class MM_Autos extends MM_OpMode {
                         MM_Position_Data.targetPos.setHeading(-90 * alliance);
                         targetHeading = -90 * alliance;
                         if(collectCycle == 0) {
-                            rotateDone = false;
+                            if(!collected) {
+                                rotateDone = false;
+                            }
                         } else {
                             rotateDone = true;
                             prepareToSpline(collectSplines.get(collectCycle));
@@ -118,15 +128,29 @@ public class MM_Autos extends MM_OpMode {
 
                     if (robot.drivetrain.driveDone() && rotateDone) {
                         previousState = state;
-                        if(collectCycle == 0 || (currentSpline != null && splineDone())) {
+                        if((currentSpline != null && splineDone()) || (collectCycle == 0 && !releasedGate && !collected)) {
                             state = STATES.COLLECT;
+                            collected = true;
                         } else if (currentSpline != null){
                             setNextSplinePoint(currentSpline);
 
                         }
+                        if((collectCycle == 0 && releasedGate)){
+                            state = STATES.DRIVE_TO_SCORE;
+                            preparedToReleaseGate = false;
+                            releasedGate = false;
+                        }
                     } else if (robot.drivetrain.driveDone() && collectCycle == 0){
-                        MM_Position_Data.targetPos.setAll(-15, 33 * alliance, -90 * alliance);
-                        rotateDone = true;
+                        if(!rotateDone) {
+                            MM_Position_Data.targetPos.setAll(-15, 33 * alliance, -90 * alliance);
+                            rotateDone = true;
+                        } else if (!preparedToReleaseGate){
+                            MM_Position_Data.targetPos.setY(36 * alliance);
+                            preparedToReleaseGate = true;
+                        } else if(!releasedGate){
+                            MM_Position_Data.targetPos.setAll(-9, 54 * alliance, -90 * alliance);
+                            releasedGate = true;
+                        }
                     }
                     multipleTelemetry.addData("currentTargetX", MM_Position_Data.targetPos.getX());
                     MM_Collector.runCollector = true;
@@ -144,6 +168,9 @@ public class MM_Autos extends MM_OpMode {
                             collectCycle = -1;
                         }
                         state = STATES.DRIVE_TO_SCORE;
+                        if(collectCycle == 0){
+                            state = STATES.DRIVE_TO_COLLECT;
+                        }
                     }
 
             }
