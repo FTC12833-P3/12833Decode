@@ -11,12 +11,20 @@ import com.qualcomm.robotcore.hardware.DcMotorEx;
 public class MM_Drivetrain {
     MM_OpMode opMode;
     MM_Position_Data navigation;
-    public static MM_PID_CONTROLLER pidController = new MM_PID_CONTROLLER(0.2, 0, 30); //TODO find correct PID coefficients
+    public static MM_PID_CONTROLLER drivePidController = new MM_PID_CONTROLLER(0.2, 0, 30); //TODO find correct PID coefficients
+
+    public static MM_PID_CONTROLLER rotatePidController = new MM_PID_CONTROLLER(0.105, 0, 2.8); //TODO find correct PID coefficients
 
     private final DcMotorEx flMotor;
     private final DcMotorEx frMotor;
     private final DcMotorEx blMotor;
     private final DcMotorEx brMotor;
+
+    public static boolean tuningDrivePID = false;
+    public static double tuningDrivePCoEff = .2;
+    public static double tuningDriveICoEff = 0;
+    public static double tuningDriveDCoEff = 30;
+
 
     private static final double SLOW_MODE_POWER = .5;
 
@@ -37,6 +45,9 @@ public class MM_Drivetrain {
     private double blPower;
     private double brPower;
     private boolean slowMode = false;
+    private boolean positionLocked = false;
+    private boolean rotateLocked = false;
+
 
     private double pidError;
     private double xError = 0;
@@ -61,14 +72,57 @@ public class MM_Drivetrain {
         double strafePower = opMode.gamepad1.left_stick_x;
         double rotatePower = -opMode.gamepad1.right_stick_x;
 
+        if(currentGamepad1.y && !previousGamepad1.y){ //toggle lock position
+            navigation.updatePosition();
+            positionLocked = !positionLocked;
+            MM_Position_Data.targetPos.setAll(navigation.getX(), navigation.getY(), navigation.getHeading());
+        }
+
+        if(currentGamepad1.x && !previousGamepad1.x){
+            rotateLocked = !rotateLocked;
+        }
+
+        if(rotateLocked){
+            navigation.updatePosition();
+            MM_Position_Data.targetPos.setHeading(calculateDesiredAngle());
+            opMode.multipleTelemetry.addData("targetAngle", MM_Position_Data.targetPos.getHeading());
+            headingError = getNormalizedHeadingError();
+            rotatePower = headingError * ROTATE_P_CO_EFF;
+        }
+
+        if(positionLocked){
+            navigation.updatePosition();
+            xError = MM_Position_Data.targetPos.getX() - navigation.getX();
+            yError = MM_Position_Data.targetPos.getY() - navigation.getY();
+            if(!rotateLocked) {
+                headingError = getNormalizedHeadingError();
+            }
+
+            if(tuningDrivePID){
+                drivePidController.setP_COEFF(tuningDrivePCoEff);
+                drivePidController.setD_COEFF(tuningDriveDCoEff);
+            }
+
+            double moveAngle = Math.toDegrees(Math.atan2(yError, xError));
+            double theta = moveAngle - navigation.getHeading() + 45;
+
+            double PID = drivePidController.getPID(Math.hypot(xError, yError));
+
+            flPower = (2 * Math.cos(Math.toRadians(theta)) * PID) - rotatePower;
+            frPower = (2 * Math.sin(Math.toRadians(theta)) * PID) + rotatePower;
+            blPower = (2 * Math.sin(Math.toRadians(theta)) * PID) - rotatePower; //I double checked these lines.
+            brPower = (2 * Math.cos(Math.toRadians(theta)) * PID) + rotatePower;
+        }
+
         if (currentGamepad1.a && !previousGamepad1.a && !currentGamepad1.start) {
             slowMode = !slowMode;
         }
-
-        flPower = drivePower + strafePower - rotatePower;
-        frPower = drivePower - strafePower + rotatePower;
-        blPower = drivePower - strafePower - rotatePower;
-        brPower = drivePower + strafePower + rotatePower;
+        if (!positionLocked) {
+            flPower = drivePower + strafePower - rotatePower;
+            frPower = drivePower - strafePower + rotatePower;
+            blPower = drivePower - strafePower - rotatePower;
+            brPower = drivePower + strafePower + rotatePower;
+        }
         setDrivePowers();
     }
 
@@ -123,11 +177,16 @@ public class MM_Drivetrain {
         yError = MM_Position_Data.targetPos.getY() - navigation.getY();
         headingError = getNormalizedHeadingError();
 
-        double rotateVector = headingError * rotatePCoEff;
+        if(tuningDrivePID){
+            rotatePidController.setP_COEFF(tuningDrivePCoEff);
+            rotatePidController.setD_COEFF(tuningDriveDCoEff);
+        }
+
+        double rotateVector = rotatePidController.getPID(headingError);
         double moveAngle = Math.toDegrees(Math.atan2(yError, xError));
         double theta = moveAngle - navigation.getHeading() + 45;
 
-        double PID = pidController.getPID(Math.hypot(xError, yError));
+        double PID = drivePidController.getPID(Math.hypot(xError, yError));
         opMode.multipleTelemetry.addData("PIDpower", PID);
 
         flPower = (2 * Math.cos(Math.toRadians(theta)) * PID) - rotateVector;
@@ -141,9 +200,9 @@ public class MM_Drivetrain {
         opMode.multipleTelemetry.addData("zXError", xError);
         opMode.multipleTelemetry.addData("zYError", yError);
         opMode.multipleTelemetry.addData("zTheta", theta);
-        opMode.multipleTelemetry.addData("D", pidController.getD());
-        opMode.multipleTelemetry.addData("rate of change of hypot error", pidController.getD() / MM_PID_CONTROLLER.D_COEFF);
-        opMode.multipleTelemetry.addData("P", pidController.getP());
+        opMode.multipleTelemetry.addData("D", drivePidController.getD());
+        opMode.multipleTelemetry.addData("rate of change of hypot error", drivePidController.getD() / drivePidController.getD_COEFF());
+        opMode.multipleTelemetry.addData("P", drivePidController.getP());
         opMode.multipleTelemetry.addData("hypot error", Math.hypot(xError, yError));
     }
 
@@ -156,5 +215,15 @@ public class MM_Drivetrain {
 
         error = (error >= 180) ? error - 360 : ((error <= -180) ? error + 360 : error); // a nested ternary to determine error
         return error;
+    }
+    private double calculateDesiredAngle(){
+        double xError = -MM_Launcher.projectileTarget.getX() - navigation.getX();
+        double yError = -MM_Launcher.projectileTarget.getY() - navigation.getY();
+        double angle = Math.toDegrees(Math.atan2(xError, yError)) + 180;
+        opMode.multipleTelemetry.addData("desiredAngle", angle);
+        opMode.multipleTelemetry.addData("launchXError", xError);
+        opMode.multipleTelemetry.addData("launchYError", yError);
+
+        return angle;
     }
 }

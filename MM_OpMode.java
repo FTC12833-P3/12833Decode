@@ -24,17 +24,28 @@ public abstract class MM_OpMode extends LinearOpMode {
 
     public static String scoringLocation = "";
     public static int alliance = -1; //default = blue
+    public static int motif = -1;
     public MM_Spline currentSpline = null;
 
+
+    boolean goalSide = true;
     boolean allSpikes = true;
     boolean spike1 = true;
     boolean spike2 = true;
     boolean spike3 = true;
     boolean eliminationMatch = true;
-    boolean scoreFastest = true;
-    boolean scoreGoalOnly = false;
-    boolean[] settings = {allSpikes, spike1, spike2, spike3, eliminationMatch, scoreFastest, };
-    String[] settingsNames = {"AllSpikesEnabled", "spike1Enabled", "spike2Enabled", "spike3Enabled", "Elimination Match", "score fastest", "score goal only"};
+
+    public enum SETTINGS {
+        ALL_SPIKES,
+        SPIKE_1,
+        SPIKE_2,
+        SPIKE_3,
+        ELIMINATION_MATCH,
+        GOAL_SIDE
+    }
+
+    boolean[] settings = {allSpikes, spike1, spike2, spike3, eliminationMatch, goalSide};
+    String[] settingsNames = {"AllSpikesEnabled", "spike1Enabled", "spike2Enabled", "spike3Enabled", "Elimination Match", "starting by goal"};
     int currentSetting = 0;
 
     public void runOpMode(){
