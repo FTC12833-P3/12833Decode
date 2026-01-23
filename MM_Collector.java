@@ -10,7 +10,7 @@ public class MM_Collector {
     MM_OpMode opMode;
     DcMotorEx collector;
 
-    private static double COLLECT_POWER = 1;
+    private static double COLLECT_POWER = 0.775;
     public static boolean runCollector = false;
     public static boolean reverseCollector = false;
 

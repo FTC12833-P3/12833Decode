@@ -78,7 +78,7 @@ public class MM_Launcher {
     private boolean serverIsReady = false;
     private boolean launching = false;
     private boolean attemptedShot;
-    public static int serverStopPoint = 120;
+    public static int serverStopPoint = 60;
 
     public MM_Launcher(MM_OpMode opMode) {
         this.opMode = opMode;
@@ -113,7 +113,7 @@ public class MM_Launcher {
             pusher.setPosition(PUSHER_POSITION_3);
             serverStopPoint = 281;
         } else if(Math.abs(getAxonDegrees(pusherEncoder) / 360 - PUSHER_POSITION_3) < .01){
-            serverStopPoint = 120;
+            serverStopPoint = 60;
         }
 
         double serverError = getAxonDegrees(serverEncoder) - serverStopPoint;
@@ -197,7 +197,6 @@ public class MM_Launcher {
             } else {
                 server.setPower(serverPIDController.getPID(serverError));
             }
-
         }
     }
 
@@ -216,7 +215,7 @@ public class MM_Launcher {
                     pusher.setPosition(PUSHER_POSITION_3);
                     serverStopPoint = 301;
                 } else if (Math.abs(getAxonDegrees(pusherEncoder) / 360 - PUSHER_POSITION_3) < .01) {
-                    serverStopPoint = 120;
+                    serverStopPoint = 60;
                     attemptedShot = true;
                     pusher.setPosition(PUSHER_BOTTOM_POSITION);
                 }
@@ -246,9 +245,6 @@ public class MM_Launcher {
             opMode.multipleTelemetry.addData("servoEncoder", getAxonDegrees(serverEncoder));
             opMode.multipleTelemetry.addData("serverisready", serverIsReady);
             opMode.multipleTelemetry.addData("servo pos", getAxonDegrees(pusherEncoder) / 360);
-
-
-
 
             if (Math.abs(launchMotorLeft.getVelocity() - targetLauncherVelocity) < 50 && launching) {
                 if (getAxonDegrees(pusherEncoder) / 360 >= pusher.getPosition() - .02 && pusher.getPosition() >= PUSHER_BOTTOM_POSITION -.02) {
@@ -297,7 +293,7 @@ public class MM_Launcher {
     }
 
     public boolean lowerSensorTriggered() {
-        return bottomLeftDistance.getDistance(DistanceUnit.MM) < 35 || bottomRightDistance.getDistance(DistanceUnit.MM) < 35;
+        return bottomLeftDistance.getDistance(DistanceUnit.MM) < 40 || bottomRightDistance.getDistance(DistanceUnit.MM) < 40;
     }
 
     public boolean lowerFeedArmReady() {
