@@ -43,7 +43,11 @@ public class MM_Autos extends MM_OpMode {
                 case DRIVE_TO_SCORE:
                     if (state != previousState) {
                         previousState = state;
-                        MM_Position_Data.targetPos.setAll(-20, 20 * alliance, 135 * alliance);
+                        if(settings[SETTINGS.GOAL_SIDE.ordinal()]) {
+                            MM_Position_Data.targetPos.setAll(-20, 20 * alliance, 135 * alliance);
+                        } else {
+                            MM_Position_Data.targetPos.setAll(53, 17 * alliance, 158.2 * alliance);
+                        }
 
                     } else if (robot.drivetrain.driveDone()) {
                         state = STATES.SCORE;
@@ -56,8 +60,11 @@ public class MM_Autos extends MM_OpMode {
                         MM_Launcher.scoreArtifacts = true;
                     } else if (!MM_Launcher.scoreArtifacts) {
                         state = STATES.DRIVE_TO_COLLECT;
-                        if (collectCycle >= 1) {
+                        if (collectCycle >= 1 || !goalSide) {
                             notDone = false;
+                            if(!goalSide) {
+                                break;
+                            }
                         }
                         if(!eliminationMatch){
                             if (motif == -1) {
@@ -134,7 +141,7 @@ public class MM_Autos extends MM_OpMode {
                     break;
                 case COLLECT:
 
-                    MM_Position_Data.targetPos.setY(54 * alliance);
+                    MM_Position_Data.targetPos.setY(56 * alliance);
 
                     if (state != previousState) {
                         previousState = state;

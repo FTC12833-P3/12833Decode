@@ -38,11 +38,13 @@ public class MM_Launcher {
     public static final MM_Position projectileTarget = new MM_Position(-62, 62 * alliance, 0); //goal pos
 
     public static double LAUNCH_ZONE_CO_EFF_AUDIENCE = 2.4;
+    public static double LAUNCH_ZONE_CO_EFF_CLOSE_AUDIENCE = 2.3;
     public static double LAUNCH_ZONE_CO_EFF_FIELD_CENTER = 2.35;
     public static double LAUNCH_ZONE_CO_EFF_GOAL_MID = 2.7;
     public static double LAUNCH_ZONE_CO_EFF_GOAL_NEAR = 0;
 
-    public static double LAUNCH_ZONE_BOUNDARY_FIELD_CENTER = 100;
+    public static double LAUNCH_ZONE_BOUNDARY_CLOSE_AUDIENCE = 130;
+    public static double LAUNCH_ZONE_BOUNDARY_FIELD_CENTER = 80;
     public static double LAUNCH_ZONE_BOUNDARY_GOAL_MID = 55;
     public static double LAUNCH_ZONE_BOUNDARY_GOAL_NEAR = 45;
 
@@ -52,7 +54,7 @@ public class MM_Launcher {
     public static double PUSHER_BOTTOM_POSITION = .2;
     public static double PUSHER_POSITION_1 = .65;
     public static double PUSHER_POSITION_2 = .77;
-    public static double PUSHER_POSITION_3 = .885;
+    public static double PUSHER_POSITION_3 = .91;
     public static double AXON_ENCODER_CO_EFF = 1;
 
     private final double FINAL_PROJECTILE_HEIGHT = 26.5; //height above launch height
@@ -279,7 +281,9 @@ public class MM_Launcher {
             targetLauncherVelocity = ticksPerSecond * LAUNCH_ZONE_CO_EFF_GOAL_MID;
         } else if (launchDistance <= LAUNCH_ZONE_BOUNDARY_FIELD_CENTER) {
             targetLauncherVelocity = ticksPerSecond * LAUNCH_ZONE_CO_EFF_FIELD_CENTER;
-        } else {
+        }else if (launchDistance <= LAUNCH_ZONE_BOUNDARY_CLOSE_AUDIENCE) {
+            targetLauncherVelocity = ticksPerSecond * LAUNCH_ZONE_CO_EFF_CLOSE_AUDIENCE;
+        }  else {
             targetLauncherVelocity = ticksPerSecond * LAUNCH_ZONE_CO_EFF_AUDIENCE;
         }
 

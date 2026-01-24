@@ -17,6 +17,7 @@ public class MM_Collector {
     MM_Collector(MM_OpMode opMode){
         this.opMode = opMode;
         collector = opMode.hardwareMap.get(DcMotorEx.class, "collector");
+        COLLECT_POWER =  opMode.getClass() == MM_Autos.class? 1: COLLECT_POWER;
     }
 
     public void runCollector(){
