@@ -1,5 +1,8 @@
 package org.firstinspires.ftc.teamcode;
 
+import static org.firstinspires.ftc.teamcode.MM_OpMode.currentGamepad1;
+import static org.firstinspires.ftc.teamcode.MM_OpMode.previousGamepad1;
+
 import com.acmerobotics.dashboard.config.Config;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
@@ -18,10 +21,12 @@ public class MM_Position_Data {
     private Pose2D AprilTagPos;
     public double pastExtrinsicY;
 
+    public static double firstSpikeX = -15;
     public static MM_Position targetPos = new MM_Position(0, 0, 0);
-    public MM_Spline splineToCollectFirstSpikeMark = new MM_Spline(new double[]{-20, -1.4, 14.7, 8  }, new double[]{20 * MM_OpMode.alliance, 17.7 * MM_OpMode.alliance, 20.3 * MM_OpMode.alliance, 33 * MM_OpMode.alliance}, MM_Autos.SPLINE_DETAIL_LEVEL, true);
-    public MM_Spline splineToCollectSecondSpikeMark = new MM_Spline(new double[]{-20, -11, -1, 18}, new double[]{-20, -13, -16, -33}, MM_Autos.SPLINE_DETAIL_LEVEL, true);
-    public MM_Spline splineToCollectThirdSpikeMark = new MM_Spline(new double[]{-12, 15, 36, 36}, new double[]{-12, -16, -16, -33}, MM_Autos.SPLINE_DETAIL_LEVEL, true);
+
+    public MM_Spline splineToCollectSecondSpikeMark = new MM_Spline(new double[]{-20, -1.4, 14.7, 8  }, new double[]{20 * MM_OpMode.alliance, 17.7 * MM_OpMode.alliance, 20.3 * MM_OpMode.alliance, 33 * MM_OpMode.alliance}, MM_Autos.SPLINE_DETAIL_LEVEL, true);
+    public MM_Spline splineToCollectThirdSpikeMark = new MM_Spline(new double[]{-20, -11, 43.4, 32}, new double[]{20 * MM_OpMode.alliance, 13 * MM_OpMode.alliance, 23 * MM_OpMode.alliance, 33 * MM_OpMode.alliance}, MM_Autos.SPLINE_DETAIL_LEVEL, true);
+    public MM_Spline splineToOpenGate = new MM_Spline(new double[]{-15, -15, -9, -9}, new double[]{56 * MM_OpMode.alliance, 42 * MM_OpMode.alliance, 42 * MM_OpMode.alliance, 54 * MM_OpMode.alliance}, MM_Autos.SPLINE_DETAIL_LEVEL, true);
 
     MM_Position_Data(MM_OpMode opMode) {
         this.opMode = opMode;
@@ -42,6 +47,21 @@ public class MM_Position_Data {
         currentPos = odometryController.getPosition();
         targetPos.setAll(0, 0, 0);
     }
+    public void initSpikeMarks(){
+        odometryController.update();
+        currentPos = odometryController.getPosition();
+        if(opMode.gamepad1.dpad_left && currentGamepad1.b && !previousGamepad1.b){
+            firstSpikeX = currentPos.getX(DistanceUnit.INCH);
+        }
+        if(opMode.gamepad1.dpad_up && currentGamepad1.b && !previousGamepad1.b){
+            splineToCollectSecondSpikeMark.setLastPoint(currentPos.getX(DistanceUnit.INCH));
+        }
+        if(opMode.gamepad1.dpad_right && currentGamepad1.b && !previousGamepad1.b){
+            //TODO when we have 12 artifact
+        }
+        opMode.multipleTelemetry.addData("firstSpikeX", firstSpikeX);
+        opMode.multipleTelemetry.addData("secondSpikeX", splineToCollectSecondSpikeMark.getxPoints()[MM_Autos.SPLINE_DETAIL_LEVEL]);
+    }
 
 
     public void updatePosition() {
@@ -51,14 +71,14 @@ public class MM_Position_Data {
         opMode.multipleTelemetry.addData("yOdom", round2Dec(getY()));
         opMode.multipleTelemetry.addData("yawOdom", round2Dec(getHeading()));
 
-        if(MM_OpMode.currentGamepad1.dpad_down) {
+        if(currentGamepad1.dpad_down) {
             AprilTagPos = visionPortal.setPosFromApriltag();
             if (AprilTagPos != null) {
                 opMode.multipleTelemetry.addData("xApril", round2Dec(AprilTagPos.getX(DistanceUnit.INCH)));
                 opMode.multipleTelemetry.addData("yApril", round2Dec(AprilTagPos.getY(DistanceUnit.INCH)));
                 opMode.multipleTelemetry.addData("yawApril", round2Dec(AprilTagPos.getHeading(AngleUnit.DEGREES)));
 
-                if (MM_OpMode.currentGamepad1.b && !MM_OpMode.previousGamepad1.b) {
+                if (currentGamepad1.b && !MM_OpMode.previousGamepad1.b) {
                     odometryController.setPosition(AprilTagPos);
                     if (opMode.opModeInInit()) {
                         MM_OpMode.alliance = MM_VisionPortal.startingTag == 20 ? -1 : 1; //blue = -1

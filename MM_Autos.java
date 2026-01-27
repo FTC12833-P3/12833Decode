@@ -15,7 +15,9 @@ public class MM_Autos extends MM_OpMode {
         SCORE,
         DRIVE_TO_COLLECT,
         COLLECT,
-        LOOK_AT_MOTIF
+        LOOK_AT_MOTIF,
+        DRIVE_OFF_LINE,
+        OPEN_GATE,
     }
 
     STATES previousState = null;
@@ -28,6 +30,8 @@ public class MM_Autos extends MM_OpMode {
     boolean notDone = true;
     boolean motifDone = false;
     boolean rotateDone = true;
+    boolean lastCycle = false;
+
     List<MM_Spline> collectSplines;
 
     private STATES state = STATES.DRIVE_TO_SCORE;
@@ -35,123 +39,157 @@ public class MM_Autos extends MM_OpMode {
     @Override
     public void runProcedures() {
 
-        collectSplines = Arrays.asList(null, robot.drivetrain.navigation.splineToCollectFirstSpikeMark, robot.drivetrain.navigation.splineToCollectSecondSpikeMark);
+        collectSplines = Arrays.asList(null, robot.drivetrain.navigation.splineToCollectSecondSpikeMark, robot.drivetrain.navigation.splineToCollectThirdSpikeMark);
         robot.drivetrain.enableBrakes();
 
-        while (opModeIsActive() && notDone) {
-            switch (state) {
-                case DRIVE_TO_SCORE:
-                    if (state != previousState) {
-                        previousState = state;
-                        if(settings[SETTINGS.GOAL_SIDE.ordinal()]) {
-                            MM_Position_Data.targetPos.setAll(-20, 20 * alliance, 135 * alliance);
-                        } else {
-                            MM_Position_Data.targetPos.setAll(53, 17 * alliance, 158.2 * alliance);
-                        }
-
-                    } else if (robot.drivetrain.driveDone()) {
-                        state = STATES.SCORE;
-                        break;
-                    }
-                    break;
-                case SCORE:
-                    if (state != previousState) {
-                        previousState = state;
-                        MM_Launcher.scoreArtifacts = true;
-                    } else if (!MM_Launcher.scoreArtifacts) {
-                        state = STATES.DRIVE_TO_COLLECT;
-                        if (collectCycle >= 1 || !goalSide) {
-                            notDone = false;
-                            if(!goalSide) {
-                                break;
+        while (opModeIsActive()) {
+            if(notDone) {
+                switch (state) {
+                    case DRIVE_TO_SCORE:
+                        if (state != previousState) {
+                            previousState = state;
+                            if (settings[SETTINGS.GOAL_SIDE.ordinal()]) {
+                                MM_Position_Data.targetPos.setAll(-20, 20 * alliance, 135 * alliance);
+                            } else {
+                                MM_Position_Data.targetPos.setAll(53, 17 * alliance, 158.2 * alliance);
                             }
+
+                        } else if (robot.drivetrain.driveDone()) {
+                            state = STATES.SCORE;
+                            break;
                         }
-                        if(!eliminationMatch){
-                            if (motif == -1) {
-                                state = STATES.LOOK_AT_MOTIF;
-                            } else if (!allSpikes){
-                                if(spike1 && motif != 0 && collectCycle < 0){
+                        break;
+                    case SCORE:
+                        if (state != previousState) {
+                            previousState = state;
+                            MM_Launcher.scoreArtifacts = true;
+                        } else if (!MM_Launcher.scoreArtifacts) {
+                            state = STATES.DRIVE_TO_COLLECT;
+                            if (collectCycle >= 2 || !settings[SETTINGS.GOAL_SIDE.ordinal()]) {
+                                lastCycle = true;
+                            }
+                            if (!eliminationMatch) {
+                                if (motif == -1) {
+                                    state = STATES.LOOK_AT_MOTIF;
+                                } else if (!allSpikes) {
+                                    if (spike1 && motif != 0 && collectCycle < 0) {
+                                        collectCycle = 0;
+                                    } else if (spike2 && motif != 1 && collectCycle < 1) {
+                                        collectCycle = 1;
+                                    } else if (spike3 && motif != 2 && collectCycle < 2) {
+                                        collectCycle = 2;
+                                    } else {
+                                        lastCycle = true;
+                                    }
+                                }
+                            } else {
+                                motifDone = true;
+                                if (allSpikes) {
+                                    collectCycle++;
+                                } else if (spike1 && collectCycle < 0) {
                                     collectCycle = 0;
-                                } else if (spike2 && motif != 1 && collectCycle < 1){
+                                } else if (spike2 && collectCycle < 1) {
                                     collectCycle = 1;
-                                } else if (spike3 && motif != 2 && collectCycle < 2){
+                                } else if (collectCycle < 2) {
                                     collectCycle = 2;
-                                } else {
-                                    notDone = false;
                                 }
                             }
-                        } else {
-                            motifDone = true;
-                            if(allSpikes) {
-                                collectCycle++;
-                            } else if (spike1 && collectCycle < 0){
-                                collectCycle = 0;
-                            } else if (spike2 && collectCycle < 1){
-                                collectCycle = 1;
-                            } else if (collectCycle < 2){
-                                collectCycle = 2;
+                        }
+                        if (lastCycle) {
+                            state = STATES.DRIVE_OFF_LINE;
+                        }
+                        break;
+                    case LOOK_AT_MOTIF:
+                        if (state != previousState) {
+                            previousState = state;
+                            MM_Position_Data.targetPos.setHeading(150 * alliance);
+                        }
+
+                        if (robot.drivetrain.driveDone()) {
+                            robot.drivetrain.navigation.visionPortal.setMotif();
+                            if (motif != -2) {
+                                collectCycle = Math.abs(motif - 2);
                             }
-                        }
-                    }
-                    break;
-                case LOOK_AT_MOTIF:
-                    if(state != previousState){
-                        previousState = state;
-                        MM_Position_Data.targetPos.setHeading(150 * alliance);
-                    }
-
-                    if(robot.drivetrain.driveDone()){
-                        robot.drivetrain.navigation.visionPortal.setMotif();
-                        if(motif != -2) {
-                            collectCycle = Math.abs(motif - 2);
-                        }
-                        state = STATES.COLLECT;
-                    }
-
-                    break;
-                case DRIVE_TO_COLLECT:
-                    if (state != previousState) {
-                        MM_Position_Data.targetPos.setHeading(-90 * alliance);
-                        targetHeading = -90 * alliance;
-                        if(collectCycle == 0) {
-                            rotateDone = false;
-                        } else {
-                            rotateDone = true;
-                            prepareToSpline(collectSplines.get(collectCycle));
-
-                        }
-                        previousState = state;
-                    }
-
-                    if (robot.drivetrain.driveDone() && rotateDone) {
-                        previousState = state;
-                        if(collectCycle == 0 || (currentSpline != null && splineDone())) {
                             state = STATES.COLLECT;
-                        } else if (currentSpline != null){
+                        }
+
+                        break;
+                    case DRIVE_TO_COLLECT:
+                        if (state != previousState) {
+                            MM_Position_Data.targetPos.setHeading(-90 * alliance);
+                            targetHeading = -90 * alliance;
+                            if (collectCycle == 0) {
+                                rotateDone = false;
+                            } else {
+                                rotateDone = true;
+                                prepareToSpline(collectSplines.get(collectCycle));
+
+                            }
+                            previousState = state;
+                        }
+
+                        if (robot.drivetrain.driveDone() && rotateDone) {
+                            previousState = state;
+                            if (collectCycle == 0 || (currentSpline != null && splineDone())) {
+                                state = STATES.COLLECT;
+                            } else if (currentSpline != null) {
+                                setNextSplinePoint(currentSpline);
+
+                            }
+                        } else if (robot.drivetrain.driveDone() && collectCycle == 0) {
+                            MM_Position_Data.targetPos.setAll(MM_Position_Data.firstSpikeX, 33 * alliance, -90 * alliance);
+                            rotateDone = true;
+                        }
+                        multipleTelemetry.addData("currentTargetX", MM_Position_Data.targetPos.getX());
+                        MM_Collector.runCollector = true;
+
+                        break;
+                    case COLLECT:
+
+                        MM_Position_Data.targetPos.setY(56 * alliance);
+
+                        if (state != previousState) {
+                            previousState = state;
+                        } else if (robot.drivetrain.driveDone()) {
+                            if (!motifDone) {
+                                motifDone = true;
+                                collectCycle = -1;
+                            }
+                            if(collectCycle == 0 && (settings[SETTINGS.ALL_SPIKES.ordinal()] ||settings[SETTINGS.SPIKE_3.ordinal()])) {
+                                state = STATES.OPEN_GATE;
+                            } else {
+                                state = STATES.DRIVE_TO_SCORE;
+                            }
+
+
+                        }
+                        break;
+                    case DRIVE_OFF_LINE:
+                        if(previousState != state) {
+                            previousState = state;
+                            if (settings[SETTINGS.GOAL_SIDE.ordinal()]) {
+                                MM_Position_Data.targetPos.setAll(0, 24 * alliance, 180);
+                            } else {
+                                MM_Position_Data.targetPos.setAll(54, 36 * alliance, 180);
+                            }
+                        } else if (robot.drivetrain.driveDone()) {
+                            notDone = false;
+                        }
+                        break;
+
+                    case OPEN_GATE:
+                        if(previousState != state){
+                            previousState = state;
+                            prepareToSpline(robot.drivetrain.navigation.splineToOpenGate);
+                        } else if (robot.drivetrain.driveDone()){
                             setNextSplinePoint(currentSpline);
-
                         }
-                    } else if (robot.drivetrain.driveDone() && collectCycle == 0){
-                        MM_Position_Data.targetPos.setAll(-15, 33 * alliance, -90 * alliance);
-                        rotateDone = true;
-                    }
-                    multipleTelemetry.addData("currentTargetX", MM_Position_Data.targetPos.getX());
-                    MM_Collector.runCollector = true;
 
-                    break;
-                case COLLECT:
-
-                    MM_Position_Data.targetPos.setY(56 * alliance);
-
-                    if (state != previousState) {
-                        previousState = state;
-                    } else if (robot.drivetrain.driveDone()) {
-                        if(!motifDone){
-                            motifDone = true;
-                            collectCycle = -1;
+                        if(splineDone()){
+                            state = STATES.DRIVE_TO_SCORE;
                         }
-                        state = STATES.DRIVE_TO_SCORE;
-                    }
+                        break;
+                }
 
             }
             robot.drivetrain.autoRunDrivetrain();

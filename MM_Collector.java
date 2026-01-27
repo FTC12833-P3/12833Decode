@@ -21,7 +21,7 @@ public class MM_Collector {
     }
 
     public void runCollector(){
-        if(opMode.gamepad2.right_bumper && opMode.robot.launcher.lowerFeedArmReady() && !opMode.robot.launcher.lowerSensorTriggered()){
+        if(opMode.gamepad2.right_bumper && opMode.robot.launcher.lowerFeedArmReady() && (!opMode.robot.launcher.lowerSensorTriggered() || opMode.gamepad2.a)){
             collector.setPower(COLLECT_POWER);
         } else if (opMode.gamepad2.left_bumper){
             collector.setPower(-COLLECT_POWER);
@@ -29,18 +29,18 @@ public class MM_Collector {
             collector.setPower(0);
         }
 
-        if(currentGamepad2.a && !previousGamepad2.a){
-            COLLECT_POWER = COLLECT_POWER == 1? .2: 1;
-        }
+//        if(currentGamepad2.a && !previousGamepad2.a){
+//            COLLECT_POWER = COLLECT_POWER == 1? .2: 1;
+//        }
     }
     
     public void autoRunCollector(){
-        if(runCollector && !opMode.robot.launcher.lowerSensorTriggered()){
+        if(runCollector){ //&& !opMode.robot.launcher.lowerSensorTriggered
             collector.setPower(COLLECT_POWER);
         } else if (reverseCollector){
             collector.setPower(-COLLECT_POWER);
         } else {
-            collector.setPower(0);
+            //collector.setPower(0);
         }
     }
 }

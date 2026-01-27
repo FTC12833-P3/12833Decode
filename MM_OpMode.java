@@ -78,6 +78,7 @@ public abstract class MM_OpMode extends LinearOpMode {
                 }
             }
             multipleTelemetry.update();
+            robot.drivetrain.navigation.initSpikeMarks();
 
             previousGamepad1.copy(currentGamepad1);
             currentGamepad1.copy(gamepad1);

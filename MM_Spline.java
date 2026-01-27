@@ -56,6 +56,10 @@ public class MM_Spline {
         distanceTraveled += sectionLengths[currentSection];
     }
 
+    public void setLastPoint(double x){
+        this.xPoints[MM_Autos.SPLINE_DETAIL_LEVEL] = x;
+    }
+
     public double getError(){
         return fullCurveLength - distanceTraveled;
     }
