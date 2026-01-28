@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode;
 
+import static org.firstinspires.ftc.teamcode.MM_OpMode.alliance;
 import static org.firstinspires.ftc.teamcode.MM_OpMode.currentGamepad1;
 import static org.firstinspires.ftc.teamcode.MM_OpMode.previousGamepad1;
 
@@ -13,7 +14,7 @@ public class MM_Drivetrain {
     MM_Position_Data navigation;
     public static MM_PID_CONTROLLER drivePidController = new MM_PID_CONTROLLER(0.2, 0, 30); //TODO find correct PID coefficients
 
-    public static MM_PID_CONTROLLER rotatePidController = new MM_PID_CONTROLLER(0.105, 0, 2.8); //TODO find correct PID coefficients
+    public static MM_PID_CONTROLLER rotatePidController = new MM_PID_CONTROLLER(0.103, 0, 2.8); //TODO find correct PID coefficients
 
     private final DcMotorEx flMotor;
     private final DcMotorEx frMotor;
@@ -75,7 +76,7 @@ public class MM_Drivetrain {
         if(currentGamepad1.y && !previousGamepad1.y){ //toggle lock position
             navigation.updatePosition();
             positionLocked = !positionLocked;
-            MM_Position_Data.targetPos.setAll(navigation.getX(), navigation.getY(), navigation.getHeading());
+            MM_Position_Data.targetPos.setAll(53, 17 * alliance, 158.2 * alliance);
         }
 
         if(currentGamepad1.x && !previousGamepad1.x){
@@ -83,35 +84,41 @@ public class MM_Drivetrain {
         }
 
         if(rotateLocked){
-            navigation.updatePosition();
-            MM_Position_Data.targetPos.setHeading(calculateDesiredAngle());
-            opMode.multipleTelemetry.addData("targetAngle", MM_Position_Data.targetPos.getHeading());
-            headingError = getNormalizedHeadingError();
-            rotatePower = headingError * ROTATE_P_CO_EFF;
+//            navigation.updatePosition();
+//            MM_Position_Data.targetPos.setHeading(calculateDesiredAngle());
+//            opMode.multipleTelemetry.addData("targetAngle", MM_Position_Data.targetPos.getHeading());
+//            headingError = getNormalizedHeadingError();
+//            rotatePower = headingError * ROTATE_P_CO_EFF;
         }
 
         if(positionLocked){
-            navigation.updatePosition();
-            xError = MM_Position_Data.targetPos.getX() - navigation.getX();
-            yError = MM_Position_Data.targetPos.getY() - navigation.getY();
-            if(!rotateLocked) {
-                headingError = getNormalizedHeadingError();
+            autoRunDrivetrain();
+
+            if(drivePidController.getP_COEFF() != .115){
+                drivePidController.setP_COEFF(.115);
+                drivePidController.setD_COEFF(17);
             }
-
-            if(tuningDrivePID){
-                drivePidController.setP_COEFF(tuningDrivePCoEff);
-                drivePidController.setD_COEFF(tuningDriveDCoEff);
-            }
-
-            double moveAngle = Math.toDegrees(Math.atan2(yError, xError));
-            double theta = moveAngle - navigation.getHeading() + 45;
-
-            double PID = drivePidController.getPID(Math.hypot(xError, yError));
-
-            flPower = (2 * Math.cos(Math.toRadians(theta)) * PID) - rotatePower;
-            frPower = (2 * Math.sin(Math.toRadians(theta)) * PID) + rotatePower;
-            blPower = (2 * Math.sin(Math.toRadians(theta)) * PID) - rotatePower; //I double checked these lines.
-            brPower = (2 * Math.cos(Math.toRadians(theta)) * PID) + rotatePower;
+//            navigation.updatePosition();
+//            xError = MM_Position_Data.targetPos.getX() - navigation.getX();
+//            yError = MM_Position_Data.targetPos.getY() - navigation.getY();
+//            if(!rotateLocked) {
+//                headingError = getNormalizedHeadingError();
+//            }
+//
+//            if(tuningDrivePID){
+//                drivePidController.setP_COEFF(tuningDrivePCoEff);
+//                drivePidController.setD_COEFF(tuningDriveDCoEff);
+//            }
+//
+//            double moveAngle = Math.toDegrees(Math.atan2(yError, xError));
+//            double theta = moveAngle - navigation.getHeading() + 45;
+//
+//            double PID = drivePidController.getPID(Math.hypot(xError, yError));
+//
+//            flPower = (2 * Math.cos(Math.toRadians(theta)) * PID) - rotatePower;
+//            frPower = (2 * Math.sin(Math.toRadians(theta)) * PID) + rotatePower;
+//            blPower = (2 * Math.sin(Math.toRadians(theta)) * PID) - rotatePower; //I double checked these lines.
+//            brPower = (2 * Math.cos(Math.toRadians(theta)) * PID) + rotatePower;
         }
 
         if (currentGamepad1.a && !previousGamepad1.a && !currentGamepad1.start) {
@@ -178,11 +185,11 @@ public class MM_Drivetrain {
         headingError = getNormalizedHeadingError();
 
         if(tuningDrivePID){
-            rotatePidController.setP_COEFF(tuningDrivePCoEff);
-            rotatePidController.setD_COEFF(tuningDriveDCoEff);
+            drivePidController.setP_COEFF(tuningDrivePCoEff);
+            drivePidController.setD_COEFF(tuningDriveDCoEff);
         }
 
-        double rotateVector = rotatePidController.getPID(headingError);
+        double rotateVector = !positionLocked? rotatePidController.getPID(headingError):  rotatePidController.getPID(headingError) * .2;
         double moveAngle = Math.toDegrees(Math.atan2(yError, xError));
         double theta = moveAngle - navigation.getHeading() + 45;
 

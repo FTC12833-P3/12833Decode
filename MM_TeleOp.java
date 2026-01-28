@@ -7,6 +7,7 @@ public class MM_TeleOp extends MM_OpMode{
 
     @Override
     public void runProcedures(){
+        robot.drivetrain.enableBrakes();
         while(opModeIsActive()){
             previousGamepad1.copy(currentGamepad1);
             currentGamepad1.copy(gamepad1);

@@ -12,8 +12,9 @@ public class PID_Tuner extends MM_OpMode{
     public void runProcedures(){
         while (opModeIsActive()){
             robot.drivetrain.enableBrakes();
-           robot.drivetrain.autoRunDrivetrain();
-           multipleTelemetry.update();
+            robot.collector.runCollector();
+            robot.drivetrain.autoRunDrivetrain();
+            multipleTelemetry.update();
         }
     }
 }
