@@ -137,7 +137,7 @@ public class MM_Autos extends MM_OpMode {
 
                             }
                         } else if (robot.drivetrain.driveDone() && collectCycle == 0) {
-                            MM_Position_Data.targetPos.setAll(MM_Position_Data.firstSpikeX, 33 * alliance, -90 * alliance);
+                            MM_Position_Data.targetPos.setAll(robot.drivetrain.navigation.firstSpikeX, 33 * alliance, -90 * alliance);
                             rotateDone = true;
                         }
                         multipleTelemetry.addData("currentTargetX", MM_Position_Data.targetPos.getX());

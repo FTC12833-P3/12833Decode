@@ -21,7 +21,9 @@ public class MM_Position_Data {
     private Pose2D AprilTagPos;
     public double pastExtrinsicY;
 
-    public static double firstSpikeX = -15;
+    public double firstSpikeX = -15;
+    public double thirdSpikeX = 32;
+
     public static MM_Position targetPos = new MM_Position(0, 0, 0);
 
     public MM_Spline splineToCollectSecondSpikeMark = new MM_Spline(new double[]{-20, -1.4, 14.7, 8  }, new double[]{20 * MM_OpMode.alliance, 17.7 * MM_OpMode.alliance, 20.3 * MM_OpMode.alliance, 33 * MM_OpMode.alliance}, MM_Autos.SPLINE_DETAIL_LEVEL, true);
@@ -57,10 +59,12 @@ public class MM_Position_Data {
             splineToCollectSecondSpikeMark.setLastPoint(currentPos.getX(DistanceUnit.INCH));
         }
         if(opMode.gamepad1.dpad_right && currentGamepad1.b && !previousGamepad1.b){
-            //TODO when we have 12 artifact
+            splineToCollectThirdSpikeMark.setLastPoint(currentPos.getX(DistanceUnit.INCH));
         }
         opMode.multipleTelemetry.addData("firstSpikeX", firstSpikeX);
         opMode.multipleTelemetry.addData("secondSpikeX", splineToCollectSecondSpikeMark.getxPoints()[MM_Autos.SPLINE_DETAIL_LEVEL]);
+        opMode.multipleTelemetry.addData("thirdSpikeX", splineToCollectThirdSpikeMark.getxPoints()[MM_Autos.SPLINE_DETAIL_LEVEL]);
+
     }
 
 
