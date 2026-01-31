@@ -74,7 +74,6 @@ public class MM_Position_Data {
 
 
     public void updatePosition() {
-        odometryController.update();
         currentPos = odometryController.getUpdatedPositon();
 
         opMode.multipleTelemetry.addData("xOdom", round2Dec(getX()));

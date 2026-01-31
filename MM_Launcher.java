@@ -294,9 +294,10 @@ public class MM_Launcher {
         opMode.multipleTelemetry.addData("metersPerSecond", metersPerSecond);
     }
 
-//    private double calculateNormalizedServerError(double target, ){
-//        return
-//    }
+    private double calculateNormalizedServerError(double target, boolean launching){
+        double currentPos = getAxonDegrees(serverEncoder);
+        return Math.abs(currentPos - target) < Math.abs(currentPos - 360)? target - currentPos: launching? (360 - currentPos) + target: target - currentPos;
+    }
 
     private boolean haveArtifactAtTop() {
         artifactAtTop = topLeftDistance.getDistance(DistanceUnit.MM) < 20 || topRightDistance.getDistance(DistanceUnit.MM) < 33;
