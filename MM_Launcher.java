@@ -281,9 +281,9 @@ public class MM_Launcher {
         if (launchDistance <= LAUNCH_ZONE_BOUNDARY_GOAL_NEAR) {
             targetLauncherVelocity = ticksPerSecond * LAUNCH_ZONE_CO_EFF_GOAL_NEAR;
         } else if (launchDistance <= LAUNCH_ZONE_BOUNDARY_GOAL_MID) {
-            targetLauncherVelocity = ticksPerSecond * LAUNCH_ZONE_CO_EFF_GOAL_MID;
+            targetLauncherVelocity = opMode.getClass() != MM_Autos.class? ticksPerSecond * LAUNCH_ZONE_CO_EFF_GOAL_MID: ticksPerSecond * LAUNCH_ZONE_CO_EFF_GOAL_MID * 1.04;
         } else if (launchDistance <= LAUNCH_ZONE_BOUNDARY_FIELD_CENTER) {
-            targetLauncherVelocity = ticksPerSecond * LAUNCH_ZONE_CO_EFF_FIELD_CENTER;
+            targetLauncherVelocity = opMode.getClass() != MM_Autos.class? ticksPerSecond * LAUNCH_ZONE_CO_EFF_FIELD_CENTER: ticksPerSecond * LAUNCH_ZONE_CO_EFF_FIELD_CENTER * 1.04;
         }else if (launchDistance <= LAUNCH_ZONE_BOUNDARY_CLOSE_AUDIENCE) {
             targetLauncherVelocity = ticksPerSecond * LAUNCH_ZONE_CO_EFF_CLOSE_AUDIENCE;
         }  else {
@@ -293,6 +293,10 @@ public class MM_Launcher {
         opMode.multipleTelemetry.addData("launchDistance (inches)", launchDistance);
         opMode.multipleTelemetry.addData("metersPerSecond", metersPerSecond);
     }
+
+//    private double calculateNormalizedServerError(double target, ){
+//        return
+//    }
 
     private boolean haveArtifactAtTop() {
         artifactAtTop = topLeftDistance.getDistance(DistanceUnit.MM) < 20 || topRightDistance.getDistance(DistanceUnit.MM) < 33;

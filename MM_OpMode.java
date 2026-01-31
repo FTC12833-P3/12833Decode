@@ -95,6 +95,8 @@ public abstract class MM_OpMode extends LinearOpMode {
         if(isStopRequested()){
             //TODO add any static variables reset code here
             MM_Launcher.scoreArtifacts = false;
+            MM_Position_Data.targetPos.setAll(0, 0, 0);
+
         }
     }
 

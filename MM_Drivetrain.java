@@ -79,6 +79,12 @@ public class MM_Drivetrain {
             MM_Position_Data.targetPos.setAll(53, 17 * alliance, 158.2 * alliance);
         }
 
+        if(currentGamepad1.x && !previousGamepad1.x){ //toggle lock position
+            navigation.updatePosition();
+            positionLocked = !positionLocked;
+            MM_Position_Data.targetPos.setAll(0, 0, 135 * alliance);
+        }
+
         if(currentGamepad1.x && !previousGamepad1.x){
             rotateLocked = !rotateLocked;
         }

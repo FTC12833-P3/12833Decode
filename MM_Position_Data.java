@@ -26,9 +26,9 @@ public class MM_Position_Data {
 
     public static MM_Position targetPos = new MM_Position(0, 0, 0);
 
-    public MM_Spline splineToCollectSecondSpikeMark = new MM_Spline(new double[]{-20, -1.4, 14.7, 8  }, new double[]{20 * MM_OpMode.alliance, 17.7 * MM_OpMode.alliance, 20.3 * MM_OpMode.alliance, 33 * MM_OpMode.alliance}, MM_Autos.SPLINE_DETAIL_LEVEL, true);
-    public MM_Spline splineToCollectThirdSpikeMark = new MM_Spline(new double[]{-20, 15, 32, 32}, new double[]{20 * MM_OpMode.alliance, 20 * MM_OpMode.alliance, 18 * MM_OpMode.alliance, 33 * MM_OpMode.alliance}, MM_Autos.SPLINE_DETAIL_LEVEL, true);
-    public MM_Spline splineToOpenGate = new MM_Spline(new double[]{-15, -15, -9, -9}, new double[]{56 * MM_OpMode.alliance, 42 * MM_OpMode.alliance, 42 * MM_OpMode.alliance, 54 * MM_OpMode.alliance}, MM_Autos.SPLINE_DETAIL_LEVEL, true);
+    public MM_Spline splineToCollectSecondSpikeMark = new MM_Spline(new double[]{-20, -1.4, 14.7, 8  }, new double[]{20, 17.7, 20.3, 33}, MM_Autos.SPLINE_DETAIL_LEVEL, true);
+    public MM_Spline splineToCollectThirdSpikeMark = new MM_Spline(new double[]{-20, 15, 32, 32}, new double[]{20, 20, 18, 33}, MM_Autos.SPLINE_DETAIL_LEVEL, true);
+    public MM_Spline splineToOpenGate = new MM_Spline(new double[]{-15, -15, -7.5, -7.5}, new double[]{56, 42, 42, 55}, MM_Autos.SPLINE_DETAIL_LEVEL, true);
 
     MM_Position_Data(MM_OpMode opMode) {
         this.opMode = opMode;
@@ -69,6 +69,7 @@ public class MM_Position_Data {
 
 
     public void updatePosition() {
+        odometryController.update();
         currentPos = odometryController.getUpdatedPositon();
 
         opMode.multipleTelemetry.addData("xOdom", round2Dec(getX()));

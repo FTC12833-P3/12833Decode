@@ -49,9 +49,9 @@ public class MM_Autos extends MM_OpMode {
                         if (state != previousState) {
                             previousState = state;
                             if (settings[SETTINGS.GOAL_SIDE.ordinal()]) {
-                                MM_Position_Data.targetPos.setAll(-20, 20 * alliance, 135 * alliance);
+                                MM_Position_Data.targetPos.setAll(-20, 20 * alliance, alliance == BLUE? -138.5: 133);
                             } else {
-                                MM_Position_Data.targetPos.setAll(53, 17 * alliance, 158.2 * alliance);
+                                MM_Position_Data.targetPos.setAll(53, 17 * alliance,  158.2 * alliance);
                             }
 
                         } else if (robot.drivetrain.driveDone()) {
@@ -117,7 +117,7 @@ public class MM_Autos extends MM_OpMode {
                     case DRIVE_TO_COLLECT:
                         if (state != previousState) {
                             MM_Position_Data.targetPos.setHeading(-90 * alliance);
-                            targetHeading = -90 * alliance;
+                            targetHeading = -90;
                             if (collectCycle == 0) {
                                 rotateDone = false;
                             } else {
@@ -200,13 +200,14 @@ public class MM_Autos extends MM_OpMode {
             multipleTelemetry.addData("dCoeff", MM_Drivetrain.drivePidController.getD_COEFF());
             multipleTelemetry.update();
         }
+        MM_Position_Data.targetPos.setAll(0, 0, 0);
     }
 
     public void setNextSplinePoint(MM_Spline spline) {
         spline.updateDistanceTraveled(currentSection);
         targetX = spline.getNextPoint(currentSection)[0];
         targetY = spline.getNextPoint(currentSection)[1];
-        MM_Position_Data.targetPos.setAll(targetX, -targetY * alliance, -targetHeading * alliance);
+        MM_Position_Data.targetPos.setAll(targetX, targetY * alliance, targetHeading * alliance);
         currentSection++;
     }
 
