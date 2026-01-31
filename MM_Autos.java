@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.util.ElapsedTime;
 
 import java.util.Arrays;
 import java.util.List;
@@ -31,6 +32,8 @@ public class MM_Autos extends MM_OpMode {
     boolean motifDone = false;
     boolean rotateDone = true;
     boolean lastCycle = false;
+    boolean timerStarted = false;
+    ElapsedTime gateTime = new ElapsedTime();
 
     List<MM_Spline> collectSplines;
 
@@ -181,12 +184,18 @@ public class MM_Autos extends MM_OpMode {
                         if(previousState != state){
                             previousState = state;
                             prepareToSpline(robot.drivetrain.navigation.splineToOpenGate);
-                        } else if (robot.drivetrain.driveDone()){
+                        } else if (robot.drivetrain.driveDone() && !timerStarted){
                             setNextSplinePoint(currentSpline);
                         }
 
                         if(splineDone()){
-                            state = STATES.DRIVE_TO_SCORE;
+                            if(timerStarted && gateTime.milliseconds() > 1000){
+                                state = STATES.DRIVE_TO_SCORE;
+                            }
+                            if(!timerStarted){
+                                gateTime.reset();
+                                timerStarted = true;
+                            }
                         }
                         break;
                 }
@@ -231,6 +240,7 @@ public class MM_Autos extends MM_OpMode {
             currentSpline = null;
             return true;
         }
-        return false;
+
+        return currentSpline == null;
     }
 }
