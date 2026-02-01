@@ -219,14 +219,14 @@ public class MM_Launcher {
                 } else if (serverStopPoint == 300 && Math.abs(getAxonDegrees(serverEncoder) - serverStopPoint) < 150) {
                     pusher.setPosition(PUSHER_POSITION_3);
                     serverStopPoint = 301;
-                } else if (Math.abs(getAxonDegrees(pusherEncoder) / 360 - PUSHER_POSITION_3) < .01) {
+                } else if (Math.abs(getAxonDegrees(pusherEncoder) / 360 - PUSHER_POSITION_3) < .017) {
                     serverStopPoint = 60;
                     attemptedShot = true;
                     pusher.setPosition(PUSHER_BOTTOM_POSITION);
                 }
             }
 
-            if(attemptedShot && getAxonDegrees(pusherEncoder) / 360 < .53 + .01){
+            if(attemptedShot && getAxonDegrees(pusherEncoder) / 360 < .53 + .02){
                 attemptedShot = false;
                 scoreArtifacts = false;
             }
@@ -281,11 +281,11 @@ public class MM_Launcher {
         if (launchDistance <= LAUNCH_ZONE_BOUNDARY_GOAL_NEAR) {
             targetLauncherVelocity = ticksPerSecond * LAUNCH_ZONE_CO_EFF_GOAL_NEAR;
         } else if (launchDistance <= LAUNCH_ZONE_BOUNDARY_GOAL_MID) {
-            targetLauncherVelocity = opMode.getClass() != MM_Autos.class? ticksPerSecond * LAUNCH_ZONE_CO_EFF_GOAL_MID: ticksPerSecond * LAUNCH_ZONE_CO_EFF_GOAL_MID * 1.04;
+            targetLauncherVelocity = opMode.getClass() != MM_Autos.class? ticksPerSecond * LAUNCH_ZONE_CO_EFF_GOAL_MID * 1.04: ticksPerSecond * LAUNCH_ZONE_CO_EFF_GOAL_MID * 1.04;
         } else if (launchDistance <= LAUNCH_ZONE_BOUNDARY_FIELD_CENTER) {
-            targetLauncherVelocity = opMode.getClass() != MM_Autos.class? ticksPerSecond * LAUNCH_ZONE_CO_EFF_FIELD_CENTER: ticksPerSecond * LAUNCH_ZONE_CO_EFF_FIELD_CENTER * 1.04;
+            targetLauncherVelocity = opMode.getClass() != MM_Autos.class? ticksPerSecond * LAUNCH_ZONE_CO_EFF_FIELD_CENTER * 1.04: ticksPerSecond * LAUNCH_ZONE_CO_EFF_FIELD_CENTER * 1.04;
         }else if (launchDistance <= LAUNCH_ZONE_BOUNDARY_CLOSE_AUDIENCE) {
-            targetLauncherVelocity = opMode.getClass() != MM_Autos.class? ticksPerSecond * LAUNCH_ZONE_CO_EFF_CLOSE_AUDIENCE: ticksPerSecond * LAUNCH_ZONE_CO_EFF_CLOSE_AUDIENCE * 1.04;
+            targetLauncherVelocity = opMode.getClass() != MM_Autos.class? ticksPerSecond * LAUNCH_ZONE_CO_EFF_CLOSE_AUDIENCE * 1.04: ticksPerSecond * LAUNCH_ZONE_CO_EFF_CLOSE_AUDIENCE * 1.04;
         }  else {
             targetLauncherVelocity = ticksPerSecond * LAUNCH_ZONE_CO_EFF_AUDIENCE;
         }
