@@ -73,16 +73,22 @@ public class MM_Drivetrain {
         double strafePower = opMode.gamepad1.left_stick_x;
         double rotatePower = -opMode.gamepad1.right_stick_x;
 
-        if(currentGamepad1.y && !previousGamepad1.y){ //toggle lock position
+        if(currentGamepad1.y && !previousGamepad1.y){ //toggle lock position far shot
             navigation.updatePosition();
             positionLocked = !positionLocked;
             MM_Position_Data.targetPos.setAll(53, 17 * alliance, 158.2 * alliance);
         }
 
-        if(currentGamepad1.x && !previousGamepad1.x){ //toggle lock position
+        if(currentGamepad1.x && !previousGamepad1.x){ //toggle lock position close shot
             navigation.updatePosition();
             positionLocked = !positionLocked;
             MM_Position_Data.targetPos.setAll(0, 0, 135 * alliance);
+        }
+
+        if(currentGamepad1.b && !previousGamepad1.b && !currentGamepad1.dpad_down){ //toggle lock position base
+            navigation.updatePosition();
+            positionLocked = !positionLocked;
+            MM_Position_Data.targetPos.setAll(36, 30, -90 * alliance);
         }
 
         if(currentGamepad1.x && !previousGamepad1.x){
