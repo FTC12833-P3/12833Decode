@@ -107,17 +107,18 @@ public class MM_Launcher {
     public void runLauncher() {
         setTargetLauncherVelocity();
         haveArtifactAtTop();
+        if( !launching) {
+            if (currentGamepad2.left_trigger > 0) { //rapid fire
+                serverStopPoint = 280;
+            }
+            if (serverStopPoint == 280 && Math.abs(getAxonDegrees(serverEncoder) - serverStopPoint) < 150) {
+                pusher.setPosition(PUSHER_POSITION_3);
+                serverStopPoint = 281;
+            } else if (Math.abs(getAxonDegrees(pusherEncoder) / 360 - PUSHER_POSITION_3) <= .02) {
+                serverStopPoint = 60;
+                pusher.setPosition(PUSHER_BOTTOM_POSITION);
 
-        if(currentGamepad2.left_trigger > 0){ //rapid fire
-            serverStopPoint = 280;
-        }
-        if(serverStopPoint == 280 && Math.abs(getAxonDegrees(serverEncoder) - serverStopPoint) < 150){
-            pusher.setPosition(PUSHER_POSITION_3);
-            serverStopPoint = 281;
-        } else if(Math.abs(getAxonDegrees(pusherEncoder) / 360 - PUSHER_POSITION_3) <= .02){
-            serverStopPoint = 60;
-            pusher.setPosition(PUSHER_BOTTOM_POSITION);
-
+            }
         }
 
 
@@ -181,7 +182,6 @@ public class MM_Launcher {
             }
             if ((pusher.getPosition() >= PUSHER_POSITION_1 - .1 && !launching && artifactAtTop && currentGamepad2.right_trigger > 0 && Math.abs(launchMotorLeft.getVelocity() - targetLauncherVelocity) < 50) || (testMode && currentGamepad2.a && !previousGamepad2.a)) {
 //            lowerFeedArm.setPosition(LOWER_FEED_BAR_TOP_POSITION); TODO fix the lower feed arm
-                server.setPower(1);
                 launching = true;
             }
             opMode.multipleTelemetry.addData("launching", launching);
@@ -190,18 +190,18 @@ public class MM_Launcher {
             opMode.multipleTelemetry.addData("controller right trigger", currentGamepad2.right_trigger);
 
             //opMode.multipleTelemetry.addData("colors", "red %d, green %d, blue %d", peephole.red(), peephole.green(), peephole.blue());
+            double serverNormalizedError = calculateNormalizedServerError(serverStopPoint, true);
 
             if (launching) {
-                server.setPower(Math.abs(serverPIDController.getPID(getAxonDegrees(serverEncoder) < serverStopPoint ? serverError : serverStopPoint + (360 - getAxonDegrees(serverEncoder)))));
-                if(getAxonDegrees(serverEncoder) < 100) {
-                    serverIsReady = false;
-                } else if (!serverIsReady && getAxonDegrees(serverEncoder) > 180) {
-                    serverIsReady = true;
+                serverNormalizedError = calculateNormalizedServerError(serverStopPoint, true);
+                if(Math.abs(serverNormalizedError) < 30){
                     launching = false;
                 }
             } else {
-                server.setPower(serverPIDController.getPID(serverError));
+                serverNormalizedError = calculateNormalizedServerError(serverStopPoint, false);
             }
+            server.setPower(serverPIDController.getPID(serverNormalizedError));
+            opMode.multipleTelemetry.addData("serverNormalizedError", serverNormalizedError);
         }
     }
 
@@ -296,7 +296,13 @@ public class MM_Launcher {
 
     private double calculateNormalizedServerError(double target, boolean launching){
         double currentPos = getAxonDegrees(serverEncoder);
-        return Math.abs(currentPos - target) < Math.abs(currentPos - 360)? target - currentPos: launching? (360 - currentPos) + target: target - currentPos;
+        double error;
+        if(launching){
+            error = target <= currentPos? target + (360 - currentPos): target - currentPos;
+        } else {
+            error = Math.abs(target - currentPos) < Math.abs(currentPos - (360 + target))? target - currentPos: currentPos - (360 + target);
+        }
+        return error;
     }
 
     private boolean haveArtifactAtTop() {
