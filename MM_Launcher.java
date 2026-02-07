@@ -81,6 +81,7 @@ public class MM_Launcher {
     private boolean launching = false;
     private boolean attemptedShot;
     public static int serverStopPoint = 60;
+    double serverNormalizedError = 0;
 
     public MM_Launcher(MM_OpMode opMode) {
         this.opMode = opMode;
@@ -127,11 +128,12 @@ public class MM_Launcher {
             serverPIDController.setP_COEFF(serverTuningPCoEff);
             serverPIDController.setD_COEFF(serverTuningDCoEff);
 
-            server.setPower(serverPIDController.getPID(serverError));
+            server.setPower(serverPIDController.getPID(serverNormalizedError));
             opMode.multipleTelemetry.addData("serverError", serverError);
             opMode.multipleTelemetry.addData("serverP", serverPIDController.getP());
             opMode.multipleTelemetry.addData("serverD", serverPIDController.getD());
         }
+
 
         opMode.multipleTelemetry.addData("serverTarget", serverStopPoint);
 
@@ -190,7 +192,6 @@ public class MM_Launcher {
             opMode.multipleTelemetry.addData("controller right trigger", currentGamepad2.right_trigger);
 
             //opMode.multipleTelemetry.addData("colors", "red %d, green %d, blue %d", peephole.red(), peephole.green(), peephole.blue());
-            double serverNormalizedError = calculateNormalizedServerError(serverStopPoint, true);
 
             if (launching) {
                 serverNormalizedError = calculateNormalizedServerError(serverStopPoint, true);
@@ -247,7 +248,6 @@ public class MM_Launcher {
 //                }
 //            }
             opMode.multipleTelemetry.addData("launching", launching);
-            opMode.multipleTelemetry.addData("servoEncoder", getAxonDegrees(serverEncoder));
             opMode.multipleTelemetry.addData("serverisready", serverIsReady);
             opMode.multipleTelemetry.addData("servo pos", getAxonDegrees(pusherEncoder) / 360);
 
@@ -296,12 +296,14 @@ public class MM_Launcher {
 
     private double calculateNormalizedServerError(double target, boolean launching){
         double currentPos = getAxonDegrees(serverEncoder);
+        opMode.multipleTelemetry.addData("servoEncoder", currentPos);
         double error;
         if(launching){
             error = target <= currentPos? target + (360 - currentPos): target - currentPos;
         } else {
-            error = Math.abs(target - currentPos) < Math.abs(currentPos - (360 + target))? target - currentPos: currentPos - (360 + target);
+            error = (Math.abs(target - currentPos) < Math.abs((target - 360) - currentPos))? currentPos - target: -((target - 360) - currentPos);
         }
+        opMode.multipleTelemetry.addData("serverNormalizedError", error);
         return error;
     }
 
