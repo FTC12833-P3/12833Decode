@@ -80,7 +80,7 @@ public class MM_Launcher {
     private boolean serverIsReady = false;
     private boolean launching = false;
     private boolean attemptedShot;
-    public static int serverStopPoint = 60;
+    public static int serverStopPoint = 110;
     double serverNormalizedError = 0;
 
     public MM_Launcher(MM_OpMode opMode) {
@@ -108,19 +108,21 @@ public class MM_Launcher {
     public void runLauncher() {
         setTargetLauncherVelocity();
         haveArtifactAtTop();
-        if( !launching) {
-            if (currentGamepad2.left_trigger > 0) { //rapid fire
-                serverStopPoint = 280;
-            }
-            if (serverStopPoint == 280 && Math.abs(getAxonDegrees(serverEncoder) - serverStopPoint) < 150) {
-                pusher.setPosition(PUSHER_POSITION_3);
-                serverStopPoint = 281;
-            } else if (Math.abs(getAxonDegrees(pusherEncoder) / 360 - PUSHER_POSITION_3) <= .02) {
-                serverStopPoint = 60;
-                pusher.setPosition(PUSHER_BOTTOM_POSITION);
 
-            }
-        }
+                if (currentGamepad2.left_trigger > 0) { //rapid fire
+                    launching = true;
+                    serverStopPoint = 280;
+                }
+                if (serverStopPoint == 280 && Math.abs(getAxonDegrees(serverEncoder) - serverStopPoint) < 150) {
+                    pusher.setPosition(PUSHER_POSITION_3);
+                    serverStopPoint = 281;
+                } else if (Math.abs(getAxonDegrees(pusherEncoder) / 360 - PUSHER_POSITION_3) <= .02) {
+                    serverStopPoint = 110;
+                    pusher.setPosition(PUSHER_BOTTOM_POSITION);
+
+                }
+
+
 
 
         double serverError = getAxonDegrees(serverEncoder) - serverStopPoint;
@@ -195,7 +197,7 @@ public class MM_Launcher {
 
             if (launching) {
                 serverNormalizedError = calculateNormalizedServerError(serverStopPoint, true);
-                if(Math.abs(serverNormalizedError) < 30){
+                if(Math.abs(serverNormalizedError) < 90){
                     launching = false;
                 }
             } else {
@@ -299,7 +301,7 @@ public class MM_Launcher {
         opMode.multipleTelemetry.addData("servoEncoder", currentPos);
         double error;
         if(launching){
-            error = target <= currentPos? target + (360 - currentPos): target - currentPos;
+            error = target <= (currentPos + 15)? -(target + (360 - currentPos)): -(target - currentPos);
         } else {
             error = (Math.abs(target - currentPos) < Math.abs((target - 360) - currentPos))? currentPos - target: -((target - 360) - currentPos);
         }
