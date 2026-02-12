@@ -82,6 +82,7 @@ public class MM_Launcher {
     private boolean attemptedShot;
     public static int serverStopPoint = 110;
     double serverNormalizedError = 0;
+    double launchAttempts;
 
     public MM_Launcher(MM_OpMode opMode) {
         this.opMode = opMode;
@@ -231,7 +232,16 @@ public class MM_Launcher {
 
             if(attemptedShot && getAxonDegrees(pusherEncoder) / 360 < .53 + .02){
                 attemptedShot = false;
-                scoreArtifacts = false;
+                launchAttempts++;
+
+                if(launchAttempts > 1) {
+                    scoreArtifacts = false;
+                    launchAttempts = 0;
+                } else {
+                    launchAttempts++;
+
+                }
+
             }
 
 //            if (!launching) {
