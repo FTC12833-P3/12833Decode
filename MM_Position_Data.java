@@ -26,9 +26,12 @@ public class MM_Position_Data {
     public double gateEndingControlPointsX = -7.5;
     public static MM_Position targetPos = new MM_Position(0, 0, 0);
 
-    public MM_Spline splineToCollectSecondSpikeMark = new MM_Spline(new double[]{-20, -1.4, 8, 8}, new double[]{20, 17.7, 20.3, 33}, MM_Autos.SPLINE_DETAIL_LEVEL, true);
-    public MM_Spline splineToCollectThirdSpikeMark = new MM_Spline(new double[]{-20, 15, 32, 32}, new double[]{20, 20, 18, 33}, MM_Autos.SPLINE_DETAIL_LEVEL, true);
-    public MM_Spline splineToOpenGate = new MM_Spline(new double[]{-15, -15, gateEndingControlPointsX, gateEndingControlPointsX}, new double[]{56, 42, 42, 56}, MM_Autos.SPLINE_DETAIL_LEVEL, true);
+    public MM_Spline goalSideSplineToCollectSecondSpikeMark = new MM_Spline(new double[]{-20, -1.4, 8, 8}, new double[]{20, 17.7, 20.3, 33}, MM_Autos.SPLINE_DETAIL_LEVEL, true);
+    public MM_Spline audienceSideSplineToCollectSecondSpikeMark = new MM_Spline(new double[]{53, 31, 8, 8}, new double[]{17, 17, 15, 33}, MM_Autos.SPLINE_DETAIL_LEVEL, true);
+    public MM_Spline audienceSideSplineToCollectThirdSpikeMark = new MM_Spline(new double[]{53, 12, -13, -15}, new double[]{17, 17, 15, 33}, MM_Autos.SPLINE_DETAIL_LEVEL, true);
+
+    public MM_Spline goalSideSplineToCollectThirdSpikeMark = new MM_Spline(new double[]{-20, 15, 32, 32}, new double[]{20, 20, 18, 33}, MM_Autos.SPLINE_DETAIL_LEVEL, true);
+    public MM_Spline goalSideSplineToOpenGate = new MM_Spline(new double[]{-15, -15, gateEndingControlPointsX, gateEndingControlPointsX}, new double[]{56, 42, 42, 56}, MM_Autos.SPLINE_DETAIL_LEVEL, true);
 
     MM_Position_Data(MM_OpMode opMode) {
         this.opMode = opMode;
@@ -61,23 +64,23 @@ public class MM_Position_Data {
             firstSpikeX = currentPos.getX(DistanceUnit.INCH);
         }
         if(opMode.gamepad1.dpad_up && currentGamepad1.b && !previousGamepad1.b){
-            splineToCollectSecondSpikeMark.setLastPoint(currentPos.getX(DistanceUnit.INCH));
+            opMode.chosenSplineList.get(1).setLastPoint(currentPos.getX(DistanceUnit.INCH));
         }
         if(opMode.gamepad1.dpad_right && currentGamepad1.b && !previousGamepad1.b){
-            splineToCollectThirdSpikeMark.setLastPoint(currentPos.getX(DistanceUnit.INCH));
+            opMode.chosenSplineList.get(2).setLastPoint(currentPos.getX(DistanceUnit.INCH));
         }
         if(opMode.gamepad1.dpad_right && currentGamepad1.y && !previousGamepad1.y){
             opMode.multipleTelemetry.addData("lockingInToGate", "in progress...");
             opMode.multipleTelemetry.update();
             gateEndingControlPointsX = currentPos.getX(DistanceUnit.INCH);
-            splineToOpenGate = new MM_Spline(new double[]{-15, -15, gateEndingControlPointsX, gateEndingControlPointsX}, new double[]{56, 42, 42, 56}, MM_Autos.SPLINE_DETAIL_LEVEL, true);
+            goalSideSplineToOpenGate = new MM_Spline(new double[]{-15, -15, gateEndingControlPointsX, gateEndingControlPointsX}, new double[]{56, 42, 42, 56}, MM_Autos.SPLINE_DETAIL_LEVEL, true);
             opMode.multipleTelemetry.addData("lockingInToGate", "lockedIn");
             opMode.multipleTelemetry.update();
         }
         opMode.multipleTelemetry.addData("firstSpikeX", firstSpikeX);
-        opMode.multipleTelemetry.addData("secondSpikeX", splineToCollectSecondSpikeMark.getxPoints()[MM_Autos.SPLINE_DETAIL_LEVEL]);
+        opMode.multipleTelemetry.addData("secondSpikeX", goalSideSplineToCollectSecondSpikeMark.getxPoints()[MM_Autos.SPLINE_DETAIL_LEVEL]);
         opMode.multipleTelemetry.addData("gatePos", gateEndingControlPointsX);
-        opMode.multipleTelemetry.addData("thirdSpikeX", splineToCollectThirdSpikeMark.getxPoints()[MM_Autos.SPLINE_DETAIL_LEVEL]);
+        opMode.multipleTelemetry.addData("thirdSpikeX", goalSideSplineToCollectThirdSpikeMark.getxPoints()[MM_Autos.SPLINE_DETAIL_LEVEL]);
 
     }
 

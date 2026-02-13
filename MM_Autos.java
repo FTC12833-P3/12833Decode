@@ -4,7 +4,6 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import java.util.Arrays;
-import java.util.List;
 
 @Autonomous(name = "autos", group = "MM")
 public class MM_Autos extends MM_OpMode {
@@ -27,6 +26,7 @@ public class MM_Autos extends MM_OpMode {
     double targetX;
     double targetY;
     double targetHeading;
+    double finalSpike = 0;
     int collectCycle = -1; //negative one to account for the first score state
     boolean notDone = true;
     boolean motifDone = false;
@@ -35,15 +35,25 @@ public class MM_Autos extends MM_OpMode {
     boolean timerStarted = false;
     ElapsedTime gateTime = new ElapsedTime();
 
-    List<MM_Spline> collectSplines;
-
     private STATES state = STATES.DRIVE_TO_SCORE;
 
     @Override
     public void runProcedures() {
 
-        collectSplines = Arrays.asList(null, robot.drivetrain.navigation.splineToCollectSecondSpikeMark, robot.drivetrain.navigation.splineToCollectThirdSpikeMark);
+        goalSideCollectSplines = Arrays.asList(null, robot.drivetrain.navigation.goalSideSplineToCollectSecondSpikeMark, robot.drivetrain.navigation.goalSideSplineToCollectThirdSpikeMark);
+        audienceSideCollectSplines = Arrays.asList(null, robot.drivetrain.navigation.audienceSideSplineToCollectSecondSpikeMark, robot.drivetrain.navigation.audienceSideSplineToCollectThirdSpikeMark);
+
+        chosenSplineList = settings[SETTINGS.GOAL_SIDE.ordinal()] ? goalSideCollectSplines: audienceSideCollectSplines;
+
         robot.drivetrain.enableBrakes();
+
+        if(settings[SETTINGS.ALL_SPIKES.ordinal()] || settings[SETTINGS.SPIKE_3.ordinal()]){
+            finalSpike = 2;
+        } else if (settings[SETTINGS.SPIKE_2.ordinal()]){
+            finalSpike = 1;
+        } else if (settings[SETTINGS.SPIKE_1.ordinal()]){
+            finalSpike = 0;
+        }
 
         while (opModeIsActive()) {
             if(notDone) {
@@ -68,18 +78,18 @@ public class MM_Autos extends MM_OpMode {
                             MM_Launcher.scoreArtifacts = true;
                         } else if (!MM_Launcher.scoreArtifacts) {
                             state = STATES.DRIVE_TO_COLLECT;
-                            if (collectCycle >= 2 || !settings[SETTINGS.GOAL_SIDE.ordinal()]) {
+                            if (collectCycle >= finalSpike) {
                                 lastCycle = true;
                             }
-                            if (!eliminationMatch) {
+                            if (!settings[SETTINGS.ELIMINATION_MATCH.ordinal()]) {
                                 if (motif == -1) {
                                     state = STATES.LOOK_AT_MOTIF;
-                                } else if (!allSpikes) {
-                                    if (spike1 && motif != 0 && collectCycle < 0) {
+                                } else if (!settings[SETTINGS.ALL_SPIKES.ordinal()]) {
+                                    if (settings[SETTINGS.SPIKE_1.ordinal()] && motif != 0 && collectCycle < 0) {
                                         collectCycle = 0;
-                                    } else if (spike2 && motif != 1 && collectCycle < 1) {
+                                    } else if (settings[SETTINGS.SPIKE_2.ordinal()] && motif != 1 && collectCycle < 1) {
                                         collectCycle = 1;
-                                    } else if (spike3 && motif != 2 && collectCycle < 2) {
+                                    } else if (settings[SETTINGS.SPIKE_3.ordinal()] && motif != 2 && collectCycle < 2) {
                                         collectCycle = 2;
                                     } else {
                                         lastCycle = true;
@@ -125,7 +135,7 @@ public class MM_Autos extends MM_OpMode {
                                 rotateDone = false;
                             } else {
                                 rotateDone = true;
-                                prepareToSpline(collectSplines.get(collectCycle));
+                                prepareToSpline(chosenSplineList.get(collectCycle));
 
                             }
                             previousState = state;
@@ -140,7 +150,11 @@ public class MM_Autos extends MM_OpMode {
 
                             }
                         } else if (robot.drivetrain.driveDone() && collectCycle == 0) {
-                            MM_Position_Data.targetPos.setAll(robot.drivetrain.navigation.firstSpikeX, 33 * alliance, -90 * alliance);
+                            if(settings[SETTINGS.GOAL_SIDE.ordinal()]) {
+                                MM_Position_Data.targetPos.setAll(robot.drivetrain.navigation.firstSpikeX, 33 * alliance, -90 * alliance);
+                            } else {
+                                MM_Position_Data.targetPos.setAll(robot.drivetrain.navigation.thirdSpikeX, 33 * alliance, -90 * alliance);
+                            }
                             rotateDone = true;
                         }
                         multipleTelemetry.addData("currentTargetX", MM_Position_Data.targetPos.getX());
@@ -158,7 +172,7 @@ public class MM_Autos extends MM_OpMode {
                                 motifDone = true;
                                 collectCycle = -1;
                             }
-                            if(collectCycle == 0 && (settings[SETTINGS.ALL_SPIKES.ordinal()] ||settings[SETTINGS.SPIKE_3.ordinal()])) {
+                            if((collectCycle == 0 && (settings[SETTINGS.ALL_SPIKES.ordinal()] ||settings[SETTINGS.SPIKE_3.ordinal()])) && settings[SETTINGS.GOAL_SIDE.ordinal()]) {
                                 state = STATES.OPEN_GATE;
                             } else {
                                 state = STATES.DRIVE_TO_SCORE;
@@ -183,7 +197,7 @@ public class MM_Autos extends MM_OpMode {
                     case OPEN_GATE:
                         if(previousState != state){
                             previousState = state;
-                            prepareToSpline(robot.drivetrain.navigation.splineToOpenGate);
+                            prepareToSpline(robot.drivetrain.navigation.goalSideSplineToOpenGate);
                         } else if (robot.drivetrain.driveDone() && !timerStarted){
                             setNextSplinePoint(currentSpline);
                         }

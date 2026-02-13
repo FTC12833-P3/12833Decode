@@ -5,6 +5,9 @@ import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.Gamepad;
 
+import java.util.Arrays;
+import java.util.List;
+
 public abstract class MM_OpMode extends LinearOpMode {
     MM_Robot robot = null;
     public static int BLUE = -1;
@@ -47,14 +50,24 @@ public abstract class MM_OpMode extends LinearOpMode {
     boolean[] settings = {allSpikes, spike1, spike2, spike3, eliminationMatch, goalSide};
     String[] settingsNames = {"AllSpikesEnabled", "spike1Enabled", "spike2Enabled", "spike3Enabled", "Elimination Match", "starting by goal"};
     int currentSetting = 0;
+    List<MM_Spline> goalSideCollectSplines;
+    List<MM_Spline> audienceSideCollectSplines;
+    List<MM_Spline> chosenSplineList;
 
     public void runOpMode(){
+
         startPos = 1;
 
         multipleTelemetry.addData("Status", "Initializing... please wait");
         multipleTelemetry.update();
 
         initialize();
+
+        if(getClass() == MM_Autos.class){
+            goalSideCollectSplines = Arrays.asList(null, robot.drivetrain.navigation.goalSideSplineToCollectSecondSpikeMark, robot.drivetrain.navigation.goalSideSplineToCollectThirdSpikeMark);
+            audienceSideCollectSplines = Arrays.asList(null, robot.drivetrain.navigation.goalSideSplineToCollectSecondSpikeMark, robot.drivetrain.navigation.goalSideSplineToCollectThirdSpikeMark);
+            chosenSplineList = settings[SETTINGS.GOAL_SIDE.ordinal()] ? goalSideCollectSplines: audienceSideCollectSplines;
+        }
 
         multipleTelemetry.addLine("Bumpers to change setting");
         multipleTelemetry.addLine("Triggers to toggle true/false");
@@ -76,6 +89,7 @@ public abstract class MM_OpMode extends LinearOpMode {
                 if((currentGamepad1.right_trigger > 0 &&! (previousGamepad1.right_trigger > 0)) || (currentGamepad1.left_trigger > 0 &&! (previousGamepad1.left_trigger > 0))){
                     settings[currentSetting] = !settings[currentSetting];
                 }
+                chosenSplineList = settings[SETTINGS.GOAL_SIDE.ordinal()] ? goalSideCollectSplines: audienceSideCollectSplines;
             }
             multipleTelemetry.update();
             robot.drivetrain.navigation.initSpikeMarks();
