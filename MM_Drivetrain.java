@@ -7,6 +7,7 @@ import static org.firstinspires.ftc.teamcode.MM_OpMode.previousGamepad1;
 import com.acmerobotics.dashboard.config.Config;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
+import com.qualcomm.robotcore.util.ElapsedTime;
 
 @Config
 public class MM_Drivetrain {
@@ -96,11 +97,11 @@ public class MM_Drivetrain {
         }
 
         if(rotateLocked){
-//            navigation.updatePosition();
-//            MM_Position_Data.targetPos.setHeading(calculateDesiredAngle());
-//            opMode.multipleTelemetry.addData("targetAngle", MM_Position_Data.targetPos.getHeading());
-//            headingError = getNormalizedHeadingError();
-//            rotatePower = headingError * ROTATE_P_CO_EFF;
+            navigation.updatePosition();
+            MM_Position_Data.targetPos.setHeading(calculateDesiredAngle());
+            opMode.multipleTelemetry.addData("targetAngle", MM_Position_Data.targetPos.getHeading());
+            headingError = getNormalizedHeadingError();
+            rotatePower = headingError * ROTATE_P_CO_EFF;
         }
 
         if(positionLocked){
@@ -226,7 +227,7 @@ public class MM_Drivetrain {
     }
 
     public boolean driveDone() {
-        return Math.abs(xError) < xErrorThreshold && Math.abs(yError) < yErrorThreshold && Math.abs(headingError) < headingErrorThreshold;
+        return (Math.abs(xError) < xErrorThreshold && Math.abs(yError) < yErrorThreshold && Math.abs(headingError) < headingErrorThreshold);
     }
 
     private double getNormalizedHeadingError() {
@@ -236,8 +237,8 @@ public class MM_Drivetrain {
         return error;
     }
     private double calculateDesiredAngle(){
-        double xError = -MM_Launcher.projectileTarget.getX() - navigation.getX();
-        double yError = -MM_Launcher.projectileTarget.getY() - navigation.getY();
+        double xError = MM_Launcher.projectileTarget.getX() - navigation.getX();
+        double yError = MM_Launcher.projectileTarget.getY() - navigation.getY();
         double angle = Math.toDegrees(Math.atan2(xError, yError)) + 180;
         opMode.multipleTelemetry.addData("desiredAngle", angle);
         opMode.multipleTelemetry.addData("launchXError", xError);
