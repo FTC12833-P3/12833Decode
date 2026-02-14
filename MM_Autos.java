@@ -144,7 +144,7 @@ public class MM_Autos extends MM_OpMode {
                                     rotateDone = false;
                                 } else {
                                     rotateDone = true;
-                                    prepareToSpline(chosenSplineList.get(collectCycle));
+                                    prepareToSpline(chosenSplineList.get(collectCycle), false);
 
                                 }
                                 previousState = state;
@@ -155,10 +155,10 @@ public class MM_Autos extends MM_OpMode {
                                 if (collectCycle == 0 || (currentSpline != null && splineDone())) {
                                     state = STATES.COLLECT;
                                 } else if (currentSpline != null) {
-                                    setNextSplinePoint(currentSpline);
+                                    setNextSplinePoint(currentSpline, false);
 
                                 }
-                            } else if (robot.drivetrain.driveDone() && collectCycle == 0) {
+                            } else if (robot.drivetrain.driveDone() && chosenSplineList.get(collectCycle) == null) {
                                 if (settings[SETTINGS.GOAL_SIDE.ordinal()]) {
                                     MM_Position_Data.targetPos.setAll(robot.drivetrain.navigation.firstSpikeX, 33 * alliance, -90 * alliance);
                                 } else {
@@ -222,9 +222,9 @@ public class MM_Autos extends MM_OpMode {
                     case OPEN_GATE:
                         if(previousState != state){
                             previousState = state;
-                            prepareToSpline(chosenSplineList.get(3));
+                            prepareToSpline(chosenSplineList.get(3), false);
                         } else if (robot.drivetrain.driveDone() && !timerStarted){
-                            setNextSplinePoint(currentSpline);
+                            setNextSplinePoint(currentSpline, false);
                         }
 
                         if(splineDone()){
@@ -251,23 +251,30 @@ public class MM_Autos extends MM_OpMode {
         MM_Position_Data.targetPos.setAll(0, 0, 0);
     }
 
-    public void setNextSplinePoint(MM_Spline spline) {
+    public void setNextSplinePoint(MM_Spline spline, boolean reversed) {
         spline.updateDistanceTraveled(currentSection);
         targetX = spline.getNextPoint(currentSection)[0];
         targetY = spline.getNextPoint(currentSection)[1];
         MM_Position_Data.targetPos.setAll(targetX, targetY * alliance, targetHeading * alliance);
-        currentSection++;
+        currentSection = reversed? currentSection + 1: currentSection - 1;
+
     }
 
-    public void prepareToSpline(MM_Spline spline) {
+
+    public void prepareToSpline(MM_Spline spline, boolean reversed) {
         spline.resetDistanceTraveled();
         currentSpline = spline;
-        setNextSplinePoint(spline);
+        setNextSplinePoint(spline, reversed);
         MM_Drivetrain.xErrorThreshold = 4;
         MM_Drivetrain.yErrorThreshold = 4;
         MM_Drivetrain.drivePidController.setD_COEFF(0);
-        currentSection -= 1;
+        if(!reversed) {
+            currentSection -= 1;
+        } else {
+            currentSection = 21;
+        }
     }
+
 
     public boolean splineDone() {
         if (currentSection == MM_Autos.SPLINE_DETAIL_LEVEL + 1) {
