@@ -37,6 +37,8 @@ public abstract class MM_OpMode extends LinearOpMode {
     boolean spike2 = true;
     boolean spike3 = true;
     boolean eliminationMatch = true;
+    boolean hpCollect = false;
+
 
     public enum SETTINGS {
         ALL_SPIKES,
@@ -44,11 +46,12 @@ public abstract class MM_OpMode extends LinearOpMode {
         SPIKE_2,
         SPIKE_3,
         ELIMINATION_MATCH,
-        GOAL_SIDE
+        GOAL_SIDE,
+        HP_COLLECT,
     }
 
-    boolean[] settings = {allSpikes, spike1, spike2, spike3, eliminationMatch, goalSide};
-    String[] settingsNames = {"AllSpikesEnabled", "spike1Enabled", "spike2Enabled", "spike3Enabled", "Elimination Match", "starting by goal"};
+    boolean[] settings = {allSpikes, spike1, spike2, spike3, eliminationMatch, goalSide, hpCollect};
+    String[] settingsNames = {"AllSpikesEnabled", "spike1Enabled", "spike2Enabled", "spike3Enabled", "Elimination Match", "starting by goal", "hpCollect"};
     int currentSetting = 0;
     List<MM_Spline> goalSideCollectSplines;
     List<MM_Spline> audienceSideCollectSplines;

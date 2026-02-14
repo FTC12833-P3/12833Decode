@@ -34,6 +34,7 @@ public class MM_Autos extends MM_OpMode {
     boolean lastCycle = false;
     boolean timerStarted = false;
     ElapsedTime gateTime = new ElapsedTime();
+    ElapsedTime gameTime = new ElapsedTime();
 
     private STATES state = STATES.DRIVE_TO_SCORE;
 
@@ -47,15 +48,21 @@ public class MM_Autos extends MM_OpMode {
 
         robot.drivetrain.enableBrakes();
 
-        if(settings[SETTINGS.ALL_SPIKES.ordinal()] || settings[SETTINGS.SPIKE_3.ordinal()]){
+        if(settings[SETTINGS.HP_COLLECT.ordinal()] && !settings[SETTINGS.GOAL_SIDE.ordinal()]){
+            finalSpike = 20; //we want to try for as many as possible
+        } else if(settings[SETTINGS.ALL_SPIKES.ordinal()] || settings[SETTINGS.SPIKE_3.ordinal()]){
             finalSpike = 2;
         } else if (settings[SETTINGS.SPIKE_2.ordinal()]){
             finalSpike = 1;
         } else if (settings[SETTINGS.SPIKE_1.ordinal()]){
             finalSpike = 0;
         }
+        gameTime.reset();
 
         while (opModeIsActive()) {
+            if(notDone && gameTime.milliseconds() >= 25000){
+                lastCycle = true;
+            }
             if(notDone) {
                 switch (state) {
                     case DRIVE_TO_SCORE:
@@ -68,6 +75,7 @@ public class MM_Autos extends MM_OpMode {
                             }
 
                         } else if (robot.drivetrain.driveDone()) {
+                            MM_Collector.runCollector = true;
                             state = STATES.SCORE;
                             break;
                         }
@@ -128,57 +136,74 @@ public class MM_Autos extends MM_OpMode {
 
                         break;
                     case DRIVE_TO_COLLECT:
-                        if (state != previousState) {
-                            MM_Position_Data.targetPos.setHeading(-90 * alliance);
-                            targetHeading = -90;
-                            if (collectCycle == 0) {
-                                rotateDone = false;
-                            } else {
+                        if(!settings[SETTINGS.HP_COLLECT.ordinal()] || settings[SETTINGS.GOAL_SIDE.ordinal()]) {
+                            if (state != previousState) {
+                                MM_Position_Data.targetPos.setHeading(-90 * alliance);
+                                targetHeading = -90;
+                                if (collectCycle == 0) {
+                                    rotateDone = false;
+                                } else {
+                                    rotateDone = true;
+                                    prepareToSpline(chosenSplineList.get(collectCycle));
+
+                                }
+                                previousState = state;
+                            }
+
+                            if (robot.drivetrain.driveDone() && rotateDone) {
+                                previousState = state;
+                                if (collectCycle == 0 || (currentSpline != null && splineDone())) {
+                                    state = STATES.COLLECT;
+                                } else if (currentSpline != null) {
+                                    setNextSplinePoint(currentSpline);
+
+                                }
+                            } else if (robot.drivetrain.driveDone() && collectCycle == 0) {
+                                if (settings[SETTINGS.GOAL_SIDE.ordinal()]) {
+                                    MM_Position_Data.targetPos.setAll(robot.drivetrain.navigation.firstSpikeX, 33 * alliance, -90 * alliance);
+                                } else {
+                                    MM_Position_Data.targetPos.setAll(robot.drivetrain.navigation.thirdSpikeX, 33 * alliance, -90 * alliance);
+                                }
                                 rotateDone = true;
-                                prepareToSpline(chosenSplineList.get(collectCycle));
-
                             }
-                            previousState = state;
-                        }
+                            multipleTelemetry.addData("currentTargetX", MM_Position_Data.targetPos.getX());
+                            MM_Collector.runCollector = true;
+                        } else { //HP collect
+                            if(state != previousState){
+                                previousState = state;
+                                MM_Position_Data.targetPos.setAll(0, 0, 0); //TODO find correct position
+                            }
 
-                        if (robot.drivetrain.driveDone() && rotateDone) {
-                            previousState = state;
-                            if (collectCycle == 0 || (currentSpline != null && splineDone())) {
+                            if(robot.drivetrain.driveDone()){
                                 state = STATES.COLLECT;
-                            } else if (currentSpline != null) {
-                                setNextSplinePoint(currentSpline);
-
                             }
-                        } else if (robot.drivetrain.driveDone() && collectCycle == 0) {
-                            if(settings[SETTINGS.GOAL_SIDE.ordinal()]) {
-                                MM_Position_Data.targetPos.setAll(robot.drivetrain.navigation.firstSpikeX, 33 * alliance, -90 * alliance);
-                            } else {
-                                MM_Position_Data.targetPos.setAll(robot.drivetrain.navigation.thirdSpikeX, 33 * alliance, -90 * alliance);
-                            }
-                            rotateDone = true;
                         }
-                        multipleTelemetry.addData("currentTargetX", MM_Position_Data.targetPos.getX());
-                        MM_Collector.runCollector = true;
-
                         break;
                     case COLLECT:
+                        //normal collect
+                        if(!settings[SETTINGS.HP_COLLECT.ordinal()] || settings[SETTINGS.GOAL_SIDE.ordinal()]) {
+                            MM_Position_Data.targetPos.setY(56 * alliance);
 
-                        MM_Position_Data.targetPos.setY(56 * alliance);
+                            if (state != previousState) {
+                                previousState = state;
+                            } else if (robot.drivetrain.driveDone()) {
+                                if (!motifDone) {
+                                    motifDone = true;
+                                    collectCycle = -1;
+                                }
+                                if ((collectCycle == 0 && (settings[SETTINGS.ALL_SPIKES.ordinal()] || settings[SETTINGS.SPIKE_3.ordinal()])) && settings[SETTINGS.GOAL_SIDE.ordinal()]) {
+                                    state = STATES.OPEN_GATE;
+                                } else {
+                                    state = STATES.DRIVE_TO_SCORE;
+                                }
 
-                        if (state != previousState) {
-                            previousState = state;
-                        } else if (robot.drivetrain.driveDone()) {
-                            if (!motifDone) {
-                                motifDone = true;
-                                collectCycle = -1;
+
                             }
-                            if((collectCycle == 0 && (settings[SETTINGS.ALL_SPIKES.ordinal()] ||settings[SETTINGS.SPIKE_3.ordinal()])) && settings[SETTINGS.GOAL_SIDE.ordinal()]) {
-                                state = STATES.OPEN_GATE;
-                            } else {
+                        } else { //HP collect
+                            if(robot.launcher.lowerSensorTriggered()){
+                                MM_Collector.runCollector = false;
                                 state = STATES.DRIVE_TO_SCORE;
                             }
-
-
                         }
                         break;
                     case DRIVE_OFF_LINE:
