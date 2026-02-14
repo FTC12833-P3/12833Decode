@@ -81,9 +81,9 @@ public class MM_Drivetrain {
         }
 
         if(currentGamepad1.x && !previousGamepad1.x){ //toggle lock position close shot
-            navigation.updatePosition();
-            positionLocked = !positionLocked;
-            MM_Position_Data.targetPos.setAll(0, 0, 135 * alliance);
+//            navigation.updatePosition();
+//            positionLocked = !positionLocked;
+//            MM_Position_Data.targetPos.setAll(0, 0, 135 * alliance);
         }
 
         if(currentGamepad1.b && !previousGamepad1.b && !currentGamepad1.dpad_down){ //toggle lock position base
@@ -239,7 +239,7 @@ public class MM_Drivetrain {
     private double calculateDesiredAngle(){
         double xError = MM_Launcher.projectileTarget.getX() - navigation.getX();
         double yError = MM_Launcher.projectileTarget.getY() - navigation.getY();
-        double angle = Math.toDegrees(Math.atan2(xError, yError)) + 180;
+        double angle = Math.toDegrees(Math.atan2(yError, xError));
         opMode.multipleTelemetry.addData("desiredAngle", angle);
         opMode.multipleTelemetry.addData("launchXError", xError);
         opMode.multipleTelemetry.addData("launchYError", yError);
