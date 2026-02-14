@@ -31,7 +31,8 @@ public class MM_Position_Data {
     public MM_Spline audienceSideSplineToCollectThirdSpikeMark = new MM_Spline(new double[]{53, 12, -13, -15}, new double[]{17, 17, 15, 33}, MM_Autos.SPLINE_DETAIL_LEVEL, true);
 
     public MM_Spline goalSideSplineToCollectThirdSpikeMark = new MM_Spline(new double[]{-20, 15, 32, 32}, new double[]{20, 20, 18, 33}, MM_Autos.SPLINE_DETAIL_LEVEL, true);
-    public MM_Spline goalSideSplineToOpenGate = new MM_Spline(new double[]{-15, -15, gateEndingControlPointsX, gateEndingControlPointsX}, new double[]{56, 42, 42, 56}, MM_Autos.SPLINE_DETAIL_LEVEL, true);
+    public MM_Spline goalSideSplineToOpenGate = new MM_Spline(new double[]{8, 8, gateEndingControlPointsX, gateEndingControlPointsX}, new double[]{56, 42, 42, 56}, MM_Autos.SPLINE_DETAIL_LEVEL, true);
+    public MM_Spline audienceSideSplineToOpenGate = new MM_Spline(new double[]{-15, -15, gateEndingControlPointsX, gateEndingControlPointsX}, new double[]{56, 42, 42, 56}, MM_Autos.SPLINE_DETAIL_LEVEL, true);
 
     MM_Position_Data(MM_OpMode opMode) {
         this.opMode = opMode;

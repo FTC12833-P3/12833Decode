@@ -36,13 +36,13 @@ public class MM_Autos extends MM_OpMode {
     ElapsedTime gateTime = new ElapsedTime();
     ElapsedTime gameTime = new ElapsedTime();
 
+
     private STATES state = STATES.DRIVE_TO_SCORE;
 
     @Override
     public void runProcedures() {
-
-        goalSideCollectSplines = Arrays.asList(null, robot.drivetrain.navigation.goalSideSplineToCollectSecondSpikeMark, robot.drivetrain.navigation.goalSideSplineToCollectThirdSpikeMark);
-        audienceSideCollectSplines = Arrays.asList(null, robot.drivetrain.navigation.audienceSideSplineToCollectSecondSpikeMark, robot.drivetrain.navigation.audienceSideSplineToCollectThirdSpikeMark);
+        goalSideCollectSplines = Arrays.asList(null, robot.drivetrain.navigation.goalSideSplineToCollectSecondSpikeMark, robot.drivetrain.navigation.goalSideSplineToCollectThirdSpikeMark, robot.drivetrain.navigation.goalSideSplineToOpenGate);
+        audienceSideCollectSplines = Arrays.asList(null, robot.drivetrain.navigation.audienceSideSplineToCollectSecondSpikeMark, robot.drivetrain.navigation.audienceSideSplineToCollectThirdSpikeMark, robot.drivetrain.navigation.audienceSideSplineToOpenGate);
 
         chosenSplineList = settings[SETTINGS.GOAL_SIDE.ordinal()] ? goalSideCollectSplines: audienceSideCollectSplines;
 
@@ -73,7 +73,7 @@ public class MM_Autos extends MM_OpMode {
                             } else {
                                 MM_Position_Data.targetPos.setAll(53, 17 * alliance,  158.2 * alliance);
                             }
-
+                            driveTime.reset();
                         } else if (robot.drivetrain.driveDone()) {
                             MM_Collector.runCollector = true;
                             state = STATES.SCORE;
@@ -191,7 +191,7 @@ public class MM_Autos extends MM_OpMode {
                                     motifDone = true;
                                     collectCycle = -1;
                                 }
-                                if ((collectCycle == 0 && (settings[SETTINGS.ALL_SPIKES.ordinal()] || settings[SETTINGS.SPIKE_3.ordinal()])) && settings[SETTINGS.GOAL_SIDE.ordinal()]) {
+                                if ((collectCycle == 1 && !settings[SETTINGS.GOAL_SIDE.ordinal()] && settings[SETTINGS.ALL_SPIKES.ordinal()]) || (collectCycle == 0 && (settings[SETTINGS.ALL_SPIKES.ordinal()] && settings[SETTINGS.GOAL_SIDE.ordinal()]))) {
                                     state = STATES.OPEN_GATE;
                                 } else {
                                     state = STATES.DRIVE_TO_SCORE;
@@ -222,7 +222,7 @@ public class MM_Autos extends MM_OpMode {
                     case OPEN_GATE:
                         if(previousState != state){
                             previousState = state;
-                            prepareToSpline(robot.drivetrain.navigation.goalSideSplineToOpenGate);
+                            prepareToSpline(chosenSplineList.get(3));
                         } else if (robot.drivetrain.driveDone() && !timerStarted){
                             setNextSplinePoint(currentSpline);
                         }

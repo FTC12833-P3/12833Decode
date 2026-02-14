@@ -4,6 +4,7 @@ import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.Gamepad;
+import com.qualcomm.robotcore.util.ElapsedTime;
 
 import java.util.Arrays;
 import java.util.List;
@@ -38,6 +39,7 @@ public abstract class MM_OpMode extends LinearOpMode {
     boolean spike3 = true;
     boolean eliminationMatch = true;
     boolean hpCollect = false;
+    ElapsedTime driveTime;
 
 
     public enum SETTINGS {
@@ -70,6 +72,7 @@ public abstract class MM_OpMode extends LinearOpMode {
             goalSideCollectSplines = Arrays.asList(null, robot.drivetrain.navigation.goalSideSplineToCollectSecondSpikeMark, robot.drivetrain.navigation.goalSideSplineToCollectThirdSpikeMark);
             audienceSideCollectSplines = Arrays.asList(null, robot.drivetrain.navigation.goalSideSplineToCollectSecondSpikeMark, robot.drivetrain.navigation.goalSideSplineToCollectThirdSpikeMark);
             chosenSplineList = settings[SETTINGS.GOAL_SIDE.ordinal()] ? goalSideCollectSplines: audienceSideCollectSplines;
+            driveTime = new ElapsedTime();
         }
 
         multipleTelemetry.addLine("Bumpers to change setting");
