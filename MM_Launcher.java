@@ -232,15 +232,15 @@ public class MM_Launcher {
 
             if(attemptedShot && getAxonDegrees(pusherEncoder) / 360 < .53 + .02){
                 attemptedShot = false;
-                launchAttempts++;
+                //launchAttempts++;
 
-                if(launchAttempts > 1) {
+               // if(launchAttempts > 1) {
                     scoreArtifacts = false;
-                    launchAttempts = 0;
-                } else {
-                    launchAttempts++;
+                   // launchAttempts = 0;
+                //} else {
+                   // launchAttempts++;
 
-                }
+                //}
 
             }
 

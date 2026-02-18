@@ -32,13 +32,13 @@ public abstract class MM_OpMode extends LinearOpMode {
     public MM_Spline currentSpline = null;
 
 
-    boolean goalSide = true;
-    boolean allSpikes = true;
-    boolean spike1 = true;
-    boolean spike2 = true;
-    boolean spike3 = true;
-    boolean eliminationMatch = true;
-    boolean hpCollect = false;
+    int goalSide = 1;
+    int allSpikes = 1;
+    int spike1 = 1;
+    int spike2 = 1;
+    int spike3 = 1;
+    int eliminationMatch = 1;
+    int hpCollect = 0;
     ElapsedTime driveTime;
 
 
@@ -52,7 +52,7 @@ public abstract class MM_OpMode extends LinearOpMode {
         HP_COLLECT,
     }
 
-    boolean[] settings = {allSpikes, spike1, spike2, spike3, eliminationMatch, goalSide, hpCollect};
+    int[] settings = {allSpikes, spike1, spike2, spike3, eliminationMatch, goalSide, hpCollect};
     String[] settingsNames = {"AllSpikesEnabled", "spike1Enabled", "spike2Enabled", "spike3Enabled", "Elimination Match", "starting by goal", "hpCollect"};
     int currentSetting = 0;
     List<MM_Spline> goalSideCollectSplines;
@@ -71,7 +71,7 @@ public abstract class MM_OpMode extends LinearOpMode {
         if(getClass() == MM_Autos.class){
             goalSideCollectSplines = Arrays.asList(null, robot.drivetrain.navigation.goalSideSplineToCollectSecondSpikeMark, robot.drivetrain.navigation.goalSideSplineToCollectThirdSpikeMark);
             audienceSideCollectSplines = Arrays.asList(null, robot.drivetrain.navigation.goalSideSplineToCollectSecondSpikeMark, robot.drivetrain.navigation.goalSideSplineToCollectThirdSpikeMark);
-            chosenSplineList = settings[SETTINGS.GOAL_SIDE.ordinal()] ? goalSideCollectSplines: audienceSideCollectSplines;
+            chosenSplineList = settings[SETTINGS.GOAL_SIDE.ordinal()] == 1 ? goalSideCollectSplines: audienceSideCollectSplines;
             driveTime = new ElapsedTime();
         }
 
@@ -83,7 +83,7 @@ public abstract class MM_OpMode extends LinearOpMode {
             multipleTelemetry.addData("Status", "Initialized");
             if(getClass() == MM_Autos.class){
                 multipleTelemetry.addLine("Bumpers to change setting");
-                multipleTelemetry.addLine("Triggers to toggle true/false");
+                multipleTelemetry.addLine("Triggers to toggle true/false (1 / 0)");
 
                 multipleTelemetry.addData(settingsNames[currentSetting], settings[currentSetting]);
 
@@ -92,10 +92,12 @@ public abstract class MM_OpMode extends LinearOpMode {
                 } else if (currentGamepad1.left_bumper && !previousGamepad1.left_bumper){
                     previousSetting();
                 }
-                if((currentGamepad1.right_trigger > 0 &&! (previousGamepad1.right_trigger > 0)) || (currentGamepad1.left_trigger > 0 &&! (previousGamepad1.left_trigger > 0))){
-                    settings[currentSetting] = !settings[currentSetting];
+                if((currentGamepad1.right_trigger > 0 &&! (previousGamepad1.right_trigger > 0))){
+                    settings[currentSetting]++;
+                } else if ((currentGamepad1.left_trigger > 0 &&! (previousGamepad1.left_trigger > 0))){
+                    settings[currentSetting]--;
                 }
-                chosenSplineList = settings[SETTINGS.GOAL_SIDE.ordinal()] ? goalSideCollectSplines: audienceSideCollectSplines;
+                chosenSplineList = settings[SETTINGS.GOAL_SIDE.ordinal()] == 1? goalSideCollectSplines: audienceSideCollectSplines;
             }
             multipleTelemetry.update();
             robot.drivetrain.navigation.initSpikeMarks();
