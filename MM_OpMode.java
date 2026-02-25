@@ -31,7 +31,6 @@ public abstract class MM_OpMode extends LinearOpMode {
     public static int motif = -1;
     public MM_Spline currentSpline = null;
 
-
     int goalSide = 1;
     int allSpikes = 1;
     int spike1 = 1;
@@ -40,7 +39,6 @@ public abstract class MM_OpMode extends LinearOpMode {
     int eliminationMatch = 1;
     int hpCollect = 0;
     ElapsedTime driveTime;
-
 
     public enum SETTINGS {
         ALL_SPIKES,

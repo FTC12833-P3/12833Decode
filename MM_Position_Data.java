@@ -50,25 +50,22 @@ public class MM_Position_Data {
             } catch (Exception NullPointer){
                 odometryController.resetPosAndIMU();
             }
-
-
         }
 
-        odometryController.update();
-        currentPos = odometryController.getPosition();
+        currentPos = odometryController.getUpdatedPositon();
         targetPos.setAll(0, 0, 0);
     }
     public void initSpikeMarks(){
-        odometryController.update();
-        currentPos = odometryController.getPosition();
+        currentPos = odometryController.getUpdatedPositon();
+
         if(opMode.gamepad1.dpad_left && currentGamepad1.b && !previousGamepad1.b){
             firstSpikeX = currentPos.getX(DistanceUnit.INCH);
         }
         if(opMode.gamepad1.dpad_up && currentGamepad1.b && !previousGamepad1.b){
-            opMode.chosenSplineList.get(1).setLastPoint(currentPos.getX(DistanceUnit.INCH));
+            opMode.chosenSplineList.get(opMode.settings[MM_OpMode.SETTINGS.SPIKE_2.ordinal()]).setLastPoint(currentPos.getX(DistanceUnit.INCH));
         }
         if(opMode.gamepad1.dpad_right && currentGamepad1.b && !previousGamepad1.b){
-            opMode.chosenSplineList.get(2).setLastPoint(currentPos.getX(DistanceUnit.INCH));
+            opMode.chosenSplineList.get(opMode.settings[MM_OpMode.SETTINGS.SPIKE_3.ordinal()]).setLastPoint(currentPos.getX(DistanceUnit.INCH));
         }
         if(opMode.gamepad1.dpad_right && currentGamepad1.y && !previousGamepad1.y){
             opMode.multipleTelemetry.addData("lockingInToGate", "in progress...");
@@ -79,15 +76,14 @@ public class MM_Position_Data {
             opMode.multipleTelemetry.update();
         }
         opMode.multipleTelemetry.addData("firstSpikeX", firstSpikeX);
-        opMode.multipleTelemetry.addData("secondSpikeX", goalSideSplineToCollectSecondSpikeMark.getxPoints()[MM_Autos.SPLINE_DETAIL_LEVEL]);
+        opMode.multipleTelemetry.addData("secondSpikeX", opMode.settings[MM_OpMode.SETTINGS.GOAL_SIDE.ordinal()] == 1? goalSideSplineToCollectSecondSpikeMark.getxPoints()[MM_Autos.SPLINE_DETAIL_LEVEL]: audienceSideSplineToCollectSecondSpikeMark.getxPoints()[MM_Autos.SPLINE_DETAIL_LEVEL]);
         opMode.multipleTelemetry.addData("gatePos", gateEndingControlPointsX);
-        opMode.multipleTelemetry.addData("thirdSpikeX", goalSideSplineToCollectThirdSpikeMark.getxPoints()[MM_Autos.SPLINE_DETAIL_LEVEL]);
+        opMode.multipleTelemetry.addData("thirdSpikeX",  opMode.settings[MM_OpMode.SETTINGS.GOAL_SIDE.ordinal()] == 1? goalSideSplineToCollectThirdSpikeMark.getxPoints()[MM_Autos.SPLINE_DETAIL_LEVEL]: audienceSideSplineToCollectThirdSpikeMark.getxPoints()[MM_Autos.SPLINE_DETAIL_LEVEL]);
 
     }
 
-
     public void updatePosition() {
-        currentPos = odometryController.getUpdatedPositon();
+        //currentPos = odometryController.getUpdatedPositon();
 
         opMode.multipleTelemetry.addData("xOdom", round2Dec(getX()));
         opMode.multipleTelemetry.addData("yOdom", round2Dec(getY()));
@@ -102,6 +98,8 @@ public class MM_Position_Data {
 
                 if (currentGamepad1.b && !MM_OpMode.previousGamepad1.b) {
                     odometryController.setPosition(AprilTagPos);
+                    currentPos = odometryController.getUpdatedPositon();
+
                     if (opMode.opModeInInit()) {
                         MM_OpMode.alliance = MM_VisionPortal.startingTag == 20 ? -1 : 1; //blue = -1
                     }
@@ -113,7 +111,6 @@ public class MM_Position_Data {
                 opMode.multipleTelemetry.addData("yawApril", "");
             }
         }
-        currentPos = odometryController.getUpdatedPositon();
     }
 
 

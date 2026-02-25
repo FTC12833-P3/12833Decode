@@ -51,7 +51,7 @@ public class MM_Launcher {
     private double LAUNCHER_ANGLE = 45;
     public static boolean scoreArtifacts = false;
     public static double targetLauncherVelocity = 10000;
-    public static double PUSHER_BOTTOM_POSITION = .2;
+    public static double PUSHER_BOTTOM_POSITION = 0;
     public static double PUSHER_POSITION_1 = .65;
     public static double PUSHER_POSITION_2 = .77;
     public static double PUSHER_POSITION_3 = .91;
@@ -107,6 +107,10 @@ public class MM_Launcher {
     }
 
     public void runLauncher() {
+        double pusherPos = getAxonDegrees(pusherEncoder);
+        double serverPos = getAxonDegrees(serverEncoder);
+        double serverError = serverPos - serverStopPoint;
+
         setTargetLauncherVelocity();
         haveArtifactAtTop();
 
@@ -114,19 +118,14 @@ public class MM_Launcher {
                     launching = true;
                     serverStopPoint = 280;
                 }
-                if (serverStopPoint == 280 && Math.abs(getAxonDegrees(serverEncoder) - serverStopPoint) < 150) {
+                if (serverStopPoint == 280 && Math.abs(serverError) < 150) {
                     pusher.setPosition(PUSHER_POSITION_3);
                     serverStopPoint = 281;
-                } else if (Math.abs(getAxonDegrees(pusherEncoder) / 360 - PUSHER_POSITION_3) <= .02) {
+                } else if (Math.abs(pusherPos / 360 - PUSHER_POSITION_3) <= .02) {
                     serverStopPoint = 110;
                     pusher.setPosition(PUSHER_BOTTOM_POSITION);
-
                 }
 
-
-
-
-        double serverError = getAxonDegrees(serverEncoder) - serverStopPoint;
         if(tuningServerCoEffs) {
             serverPIDController.setP_COEFF(serverTuningPCoEff);
             serverPIDController.setD_COEFF(serverTuningDCoEff);
@@ -137,18 +136,16 @@ public class MM_Launcher {
             opMode.multipleTelemetry.addData("serverD", serverPIDController.getD());
         }
 
-
         opMode.multipleTelemetry.addData("serverTarget", serverStopPoint);
-
         opMode.multipleTelemetry.addData("launcherTargetSpeed", targetLauncherVelocity);
         opMode.multipleTelemetry.addData("launcherSpeedL", launchMotorLeft.getVelocity());
         opMode.multipleTelemetry.addData("launcherSpeedR", launchMotorRight.getVelocity());
-        opMode.multipleTelemetry.addData("servoEncoder", getAxonDegrees(serverEncoder));
+        opMode.multipleTelemetry.addData("servoEncoder", serverPos);
         opMode.multipleTelemetry.addData("serverSpeed", server.getPower());
-        opMode.multipleTelemetry.addData("dist Left", topLeftDistance.getDistance(DistanceUnit.MM));
-        opMode.multipleTelemetry.addData("dist Right", topRightDistance.getDistance(DistanceUnit.MM));
-        opMode.multipleTelemetry.addData("dist Lower Left", bottomLeftDistance.getDistance(DistanceUnit.MM));
-        opMode.multipleTelemetry.addData("dist Lower Right", bottomRightDistance.getDistance(DistanceUnit.MM));
+//        opMode.multipleTelemetry.addData("dist Left", topLeftDistance.getDistance(DistanceUnit.MM));
+//        opMode.multipleTelemetry.addData("dist Right", topRightDistance.getDistance(DistanceUnit.MM));
+//        opMode.multipleTelemetry.addData("dist Lower Left", bottomLeftDistance.getDistance(DistanceUnit.MM));
+//        opMode.multipleTelemetry.addData("dist Lower Right", bottomRightDistance.getDistance(DistanceUnit.MM));
 
         //if (launching){
         if (!artifactAtTop && currentGamepad2.b && !previousGamepad2.b) {
@@ -210,27 +207,30 @@ public class MM_Launcher {
     }
 
     public void autoRunLauncher() {
+        double pusherPos = getAxonDegrees(pusherEncoder);
+        double serverPos = getAxonDegrees(serverEncoder);
+        double serverError = serverPos - serverStopPoint;
+
         setTargetLauncherVelocity();
         launchMotorLeft.setVelocity(targetLauncherVelocity);
         launchMotorRight.setVelocity(targetLauncherVelocity);
-        double serverError = getAxonDegrees(serverEncoder) - serverStopPoint;
 
         if (scoreArtifacts && opMode.robot.drivetrain.driveDone()) {
 
             if(!attemptedShot) {
                 if (serverStopPoint < 300) { //rapid fire
                     serverStopPoint = 300;
-                } else if (serverStopPoint == 300 && Math.abs(getAxonDegrees(serverEncoder) - serverStopPoint) < 150) {
+                } else if (serverStopPoint == 300 && Math.abs(serverError) < 150) {
                     pusher.setPosition(PUSHER_POSITION_3);
                     serverStopPoint = 301;
-                } else if (Math.abs(getAxonDegrees(pusherEncoder) / 360 - PUSHER_POSITION_3) < .017) {
+                } else if (Math.abs(pusherPos / 360 - PUSHER_POSITION_3) < .017) {
                     serverStopPoint = 60;
                     attemptedShot = true;
                     pusher.setPosition(PUSHER_BOTTOM_POSITION);
                 }
             }
 
-            if(attemptedShot && getAxonDegrees(pusherEncoder) / 360 < .53 + .02){
+            if(attemptedShot && pusherPos / 360 < .53 + .02){
                 attemptedShot = false;
                 //launchAttempts++;
 
@@ -261,12 +261,12 @@ public class MM_Launcher {
 //            }
             opMode.multipleTelemetry.addData("launching", launching);
             opMode.multipleTelemetry.addData("serverisready", serverIsReady);
-            opMode.multipleTelemetry.addData("servo pos", getAxonDegrees(pusherEncoder) / 360);
+            opMode.multipleTelemetry.addData("servo pos", pusherPos / 360);
 
             if (Math.abs(launchMotorLeft.getVelocity() - targetLauncherVelocity) < 50 && launching) {
-                if (getAxonDegrees(pusherEncoder) / 360 >= pusher.getPosition() - .02 && pusher.getPosition() >= PUSHER_BOTTOM_POSITION -.02) {
-                    server.setPower(Math.abs(serverPIDController.getPID(getAxonDegrees(serverEncoder) < serverStopPoint ? serverError : serverStopPoint + (360 - getAxonDegrees(serverEncoder)))));
-                    if(getAxonDegrees(serverEncoder) < 90) {
+                if (pusherPos / 360 >= pusher.getPosition() - .02 && pusher.getPosition() >= PUSHER_BOTTOM_POSITION -.02) {
+                    server.setPower(Math.abs(serverPIDController.getPID(serverError < serverStopPoint ? serverError : serverStopPoint + (360 - serverPos))));
+                    if(serverPos < 90) {
                         serverIsReady = false;
                     }
 

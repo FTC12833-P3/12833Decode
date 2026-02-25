@@ -38,7 +38,6 @@ public class MM_Autos extends MM_OpMode {
     ElapsedTime gateTime = new ElapsedTime();
     ElapsedTime gameTime = new ElapsedTime();
 
-
     private STATES state = STATES.DRIVE_TO_SCORE;
 
     @Override
@@ -62,6 +61,8 @@ public class MM_Autos extends MM_OpMode {
         gameTime.reset();
 
         while (opModeIsActive()) {
+            robot.drivetrain.navigation.odometryController.getUpdatedPositon();
+
             if(notDone && gameTime.milliseconds() >= 25000){
                 lastCycle = true;
             }

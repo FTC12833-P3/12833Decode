@@ -27,7 +27,6 @@ public class MM_Drivetrain {
     public static double tuningDriveICoEff = 0;
     public static double tuningDriveDCoEff = 30;
 
-
     private static final double SLOW_MODE_POWER = .5;
 
     public static double xErrorThreshold = 1.5; //TODO fix threshold values (used to be .5)
@@ -49,7 +48,6 @@ public class MM_Drivetrain {
     private boolean slowMode = false;
     private boolean positionLocked = false;
     private boolean rotateLocked = false;
-
 
     private double pidError;
     private double xError = 0;
@@ -75,34 +73,35 @@ public class MM_Drivetrain {
         double rotatePower = -opMode.gamepad1.right_stick_x;
 
         if(currentGamepad1.y && !previousGamepad1.y){ //toggle lock position far shot
-            navigation.updatePosition();
+            //navigation.updatePosition();
             positionLocked = !positionLocked;
             MM_Position_Data.targetPos.setAll(53, 17 * alliance, 158.2 * alliance);
         }
 
-        if(currentGamepad1.x && !previousGamepad1.x){ //toggle lock position close shot
-//            navigation.updatePosition();
+        //if(currentGamepad1.x && !previousGamepad1.x){ //toggle lock position close shot
+//            //navigation.updatePosition();
 //            positionLocked = !positionLocked;
 //            MM_Position_Data.targetPos.setAll(0, 0, 135 * alliance);
-        }
+        //}
 
         if(currentGamepad1.b && !previousGamepad1.b && !currentGamepad1.dpad_down){ //toggle lock position base
-            navigation.updatePosition();
+            //navigation.updatePosition();
             positionLocked = !positionLocked;
-            MM_Position_Data.targetPos.setAll(36, 30, -90 * alliance);
+            MM_Position_Data.targetPos.setAll(36, -30 * alliance, -90 * alliance);
         }
 
-        if(currentGamepad1.x && !previousGamepad1.x){
+        if(currentGamepad1.x && !previousGamepad1.x){ //auto align heading to goal
             rotateLocked = !rotateLocked;
         }
 
-        if(rotateLocked){
-            navigation.updatePosition();
-            MM_Position_Data.targetPos.setHeading(calculateDesiredAngle());
-            opMode.multipleTelemetry.addData("targetAngle", MM_Position_Data.targetPos.getHeading());
-            headingError = getNormalizedHeadingError();
-            rotatePower = headingError * ROTATE_P_CO_EFF;
-        }
+        // following if was commented out at Corning scrimmage, when auto align heading to goal was working
+//        if(rotateLocked){
+//            //navigation.updatePosition();
+//            MM_Position_Data.targetPos.setHeading(calculateDesiredAngle());
+//            opMode.multipleTelemetry.addData("targetAngle", MM_Position_Data.targetPos.getHeading());
+//            headingError = getNormalizedHeadingError();
+//            rotatePower = headingError * ROTATE_P_CO_EFF;
+//        }
 
         if(positionLocked){
             autoRunDrivetrain();
@@ -192,7 +191,7 @@ public class MM_Drivetrain {
     }
 
     public void autoRunDrivetrain() {
-        navigation.updatePosition();
+        //navigation.updatePosition();
         xError = MM_Position_Data.targetPos.getX() - navigation.getX();
         yError = MM_Position_Data.targetPos.getY() - navigation.getY();
         headingError = getNormalizedHeadingError();
@@ -237,9 +236,9 @@ public class MM_Drivetrain {
         return error;
     }
     private double calculateDesiredAngle(){
-        double xError = MM_Launcher.projectileTarget.getX() - navigation.getX();
-        double yError = MM_Launcher.projectileTarget.getY() - navigation.getY();
-        double angle = Math.toDegrees(Math.atan2(yError, xError));
+        double xError = MM_Launcher.projectileTarget.getX() - navigation.getX() - 3;
+        double yError = MM_Launcher.projectileTarget.getY() - navigation.getY() + 3;
+        double angle = Math.toDegrees(Math.atan2(yError, xError) + 180);
         opMode.multipleTelemetry.addData("desiredAngle", angle);
         opMode.multipleTelemetry.addData("launchXError", xError);
         opMode.multipleTelemetry.addData("launchYError", yError);
