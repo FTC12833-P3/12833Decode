@@ -94,14 +94,14 @@ public class MM_Drivetrain {
             rotateLocked = !rotateLocked;
         }
 
-        // following if was commented out at Corning scrimmage, when auto align heading to goal was working
-//        if(rotateLocked){
-//            //navigation.updatePosition();
-//            MM_Position_Data.targetPos.setHeading(calculateDesiredAngle());
-//            opMode.multipleTelemetry.addData("targetAngle", MM_Position_Data.targetPos.getHeading());
-//            headingError = getNormalizedHeadingError();
-//            rotatePower = headingError * ROTATE_P_CO_EFF;
-//        }
+        // following if was commented out at Corning scrimmage, when auto align heading to goal was (supposedly?) working
+        if(rotateLocked){
+            //navigation.updatePosition();
+            MM_Position_Data.targetPos.setHeading(calculateDesiredAngle());
+            opMode.multipleTelemetry.addData("targetAngle", MM_Position_Data.targetPos.getHeading());
+            headingError = getNormalizedHeadingError();
+            rotatePower = headingError * ROTATE_P_CO_EFF;
+        }
 
         if(positionLocked){
             autoRunDrivetrain();
@@ -238,7 +238,7 @@ public class MM_Drivetrain {
     private double calculateDesiredAngle(){
         double xError = MM_Launcher.projectileTarget.getX() - navigation.getX() - 3;
         double yError = MM_Launcher.projectileTarget.getY() - navigation.getY() + 3;
-        double angle = Math.toDegrees(Math.atan2(yError, xError) + 180);
+        double angle = Math.toDegrees(Math.atan2(yError, xError));
         opMode.multipleTelemetry.addData("desiredAngle", angle);
         opMode.multipleTelemetry.addData("launchXError", xError);
         opMode.multipleTelemetry.addData("launchYError", yError);

@@ -43,6 +43,7 @@ public class MM_Launcher {
     public static double LAUNCH_ZONE_CO_EFF_GOAL_MID = 2.7;
     public static double LAUNCH_ZONE_CO_EFF_GOAL_NEAR = 0;
 
+    public String launchZone = "";
     public static double LAUNCH_ZONE_BOUNDARY_CLOSE_AUDIENCE = 130;
     public static double LAUNCH_ZONE_BOUNDARY_FIELD_CENTER = 80;
     public static double LAUNCH_ZONE_BOUNDARY_GOAL_MID = 55;
@@ -58,7 +59,6 @@ public class MM_Launcher {
     public static double AXON_ENCODER_CO_EFF = 1;
 
     private final double FINAL_PROJECTILE_HEIGHT = 26.5; //height above launch height
-
 
     private static double SERVER_P_CO_EFF = -.0035;
     private static double SERVER_D_CO_EFF = -0.35;
@@ -292,18 +292,24 @@ public class MM_Launcher {
 
         if (launchDistance <= LAUNCH_ZONE_BOUNDARY_GOAL_NEAR) {
             targetLauncherVelocity = ticksPerSecond * LAUNCH_ZONE_CO_EFF_GOAL_NEAR;
+            launchZone = "Goal Near";
         } else if (launchDistance <= LAUNCH_ZONE_BOUNDARY_GOAL_MID) {
             targetLauncherVelocity = opMode.getClass() != MM_Autos.class? ticksPerSecond * LAUNCH_ZONE_CO_EFF_GOAL_MID * 1.04: ticksPerSecond * LAUNCH_ZONE_CO_EFF_GOAL_MID * 1.04;
+            launchZone = "Goal Mid";
         } else if (launchDistance <= LAUNCH_ZONE_BOUNDARY_FIELD_CENTER) {
             targetLauncherVelocity = opMode.getClass() != MM_Autos.class? ticksPerSecond * LAUNCH_ZONE_CO_EFF_FIELD_CENTER * 1.04: ticksPerSecond * LAUNCH_ZONE_CO_EFF_FIELD_CENTER * 1.04;
-        }else if (launchDistance <= LAUNCH_ZONE_BOUNDARY_CLOSE_AUDIENCE) {
+            launchZone = "Field Center";
+        } else if (launchDistance <= LAUNCH_ZONE_BOUNDARY_CLOSE_AUDIENCE) {
             targetLauncherVelocity = opMode.getClass() != MM_Autos.class? ticksPerSecond * LAUNCH_ZONE_CO_EFF_CLOSE_AUDIENCE * 1.04: ticksPerSecond * LAUNCH_ZONE_CO_EFF_CLOSE_AUDIENCE * 1.02;
-        }  else {
+            launchZone = "Close Audience";
+        } else {
             targetLauncherVelocity = ticksPerSecond * LAUNCH_ZONE_CO_EFF_AUDIENCE;
+            launchZone = "Audience";
         }
 
         opMode.multipleTelemetry.addData("launchDistance (inches)", launchDistance);
         opMode.multipleTelemetry.addData("metersPerSecond", metersPerSecond);
+        opMode.multipleTelemetry.addData("Launch Zone", launchZone);
     }
 
     private double calculateNormalizedServerError(double target, boolean launching){

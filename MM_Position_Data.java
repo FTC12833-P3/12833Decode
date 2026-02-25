@@ -79,11 +79,10 @@ public class MM_Position_Data {
         opMode.multipleTelemetry.addData("secondSpikeX", opMode.settings[MM_OpMode.SETTINGS.GOAL_SIDE.ordinal()] == 1? goalSideSplineToCollectSecondSpikeMark.getxPoints()[MM_Autos.SPLINE_DETAIL_LEVEL]: audienceSideSplineToCollectSecondSpikeMark.getxPoints()[MM_Autos.SPLINE_DETAIL_LEVEL]);
         opMode.multipleTelemetry.addData("gatePos", gateEndingControlPointsX);
         opMode.multipleTelemetry.addData("thirdSpikeX",  opMode.settings[MM_OpMode.SETTINGS.GOAL_SIDE.ordinal()] == 1? goalSideSplineToCollectThirdSpikeMark.getxPoints()[MM_Autos.SPLINE_DETAIL_LEVEL]: audienceSideSplineToCollectThirdSpikeMark.getxPoints()[MM_Autos.SPLINE_DETAIL_LEVEL]);
-
     }
 
     public void updatePosition() {
-        //currentPos = odometryController.getUpdatedPositon();
+        currentPos = odometryController.getPosition();
 
         opMode.multipleTelemetry.addData("xOdom", round2Dec(getX()));
         opMode.multipleTelemetry.addData("yOdom", round2Dec(getY()));
@@ -113,7 +112,6 @@ public class MM_Position_Data {
         }
     }
 
-
     private double round2Dec(double inDouble) {
         return Math.round(inDouble * 100) / 100.0;
     }
@@ -133,5 +131,4 @@ public class MM_Position_Data {
     public void setPosition(double xPos, double yPos, double yawPos) {
         odometryController.setPosition(new Pose2D(DistanceUnit.INCH, xPos, yPos, AngleUnit.DEGREES, yawPos));
     }
-
 }
