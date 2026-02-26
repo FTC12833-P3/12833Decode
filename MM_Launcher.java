@@ -37,11 +37,11 @@ public class MM_Launcher {
 
     public static final MM_Position projectileTarget = new MM_Position(-62, 62 * alliance, 0); //goal pos
 
-    public static double LAUNCH_ZONE_CO_EFF_AUDIENCE = 2.5;
-    public static double LAUNCH_ZONE_CO_EFF_CLOSE_AUDIENCE = 2.5;
-    public static double LAUNCH_ZONE_CO_EFF_FIELD_CENTER = 2.35;
-    public static double LAUNCH_ZONE_CO_EFF_GOAL_MID = 2.7;
-    public static double LAUNCH_ZONE_CO_EFF_GOAL_NEAR = 0;
+    public static double LAUNCH_ZONE_CO_EFF_AUDIENCE = 2.5; // not really using this
+    public static double LAUNCH_ZONE_CO_EFF_CLOSE_AUDIENCE = 2.2;
+    public static double LAUNCH_ZONE_CO_EFF_FIELD_CENTER = 2.25;
+    public static double LAUNCH_ZONE_CO_EFF_GOAL_MID = 2.45;
+    public static double LAUNCH_ZONE_CO_EFF_GOAL_NEAR = 2;
 
     public String launchZone = "";
     public static double LAUNCH_ZONE_BOUNDARY_CLOSE_AUDIENCE = 130;

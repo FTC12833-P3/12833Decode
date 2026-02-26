@@ -16,7 +16,7 @@ public class MM_TeleOp extends MM_OpMode{
             currentGamepad2.copy(gamepad2);
 
             robot.drivetrain.navigation.odometryController.getUpdatedPositon();
-            robot.drivetrain.navigation.updatePosition();
+            robot.drivetrain.navigation.updatePosition(); //double checked that both of these lines should be here to update the position
             robot.drivetrain.driveWithSticks();
             robot.collector.runCollector();
             robot.launcher.runLauncher();

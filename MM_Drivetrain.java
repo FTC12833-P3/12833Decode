@@ -183,6 +183,7 @@ public class MM_Drivetrain {
         blMotor.setPower(0);
         brMotor.setPower(0);
     }
+
     public void enableBrakes(){
         flMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         frMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
@@ -236,8 +237,8 @@ public class MM_Drivetrain {
         return error;
     }
     private double calculateDesiredAngle(){
-        double xError = MM_Launcher.projectileTarget.getX() - navigation.getX() - 3;
-        double yError = MM_Launcher.projectileTarget.getY() - navigation.getY() + 3;
+        double xError = MM_Launcher.projectileTarget.getX() - navigation.getX(); //-3
+        double yError = MM_Launcher.projectileTarget.getY() - navigation.getY(); //+3
         double angle = Math.toDegrees(Math.atan2(yError, xError));
         opMode.multipleTelemetry.addData("desiredAngle", angle);
         opMode.multipleTelemetry.addData("launchXError", xError);
