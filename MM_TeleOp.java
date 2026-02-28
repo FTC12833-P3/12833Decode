@@ -8,6 +8,7 @@ public class MM_TeleOp extends MM_OpMode{
     @Override
     public void runProcedures(){
         robot.drivetrain.enableBrakes();
+        MM_Drivetrain.rotatePidController.resetController();
         while(opModeIsActive()){
             previousGamepad1.copy(currentGamepad1); //TODO change to button pressed methods
             currentGamepad1.copy(gamepad1);

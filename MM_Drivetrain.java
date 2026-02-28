@@ -13,9 +13,14 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 public class MM_Drivetrain {
     MM_OpMode opMode;
     MM_Position_Data navigation;
-    public static MM_PID_CONTROLLER drivePidController = new MM_PID_CONTROLLER(0.2, 0, 30); //TODO find correct PID coefficients
 
+    public static double rotateLockP = 0.015;
+    public static double rotateLockI = 0.00025;
+    public static double rotateLockD = 1; //temporary for tuning in Dashboard
+
+    public static MM_PID_CONTROLLER drivePidController = new MM_PID_CONTROLLER(0.2, 0, 30); //TODO find correct PID coefficients
     public static MM_PID_CONTROLLER rotatePidController = new MM_PID_CONTROLLER(0.103, 0, 2.8); //TODO find correct PID coefficients
+    public static MM_PID_CONTROLLER rotateLockPidController = new MM_PID_CONTROLLER(rotateLockP, rotateLockI, rotateLockD);
 
     private final DcMotorEx flMotor;
     private final DcMotorEx frMotor;
@@ -33,8 +38,6 @@ public class MM_Drivetrain {
     public static double yErrorThreshold = 1.5;
     public static double headingErrorThreshold = 3;
     public static double rotatePCoEff = .05;
-
-    public static final double ROTATE_P_CO_EFF = .05;
 
     public static final double X_ERROR_THRESHOLD = 1.5;
     public static final double Y_ERROR_THRESHOLD = 1.5;
@@ -68,6 +71,10 @@ public class MM_Drivetrain {
     }
 
     public void driveWithSticks() {
+        if (currentGamepad1.leftBumperWasPressed()) {
+            rotateLockPidController.setPID(rotateLockP, rotateLockI, rotateLockD);
+        }
+
         double drivePower = -opMode.gamepad1.left_stick_y;
         double strafePower = opMode.gamepad1.left_stick_x;
         double rotatePower = -opMode.gamepad1.right_stick_x;
@@ -92,6 +99,10 @@ public class MM_Drivetrain {
 
         if(currentGamepad1.x && !previousGamepad1.x){ //auto align heading to goal
             rotateLocked = !rotateLocked;
+
+            if (rotateLocked) {
+                rotateLockPidController.resetController();
+            }
         }
 
         // following if was commented out at Corning scrimmage, when auto align heading to goal was (supposedly?) working
@@ -99,8 +110,9 @@ public class MM_Drivetrain {
             //navigation.updatePosition();
             MM_Position_Data.targetPos.setHeading(calculateDesiredAngle());
             opMode.multipleTelemetry.addData("targetAngle", MM_Position_Data.targetPos.getHeading());
+            opMode.multipleTelemetry.addData("integral sum", rotateLockPidController.getIntegralSum());
             headingError = getNormalizedHeadingError();
-            rotatePower = headingError * ROTATE_P_CO_EFF;
+            rotatePower = rotateLockPidController.getPID(headingError);
         }
 
         if(positionLocked){
@@ -202,7 +214,7 @@ public class MM_Drivetrain {
             drivePidController.setD_COEFF(tuningDriveDCoEff);
         }
 
-        double rotateVector = !positionLocked? rotatePidController.getPID(headingError):  rotatePidController.getPID(headingError) * .2;
+        double rotateVector = !positionLocked? rotatePidController.getPID(headingError): rotatePidController.getPID(headingError) * .2;
         double moveAngle = Math.toDegrees(Math.atan2(yError, xError));
         double theta = moveAngle - navigation.getHeading() + 45;
 
@@ -241,6 +253,7 @@ public class MM_Drivetrain {
         double yError = MM_Launcher.projectileTarget.getY() - navigation.getY(); //+3
         double angle = Math.toDegrees(Math.atan2(yError, xError));
         opMode.multipleTelemetry.addData("desiredAngle", angle);
+        opMode.multipleTelemetry.addData("currentAngle", Math.toDegrees(navigation.odometryController.getHeading()));
         opMode.multipleTelemetry.addData("launchXError", xError);
         opMode.multipleTelemetry.addData("launchYError", yError);
 

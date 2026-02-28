@@ -67,7 +67,7 @@ public class MM_Launcher {
     public static double serverTuningDCoEff = SERVER_D_CO_EFF;
     public static boolean tuningServerCoEffs;
 
-    private static MM_PID_CONTROLLER serverPIDController = new MM_PID_CONTROLLER(SERVER_P_CO_EFF, 0 , SERVER_D_CO_EFF);
+    private static MM_PID_CONTROLLER serverPIDController = new MM_PID_CONTROLLER(SERVER_P_CO_EFF, 0, SERVER_D_CO_EFF);
 
     private final double TICKS_PER_REV = 28;
     private final double WHEEL_DIAMETER = 77.75; //mm 75.75 for ordered wheels, 70.95 for custom
