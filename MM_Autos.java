@@ -62,6 +62,7 @@ public class MM_Autos extends MM_OpMode {
 
         while (opModeIsActive()) {
             robot.drivetrain.navigation.odometryController.getUpdatedPositon();
+            robot.drivetrain.navigation.updatePosition(); //double checked that both of these lines are needed
 
             if(notDone && gameTime.milliseconds() >= 25000){
                 lastCycle = true;

@@ -77,8 +77,8 @@ public class MM_Position_Data {
         }
         opMode.multipleTelemetry.addData("firstSpikeX", firstSpikeX);
         opMode.multipleTelemetry.addData("secondSpikeX", opMode.settings[MM_OpMode.SETTINGS.GOAL_SIDE.ordinal()] == 1? goalSideSplineToCollectSecondSpikeMark.getxPoints()[MM_Autos.SPLINE_DETAIL_LEVEL]: audienceSideSplineToCollectSecondSpikeMark.getxPoints()[MM_Autos.SPLINE_DETAIL_LEVEL]);
+        opMode.multipleTelemetry.addData("thirdSpikeX", opMode.settings[MM_OpMode.SETTINGS.GOAL_SIDE.ordinal()] == 1? goalSideSplineToCollectThirdSpikeMark.getxPoints()[MM_Autos.SPLINE_DETAIL_LEVEL]: audienceSideSplineToCollectThirdSpikeMark.getxPoints()[MM_Autos.SPLINE_DETAIL_LEVEL]);
         opMode.multipleTelemetry.addData("gatePos", gateEndingControlPointsX);
-        opMode.multipleTelemetry.addData("thirdSpikeX",  opMode.settings[MM_OpMode.SETTINGS.GOAL_SIDE.ordinal()] == 1? goalSideSplineToCollectThirdSpikeMark.getxPoints()[MM_Autos.SPLINE_DETAIL_LEVEL]: audienceSideSplineToCollectThirdSpikeMark.getxPoints()[MM_Autos.SPLINE_DETAIL_LEVEL]);
     }
 
     public void updatePosition() {

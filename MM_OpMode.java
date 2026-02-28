@@ -33,9 +33,9 @@ public abstract class MM_OpMode extends LinearOpMode {
 
     int goalSide = 1;
     int allSpikes = 1;
-    int spike1 = 1;
+    int spike1 = 0;
     int spike2 = 1;
-    int spike3 = 1;
+    int spike3 = 2;
     int eliminationMatch = 1;
     int hpCollect = 0;
     ElapsedTime driveTime;
