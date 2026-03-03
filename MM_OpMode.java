@@ -16,7 +16,6 @@ public abstract class MM_OpMode extends LinearOpMode {
 
     public static String GOAL_SIDE = "Goal Side";
     public static String AUDIENCE_SIDE = "Audience Side";
-    public static int startPos;
 
     public static Gamepad currentGamepad1 = new Gamepad();
     public static Gamepad previousGamepad1 = new Gamepad();
@@ -30,6 +29,8 @@ public abstract class MM_OpMode extends LinearOpMode {
     public static int alliance = -1; //default = blue
     public static int motif = -1;
     public MM_Spline currentSpline = null;
+
+    boolean chosenStartingLocation = false;
 
     int goalSide = 1;
     int allSpikes = 1;
@@ -58,9 +59,6 @@ public abstract class MM_OpMode extends LinearOpMode {
     List<MM_Spline> chosenSplineList;
 
     public void runOpMode(){
-
-        startPos = 1;
-
         multipleTelemetry.addData("Status", "Initializing... please wait");
         multipleTelemetry.update();
 
@@ -68,7 +66,7 @@ public abstract class MM_OpMode extends LinearOpMode {
 
         if(getClass() == MM_Autos.class){
             goalSideCollectSplines = Arrays.asList(null, robot.drivetrain.navigation.goalSideSplineToCollectSecondSpikeMark, robot.drivetrain.navigation.goalSideSplineToCollectThirdSpikeMark);
-            audienceSideCollectSplines = Arrays.asList(null, robot.drivetrain.navigation.goalSideSplineToCollectSecondSpikeMark, robot.drivetrain.navigation.goalSideSplineToCollectThirdSpikeMark);
+            audienceSideCollectSplines = Arrays.asList(null, robot.drivetrain.navigation.audienceSideSplineToCollectSecondSpikeMark, robot.drivetrain.navigation.audienceSideSplineToCollectThirdSpikeMark);
             chosenSplineList = settings[SETTINGS.GOAL_SIDE.ordinal()] == 1 ? goalSideCollectSplines: audienceSideCollectSplines;
             driveTime = new ElapsedTime();
         }
@@ -82,23 +80,45 @@ public abstract class MM_OpMode extends LinearOpMode {
             if(getClass() == MM_Autos.class){
                 multipleTelemetry.addLine("Bumpers to change setting");
                 multipleTelemetry.addLine("Triggers to toggle true/false (1 / 0)");
-
                 multipleTelemetry.addData(settingsNames[currentSetting], settings[currentSetting]);
 
-                if (currentGamepad1.right_bumper && !previousGamepad1.right_bumper){
-                    nextSetting();
-                } else if (currentGamepad1.left_bumper && !previousGamepad1.left_bumper){
-                    previousSetting();
+                if (!chosenStartingLocation) {
+//                    if (currentGamepad1.right_bumper && !previousGamepad1.right_bumper) {
+//                        nextSetting();
+//                    } else if (currentGamepad1.left_bumper && !previousGamepad1.left_bumper) {
+//                        previousSetting();
+//                    }
+//                    if ((currentGamepad1.right_trigger > 0 && !(previousGamepad1.right_trigger > 0))) {
+//                        settings[currentSetting]++;
+//                    } else if ((currentGamepad1.left_trigger > 0 && !(previousGamepad1.left_trigger > 0))) {
+//                        settings[currentSetting]--;
+//                    }
+                    if (gamepad1.rightBumperWasPressed()) { //toggle goal or audience side
+                        if (settings[SETTINGS.GOAL_SIDE.ordinal()] == 0) {
+                            settings[SETTINGS.GOAL_SIDE.ordinal()] = 1;
+                        } else {
+                            settings[SETTINGS.GOAL_SIDE.ordinal()] = 0;
+                        }
+                    }
+
+                    if (gamepad1.leftBumperWasPressed()) {
+                        chosenStartingLocation = true;
+                        chosenSplineList = settings[SETTINGS.GOAL_SIDE.ordinal()] == 1? goalSideCollectSplines: audienceSideCollectSplines;
+                    }
                 }
-                if((currentGamepad1.right_trigger > 0 &&! (previousGamepad1.right_trigger > 0))){
-                    settings[currentSetting]++;
-                } else if ((currentGamepad1.left_trigger > 0 &&! (previousGamepad1.left_trigger > 0))){
-                    settings[currentSetting]--;
+
+                multipleTelemetry.addData("selected starting side", settings[SETTINGS.GOAL_SIDE.ordinal()] == 1? "goal": "audience");
+                multipleTelemetry.addData("starting side locked in?", chosenStartingLocation? "yes": "no");
+
+                if (chosenStartingLocation) {
+                    robot.drivetrain.navigation.initSpikeMarks();
                 }
-                chosenSplineList = settings[SETTINGS.GOAL_SIDE.ordinal()] == 1? goalSideCollectSplines: audienceSideCollectSplines;
+
+            } else {
+                chosenStartingLocation = true;
             }
+
             multipleTelemetry.update();
-            robot.drivetrain.navigation.initSpikeMarks();
 
             previousGamepad1.copy(currentGamepad1);
             currentGamepad1.copy(gamepad1);
