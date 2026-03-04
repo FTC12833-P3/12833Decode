@@ -7,7 +7,6 @@ import static org.firstinspires.ftc.teamcode.MM_OpMode.previousGamepad1;
 import com.acmerobotics.dashboard.config.Config;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
-import com.qualcomm.robotcore.util.ElapsedTime;
 
 @Config
 public class MM_Drivetrain {
@@ -57,7 +56,7 @@ public class MM_Drivetrain {
     private double yError = 0;
     private double headingError = 0;
 
-    public boolean lockInAtAutoPos = false;
+    public boolean autoLockInToAprilTag = false;
 
     public MM_Drivetrain(MM_OpMode opMode) {
         this.opMode = opMode;
@@ -87,7 +86,7 @@ public class MM_Drivetrain {
             MM_Position_Data.targetPos.setAll(53, 17 * alliance, 158.2 * alliance);
 
             if (!positionLocked) {
-                lockInAtAutoPos = true;
+                autoLockInToAprilTag = true;
             }
         }
 
@@ -103,7 +102,7 @@ public class MM_Drivetrain {
             MM_Position_Data.targetPos.setAll(36, -30 * alliance, -90 * alliance);
 
             if (!positionLocked) {
-                lockInAtAutoPos = true;
+                autoLockInToAprilTag = true;
             }
         }
 

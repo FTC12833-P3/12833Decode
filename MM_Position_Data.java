@@ -94,14 +94,14 @@ public class MM_Position_Data {
         opMode.multipleTelemetry.addData("yOdom", round2Dec(getY()));
         opMode.multipleTelemetry.addData("yawOdom", round2Dec(getHeading()));
 
-        if(currentGamepad1.dpad_down || opMode.robot.drivetrain.lockInAtAutoPos) {
+        if(currentGamepad1.dpad_down || opMode.robot.drivetrain.autoLockInToAprilTag) {
             AprilTagPos = visionPortal.setPosFromApriltag();
             if (AprilTagPos != null) {
                 opMode.multipleTelemetry.addData("xApril", round2Dec(AprilTagPos.getX(DistanceUnit.INCH)));
                 opMode.multipleTelemetry.addData("yApril", round2Dec(AprilTagPos.getY(DistanceUnit.INCH)));
                 opMode.multipleTelemetry.addData("yawApril", round2Dec(AprilTagPos.getHeading(AngleUnit.DEGREES)));
 
-                if ((currentGamepad1.b && !MM_OpMode.previousGamepad1.b) || opMode.robot.drivetrain.lockInAtAutoPos) {
+                if ((currentGamepad1.b && !MM_OpMode.previousGamepad1.b) || opMode.robot.drivetrain.autoLockInToAprilTag) {
                     odometryController.setPosition(AprilTagPos);
                     currentPos = odometryController.getUpdatedPositon();
 
@@ -110,7 +110,7 @@ public class MM_Position_Data {
                     }
                     opMode.robot.launcher.updateProjectileTarget();
 
-                    opMode.robot.drivetrain.lockInAtAutoPos = false;
+                    opMode.robot.drivetrain.autoLockInToAprilTag = false;
                 }
             } else { //just here for dashboard
                 opMode.multipleTelemetry.addData("xApril", "");

@@ -116,6 +116,7 @@ public class MM_Launcher {
 
                 if (currentGamepad2.left_trigger > 0) { //rapid fire
                     launching = true;
+                    opMode.robot.drivetrain.autoLockInToAprilTag = true;
                     serverStopPoint = 280;
                 }
                 if (serverStopPoint == 280 && Math.abs(serverError) < 150) {
