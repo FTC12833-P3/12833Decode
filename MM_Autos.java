@@ -164,7 +164,7 @@ public class MM_Autos extends MM_OpMode {
 
                         break;
                     case DRIVE_TO_COLLECT:
-                        if(chosenSplineList.get(collectCycle) == robot.drivetrain.navigation.goalSideSplineToCollectSecondSpikeMark){
+                        if(collectCycle == settings[MM_OpMode.SETTINGS.SPIKE_2.ordinal()]){
                             spike2Done = true;
                         } else if (chosenSplineList.get(collectCycle) == null){
                             spike1Done = true;

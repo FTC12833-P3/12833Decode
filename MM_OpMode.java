@@ -71,15 +71,15 @@ public abstract class MM_OpMode extends LinearOpMode {
             driveTime = new ElapsedTime();
         }
 
-        multipleTelemetry.addLine("Bumpers to change setting");
-        multipleTelemetry.addLine("Triggers to toggle true/false");
-        multipleTelemetry.addData(settingsNames[currentSetting], settings[currentSetting]);
+//        multipleTelemetry.addLine("Bumpers to change setting");
+//        multipleTelemetry.addLine("Triggers to toggle true/false");
+//        multipleTelemetry.addData(settingsNames[currentSetting], settings[currentSetting]);
 
         while (opModeInInit()){
             multipleTelemetry.addData("Status", "Initialized");
             if(getClass() == MM_Autos.class){
-                multipleTelemetry.addLine("Bumpers to change setting");
-                multipleTelemetry.addLine("Triggers to toggle true/false (1 / 0)");
+                //multipleTelemetry.addLine("Bumpers to change setting");
+                //multipleTelemetry.addLine("Triggers to toggle true/false (1 / 0)");
                 multipleTelemetry.addData(settingsNames[currentSetting], settings[currentSetting]);
 
                 if (!chosenStartingLocation) {

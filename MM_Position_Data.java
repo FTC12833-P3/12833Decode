@@ -28,9 +28,8 @@ public class MM_Position_Data {
 
     public MM_Spline goalSideSplineToCollectSecondSpikeMark = new MM_Spline(new double[]{-20, -1.4, 8, 8}, new double[]{20, 17.7, 20.3, 33}, MM_Autos.SPLINE_DETAIL_LEVEL, true);
     public MM_Spline audienceSideSplineToCollectSecondSpikeMark = new MM_Spline(new double[]{53, 31, 8, 8}, new double[]{17, 17, 15, 33}, MM_Autos.SPLINE_DETAIL_LEVEL, true);
-    public MM_Spline audienceSideSplineToCollectThirdSpikeMark = new MM_Spline(new double[]{53, 12, -13, -15}, new double[]{17, 17, 15, 33}, MM_Autos.SPLINE_DETAIL_LEVEL, true);
-
     public MM_Spline goalSideSplineToCollectThirdSpikeMark = new MM_Spline(new double[]{-20, 15, 32, 32}, new double[]{20, 20, 18, 33}, MM_Autos.SPLINE_DETAIL_LEVEL, true);
+    public MM_Spline audienceSideSplineToCollectThirdSpikeMark = new MM_Spline(new double[]{53, 12, -13, -15}, new double[]{17, 17, 15, 33}, MM_Autos.SPLINE_DETAIL_LEVEL, true);
     public MM_Spline goalSideSplineToOpenGate = new MM_Spline(new double[]{-15, -15, gateEndingControlPointsX, gateEndingControlPointsX}, new double[]{56, 42, 42, 56}, MM_Autos.SPLINE_DETAIL_LEVEL, true);
     public MM_Spline audienceSideSplineToOpenGate = new MM_Spline(new double[]{8, 8, gateEndingControlPointsX, gateEndingControlPointsX}, new double[]{56, 42, 42, 56}, MM_Autos.SPLINE_DETAIL_LEVEL, true);
 
@@ -71,13 +70,20 @@ public class MM_Position_Data {
             opMode.multipleTelemetry.addData("lockingInToGate", "in progress...");
             opMode.multipleTelemetry.update();
             gateEndingControlPointsX = currentPos.getX(DistanceUnit.INCH);
+            if (opMode.chosenStartingLocation) {
+                if (opMode.settings[MM_OpMode.SETTINGS.GOAL_SIDE.ordinal()] == 0) {
+                    audienceSideSplineToOpenGate = new MM_Spline(new double[]{8, 8, gateEndingControlPointsX, gateEndingControlPointsX}, new double[]{56, 42, 42, 56}, MM_Autos.SPLINE_DETAIL_LEVEL, true);
+                } else {
+                    goalSideSplineToOpenGate = new MM_Spline(new double[]{-15, -15, gateEndingControlPointsX, gateEndingControlPointsX}, new double[]{56, 42, 42, 56}, MM_Autos.SPLINE_DETAIL_LEVEL, true);
+                }
+            }
             goalSideSplineToOpenGate = new MM_Spline(new double[]{-15, -15, gateEndingControlPointsX, gateEndingControlPointsX}, new double[]{56, 42, 42, 56}, MM_Autos.SPLINE_DETAIL_LEVEL, true);
             opMode.multipleTelemetry.addData("lockingInToGate", "lockedIn");
             opMode.multipleTelemetry.update();
         }
         opMode.multipleTelemetry.addData("firstSpikeX", firstSpikeX);
-        opMode.multipleTelemetry.addData("secondSpikeX", opMode.settings[MM_OpMode.SETTINGS.GOAL_SIDE.ordinal()] == 1? goalSideSplineToCollectSecondSpikeMark.getxPoints()[MM_Autos.SPLINE_DETAIL_LEVEL]: audienceSideSplineToCollectSecondSpikeMark.getxPoints()[MM_Autos.SPLINE_DETAIL_LEVEL]);
-        opMode.multipleTelemetry.addData("thirdSpikeX", opMode.settings[MM_OpMode.SETTINGS.GOAL_SIDE.ordinal()] == 1? goalSideSplineToCollectThirdSpikeMark.getxPoints()[MM_Autos.SPLINE_DETAIL_LEVEL]: audienceSideSplineToCollectThirdSpikeMark.getxPoints()[MM_Autos.SPLINE_DETAIL_LEVEL]);
+        opMode.multipleTelemetry.addData("secondSpikeX", opMode.chosenSplineList.get(opMode.settings[MM_OpMode.SETTINGS.SPIKE_2.ordinal()]).getxPoints()[MM_Autos.SPLINE_DETAIL_LEVEL]);
+        opMode.multipleTelemetry.addData("thirdSpikeX", opMode.chosenSplineList.get(opMode.settings[MM_OpMode.SETTINGS.SPIKE_3.ordinal()]).getxPoints()[MM_Autos.SPLINE_DETAIL_LEVEL]);
         opMode.multipleTelemetry.addData("gatePos", gateEndingControlPointsX);
     }
 
@@ -88,14 +94,14 @@ public class MM_Position_Data {
         opMode.multipleTelemetry.addData("yOdom", round2Dec(getY()));
         opMode.multipleTelemetry.addData("yawOdom", round2Dec(getHeading()));
 
-        if(currentGamepad1.dpad_down) {
+        if(currentGamepad1.dpad_down || opMode.robot.drivetrain.lockInAtAutoPos) {
             AprilTagPos = visionPortal.setPosFromApriltag();
             if (AprilTagPos != null) {
                 opMode.multipleTelemetry.addData("xApril", round2Dec(AprilTagPos.getX(DistanceUnit.INCH)));
                 opMode.multipleTelemetry.addData("yApril", round2Dec(AprilTagPos.getY(DistanceUnit.INCH)));
                 opMode.multipleTelemetry.addData("yawApril", round2Dec(AprilTagPos.getHeading(AngleUnit.DEGREES)));
 
-                if (currentGamepad1.b && !MM_OpMode.previousGamepad1.b) {
+                if ((currentGamepad1.b && !MM_OpMode.previousGamepad1.b) || opMode.robot.drivetrain.lockInAtAutoPos) {
                     odometryController.setPosition(AprilTagPos);
                     currentPos = odometryController.getUpdatedPositon();
 
@@ -103,6 +109,8 @@ public class MM_Position_Data {
                         MM_OpMode.alliance = MM_VisionPortal.startingTag == 20 ? -1 : 1; //blue = -1
                     }
                     opMode.robot.launcher.updateProjectileTarget();
+
+                    opMode.robot.drivetrain.lockInAtAutoPos = false;
                 }
             } else { //just here for dashboard
                 opMode.multipleTelemetry.addData("xApril", "");

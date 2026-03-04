@@ -57,6 +57,8 @@ public class MM_Drivetrain {
     private double yError = 0;
     private double headingError = 0;
 
+    public boolean lockInAtAutoPos = false;
+
     public MM_Drivetrain(MM_OpMode opMode) {
         this.opMode = opMode;
         navigation = new MM_Position_Data(opMode);
@@ -83,6 +85,10 @@ public class MM_Drivetrain {
             //navigation.updatePosition();
             positionLocked = !positionLocked;
             MM_Position_Data.targetPos.setAll(53, 17 * alliance, 158.2 * alliance);
+
+            if (!positionLocked) {
+                lockInAtAutoPos = true;
+            }
         }
 
         //if(currentGamepad1.x && !previousGamepad1.x){ //toggle lock position close shot
@@ -95,6 +101,10 @@ public class MM_Drivetrain {
             //navigation.updatePosition();
             positionLocked = !positionLocked;
             MM_Position_Data.targetPos.setAll(36, -30 * alliance, -90 * alliance);
+
+            if (!positionLocked) {
+                lockInAtAutoPos = true;
+            }
         }
 
         if(currentGamepad1.x && !previousGamepad1.x){ //auto align heading to goal
