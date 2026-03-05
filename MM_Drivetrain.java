@@ -99,7 +99,7 @@ public class MM_Drivetrain {
         if(currentGamepad1.b && !previousGamepad1.b && !currentGamepad1.dpad_down){ //toggle lock position base
             //navigation.updatePosition();
             positionLocked = !positionLocked;
-            MM_Position_Data.targetPos.setAll(36, -30 * alliance, -90 * alliance);
+            MM_Position_Data.targetPos.setAll(34, -35 * alliance, -90 * alliance);
 
             if (!positionLocked) {
                 autoLockInToAprilTag = true;
