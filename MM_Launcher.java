@@ -114,20 +114,41 @@ public class MM_Launcher {
         setTargetLauncherVelocity();
         haveArtifactAtTop();
 
-                if (currentGamepad2.left_trigger > 0) { //rapid fire
-                    launching = true;
-                    opMode.robot.drivetrain.autoLockInToAprilTag = true;
-                    serverStopPoint = 280;
-                }
-                if (serverStopPoint == 280 && Math.abs(serverError) < 150) {
-                    pusher.setPosition(PUSHER_POSITION_3);
-                    serverStopPoint = 281;
-                } else if (Math.abs(pusherPos / 360 - PUSHER_POSITION_3) <= .02) {
-                    serverStopPoint = 110;
-                    pusher.setPosition(PUSHER_BOTTOM_POSITION);
-                }
+        boolean velocityCorrect = Math.abs(launchMotorLeft.getVelocity() - targetLauncherVelocity) < 50;
 
-        if(tuningServerCoEffs) {
+        if (!launching && currentGamepad2.left_trigger > 0) { //rapid fire
+            launching = true;
+            serverStopPoint = 280;
+        }
+        if (serverStopPoint == 280 && Math.abs(serverError) < 150) { //server out of the way
+            if (velocityCorrect) {
+                pusher.setPosition(PUSHER_POSITION_1);
+            }
+            serverStopPoint = 281;
+        } else if (Math.abs(pusherPos / 360 - PUSHER_POSITION_3) <= .02) { //done launching
+            serverStopPoint = 110;
+            pusher.setPosition(PUSHER_BOTTOM_POSITION);
+            opMode.robot.drivetrain.autoLockInToAprilTag = true;
+        }
+
+        //handle semi-rapid-fire
+        if (launching && serverStopPoint == 281) {
+            if (pusher.getPosition() >= PUSHER_POSITION_2 - .01) {
+                if (velocityCorrect) {
+                    pusher.setPosition(PUSHER_POSITION_3);
+                }
+            } else if (pusher.getPosition() >= PUSHER_POSITION_1 - .01) {
+                if (velocityCorrect) {
+                    pusher.setPosition(PUSHER_POSITION_2);
+                }
+            } else {
+                if (velocityCorrect) {
+                    pusher.setPosition(PUSHER_POSITION_1);
+                }
+            }
+        }
+
+        if (tuningServerCoEffs) {
             serverPIDController.setP_COEFF(serverTuningPCoEff);
             serverPIDController.setD_COEFF(serverTuningDCoEff);
 
@@ -150,11 +171,11 @@ public class MM_Launcher {
 
         //if (launching){
         if (!artifactAtTop && currentGamepad2.b && !previousGamepad2.b) {
-            if (pusher.getPosition() >= PUSHER_POSITION_3 -.01) {
+            if (pusher.getPosition() >= PUSHER_POSITION_3 - .01) {
                 pusher.setPosition(PUSHER_BOTTOM_POSITION);
-            } else if (pusher.getPosition() >= PUSHER_POSITION_2 -.01) {
+            } else if (pusher.getPosition() >= PUSHER_POSITION_2 - .01) {
                 pusher.setPosition(PUSHER_POSITION_3);
-            } else if (pusher.getPosition() >= PUSHER_POSITION_1 -.01) {
+            } else if (pusher.getPosition() >= PUSHER_POSITION_1 - .01) {
                 pusher.setPosition(PUSHER_POSITION_2);
             } else {
                 pusher.setPosition(PUSHER_POSITION_1);
@@ -180,7 +201,7 @@ public class MM_Launcher {
         } else if (opMode.gamepad2.dpad_right) {
             server.setPower(0.2);
         } else {
-            if(Math.abs(server.getPower()) > 0 && !launching) {
+            if (Math.abs(server.getPower()) > 0 && !launching) {
                 //server.setPower(0);
             }
             if ((pusher.getPosition() >= PUSHER_POSITION_1 - .1 && !launching && artifactAtTop && currentGamepad2.right_trigger > 0 && Math.abs(launchMotorLeft.getVelocity() - targetLauncherVelocity) < 50) || (testMode && currentGamepad2.a && !previousGamepad2.a)) {
@@ -188,7 +209,7 @@ public class MM_Launcher {
                 launching = true;
             }
             opMode.multipleTelemetry.addData("launching", launching);
-            opMode.multipleTelemetry.addData("artifact at top",artifactAtTop);
+            opMode.multipleTelemetry.addData("artifact at top", artifactAtTop);
             opMode.multipleTelemetry.addData("launchError", launchMotorLeft.getVelocity() - targetLauncherVelocity);
             opMode.multipleTelemetry.addData("controller right trigger", currentGamepad2.right_trigger);
 
@@ -196,7 +217,7 @@ public class MM_Launcher {
 
             if (launching) {
                 serverNormalizedError = calculateNormalizedServerError(serverStopPoint, true);
-                if(Math.abs(serverNormalizedError) < 90){
+                if (Math.abs(serverNormalizedError) < 90) {
                     launching = false;
                 }
             } else {
@@ -218,7 +239,7 @@ public class MM_Launcher {
 
         if (scoreArtifacts && opMode.robot.drivetrain.driveDone()) {
 
-            if(!attemptedShot) {
+            if (!attemptedShot) {
                 if (serverStopPoint < 300) { //rapid fire
                     serverStopPoint = 300;
                 } else if (serverStopPoint == 300 && Math.abs(serverError) < 150) {
@@ -231,15 +252,15 @@ public class MM_Launcher {
                 }
             }
 
-            if(attemptedShot && pusherPos / 360 < .53 + .02){
+            if (attemptedShot && pusherPos / 360 < .53 + .02) {
                 attemptedShot = false;
                 //launchAttempts++;
 
-               // if(launchAttempts > 1) {
-                    scoreArtifacts = false;
-                   // launchAttempts = 0;
+                // if(launchAttempts > 1) {
+                scoreArtifacts = false;
+                // launchAttempts = 0;
                 //} else {
-                   // launchAttempts++;
+                // launchAttempts++;
 
                 //}
 
@@ -265,9 +286,9 @@ public class MM_Launcher {
             opMode.multipleTelemetry.addData("servo pos", pusherPos / 360);
 
             if (Math.abs(launchMotorLeft.getVelocity() - targetLauncherVelocity) < 50 && launching) {
-                if (pusherPos / 360 >= pusher.getPosition() - .02 && pusher.getPosition() >= PUSHER_BOTTOM_POSITION -.02) {
+                if (pusherPos / 360 >= pusher.getPosition() - .02 && pusher.getPosition() >= PUSHER_BOTTOM_POSITION - .02) {
                     server.setPower(Math.abs(serverPIDController.getPID(serverError < serverStopPoint ? serverError : serverStopPoint + (360 - serverPos))));
-                    if(serverPos < 90) {
+                    if (serverPos < 90) {
                         serverIsReady = false;
                     }
 
@@ -295,13 +316,13 @@ public class MM_Launcher {
             targetLauncherVelocity = ticksPerSecond * LAUNCH_ZONE_CO_EFF_GOAL_NEAR;
             launchZone = "Goal Near";
         } else if (launchDistance <= LAUNCH_ZONE_BOUNDARY_GOAL_MID) {
-            targetLauncherVelocity = opMode.getClass() != MM_Autos.class? ticksPerSecond * LAUNCH_ZONE_CO_EFF_GOAL_MID * 1.04: ticksPerSecond * LAUNCH_ZONE_CO_EFF_GOAL_MID * 1.04;
+            targetLauncherVelocity = opMode.getClass() != MM_Autos.class ? ticksPerSecond * LAUNCH_ZONE_CO_EFF_GOAL_MID * 1.04 : ticksPerSecond * LAUNCH_ZONE_CO_EFF_GOAL_MID * 1.04;
             launchZone = "Goal Mid";
         } else if (launchDistance <= LAUNCH_ZONE_BOUNDARY_FIELD_CENTER) {
-            targetLauncherVelocity = opMode.getClass() != MM_Autos.class? ticksPerSecond * LAUNCH_ZONE_CO_EFF_FIELD_CENTER * 1.04: ticksPerSecond * LAUNCH_ZONE_CO_EFF_FIELD_CENTER * 1.04;
+            targetLauncherVelocity = opMode.getClass() != MM_Autos.class ? ticksPerSecond * LAUNCH_ZONE_CO_EFF_FIELD_CENTER * 1.04 : ticksPerSecond * LAUNCH_ZONE_CO_EFF_FIELD_CENTER * 1.04;
             launchZone = "Field Center";
         } else if (launchDistance <= LAUNCH_ZONE_BOUNDARY_CLOSE_AUDIENCE) {
-            targetLauncherVelocity = opMode.getClass() != MM_Autos.class? ticksPerSecond * LAUNCH_ZONE_CO_EFF_CLOSE_AUDIENCE * 1.04: ticksPerSecond * LAUNCH_ZONE_CO_EFF_CLOSE_AUDIENCE * 1.02;
+            targetLauncherVelocity = opMode.getClass() != MM_Autos.class ? ticksPerSecond * LAUNCH_ZONE_CO_EFF_CLOSE_AUDIENCE * 1.04 : ticksPerSecond * LAUNCH_ZONE_CO_EFF_CLOSE_AUDIENCE * 1.02;
             launchZone = "Close Audience";
         } else {
             targetLauncherVelocity = ticksPerSecond * LAUNCH_ZONE_CO_EFF_AUDIENCE;
@@ -313,14 +334,14 @@ public class MM_Launcher {
         opMode.multipleTelemetry.addData("Launch Zone", launchZone);
     }
 
-    private double calculateNormalizedServerError(double target, boolean launching){
+    private double calculateNormalizedServerError(double target, boolean launching) {
         double currentPos = getAxonDegrees(serverEncoder);
         opMode.multipleTelemetry.addData("servoEncoder", currentPos);
         double error;
-        if(launching){
-            error = target <= (currentPos + 15)? -(target + (360 - currentPos)): -(target - currentPos);
+        if (launching) {
+            error = target <= (currentPos + 15) ? -(target + (360 - currentPos)) : -(target - currentPos);
         } else {
-            error = (Math.abs(target - currentPos) < Math.abs((target - 360) - currentPos))? currentPos - target: -((target - 360) - currentPos);
+            error = (Math.abs(target - currentPos) < Math.abs((target - 360) - currentPos)) ? currentPos - target : -((target - 360) - currentPos);
         }
         opMode.multipleTelemetry.addData("serverNormalizedError", error);
         return error;
