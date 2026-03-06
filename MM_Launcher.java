@@ -126,7 +126,7 @@ public class MM_Launcher {
             }
             serverStopPoint = 281;
         } else if (Math.abs(pusherPos / 360 - PUSHER_POSITION_3) <= .02) { //done launching
-            serverStopPoint = 110;
+            serverStopPoint = 45; //used to be 110 but this hopefully stops us from colleting 4 artifacts
             pusher.setPosition(PUSHER_BOTTOM_POSITION);
             opMode.robot.drivetrain.autoLockInToAprilTag = true;
         }
