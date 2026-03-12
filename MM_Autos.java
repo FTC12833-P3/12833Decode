@@ -229,8 +229,6 @@ public class MM_Autos extends MM_OpMode {
                                 } else {
                                     state = STATES.DRIVE_TO_SCORE;
                                 }
-
-
                             }
                         } else { //HP collect
                             if(robot.launcher.lowerSensorTriggered()){

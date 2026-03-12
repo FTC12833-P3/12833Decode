@@ -322,7 +322,7 @@ public class MM_Launcher {
             targetLauncherVelocity = opMode.getClass() != MM_Autos.class ? ticksPerSecond * LAUNCH_ZONE_CO_EFF_FIELD_CENTER * 1.04 : ticksPerSecond * LAUNCH_ZONE_CO_EFF_FIELD_CENTER * 1.04;
             launchZone = "Field Center";
         } else if (launchDistance <= LAUNCH_ZONE_BOUNDARY_CLOSE_AUDIENCE) {
-            targetLauncherVelocity = opMode.getClass() != MM_Autos.class ? ticksPerSecond * LAUNCH_ZONE_CO_EFF_CLOSE_AUDIENCE * 1.04 : ticksPerSecond * LAUNCH_ZONE_CO_EFF_CLOSE_AUDIENCE * 1.02;
+            targetLauncherVelocity = opMode.getClass() != MM_Autos.class ? ticksPerSecond * LAUNCH_ZONE_CO_EFF_CLOSE_AUDIENCE * 1.04 : ticksPerSecond * LAUNCH_ZONE_CO_EFF_CLOSE_AUDIENCE * 1.04;
             launchZone = "Close Audience";
         } else {
             targetLauncherVelocity = ticksPerSecond * LAUNCH_ZONE_CO_EFF_AUDIENCE;
