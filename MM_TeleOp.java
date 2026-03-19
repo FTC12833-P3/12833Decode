@@ -9,6 +9,7 @@ public class MM_TeleOp extends MM_OpMode{
     public void runProcedures(){
         robot.drivetrain.enableBrakes();
         MM_Drivetrain.rotatePidController.resetController();
+        robot.launcher.calculateAndSetTargetLauncherVelocity();
         while(opModeIsActive()){
             previousGamepad1.copy(currentGamepad1); //TODO change to button pressed methods
             currentGamepad1.copy(gamepad1);

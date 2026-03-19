@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode;
 
 import static org.firstinspires.ftc.teamcode.MM_OpMode.alliance;
+import static org.firstinspires.ftc.teamcode.MM_OpMode.previousGamepad2;
 
 import com.acmerobotics.dashboard.config.Config;
 import com.qualcomm.robotcore.hardware.AnalogInput;
@@ -83,6 +84,9 @@ public class MM_Launcher {
     double serverNormalizedError = 0;
     double launchAttempts;
 
+    double targetPusherPos = PUSHER_BOTTOM_POSITION;
+    boolean rapidFiring = false;
+
     public MM_Launcher(MM_OpMode opMode) {
         this.opMode = opMode;
 
@@ -106,29 +110,22 @@ public class MM_Launcher {
     }
 
     public void runLauncher() {
-        double pusherPos = getAxonPosition(pusherEncoder);
         double serverPos = getAxonPosition(serverEncoder);
 
-        calculateAndSetTargetLauncherVelocity();
-
-        if (opMode.gamepad2.yWasPressed()) { //bring pusher to bottom
-            pusher.setPosition(PUSHER_BOTTOM_POSITION);
-            opMode.multipleTelemetry.addData("Pusher Position", "Bottom Position");
-        } else if (opMode.gamepad2.bWasPressed()) { //TODO add velocity up to speed
-            if (pusherPosWithinThreshold(PUSHER_BOTTOM_POSITION)) {
-                pusher.setPosition(PUSHER_POSITION_1);
-                opMode.multipleTelemetry.addData("Pusher Position", "Position 1");
-            } else if (pusherPosWithinThreshold(PUSHER_POSITION_1)) {
-                pusher.setPosition(PUSHER_POSITION_2);
-                opMode.multipleTelemetry.addData("Pusher Position", "Position 2");
-            } else if (pusherPosWithinThreshold(PUSHER_POSITION_2)) {
-                pusher.setPosition(PUSHER_POSITION_3);
-                opMode.multipleTelemetry.addData("Pusher Position", "Position 3");
-            } else if (pusherPosWithinThreshold(PUSHER_POSITION_3)) {
-                pusher.setPosition(PUSHER_BOTTOM_POSITION);
-                opMode.multipleTelemetry.addData("Pusher Position", "Bottom Position");
-            }
+        if (opMode.gamepad2.left_trigger > 0.1 && !(previousGamepad2.left_trigger > 0.1)) {
+            rapidFiring = true;
         }
+
+        if (rapidFiring) { //rapid fire
+            incrementPusherTargetPos();
+        } else if (opMode.gamepad2.yWasPressed()) { //bring pusher to bottom
+            targetPusherPos = PUSHER_BOTTOM_POSITION;
+            pusher.setPosition(PUSHER_BOTTOM_POSITION);
+        } else if (opMode.gamepad2.bWasPressed()) { // single launch
+            incrementPusherTargetPos();
+        }
+
+        opMode.multipleTelemetry.addData("Pusher Target Position", targetPusherPos); //TODO make string variable for word of pusher pos
 
 //        double pusherPos = getAxonDegrees(pusherEncoder);
 //        double serverPos = getAxonDegrees(serverEncoder);
@@ -149,7 +146,7 @@ public class MM_Launcher {
 //            }
 //            serverStopPoint = 281;
 //        } else if (Math.abs(pusherPos / 360 - PUSHER_POSITION_3) <= .02) { //done launching
-//            serverStopPoint = 45; //used to be 110 but this hopefully stops us from colleting 4 artifacts
+//            serverStopPoint = 45; //used to be 110 but this hopefully stops us from collecting 4 artifacts
 //            pusher.setPosition(PUSHER_BOTTOM_POSITION);
 //            opMode.robot.drivetrain.autoLockInToAprilTag = true;
 //        }
@@ -326,7 +323,7 @@ public class MM_Launcher {
         }
     }
 
-    private double calculateAndSetTargetLauncherVelocity() {
+    public double calculateAndSetTargetLauncherVelocity() {
         double launchDistance = Math.abs(Math.hypot(projectileTarget.getX() - opMode.robot.drivetrain.navigation.getX(),
                 projectileTarget.getY() - opMode.robot.drivetrain.navigation.getY())); // unit is inches
         double metersPerSecond = Math.sqrt((9.81 * launchDistance * 0.0254) / Math.sin(LAUNCHER_ANGLE * 2));
@@ -372,6 +369,26 @@ public class MM_Launcher {
         }
 
         return Math.abs(error) < PUSHER_POS_THRESHOLD;
+    }
+
+    private void incrementPusherTargetPos() {
+        double targetVelocity = calculateAndSetTargetLauncherVelocity();
+        boolean velocityCorrect = Math.abs(targetVelocity - launchMotorLeft.getVelocity()) < 50;
+
+        if (velocityCorrect) {
+            if (pusherPosWithinThreshold(PUSHER_BOTTOM_POSITION)) {
+                targetPusherPos = PUSHER_POSITION_1;
+            } else if (pusherPosWithinThreshold(PUSHER_POSITION_1)) {
+                targetPusherPos = PUSHER_POSITION_2;
+            } else if (pusherPosWithinThreshold(PUSHER_POSITION_2)) {
+                targetPusherPos = PUSHER_POSITION_3;
+            } else if (pusherPosWithinThreshold(PUSHER_POSITION_3)) {
+                targetPusherPos = PUSHER_BOTTOM_POSITION;
+                rapidFiring = false;
+            }
+
+            pusher.setPosition(targetPusherPos);
+        }
     }
 
     private double calculateNormalizedServerError(double target, boolean launching) {
