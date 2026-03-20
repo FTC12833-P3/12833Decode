@@ -80,7 +80,9 @@ public class MM_Launcher {
     private boolean serverIsReady = false;
     private boolean launching = false;
     private boolean attemptedShot;
-    public static int serverStopPoint = 110;
+    private final static int SERVER_STOP_POINT_COLLECT = 45;
+    private final static int SERVER_STOP_POINT_LAUNCH = 280;
+    public static int serverStopPoint = SERVER_STOP_POINT_COLLECT;
     double serverNormalizedError = 0;
     double launchAttempts;
 
@@ -377,13 +379,16 @@ public class MM_Launcher {
 
         if (velocityCorrect) {
             if (pusherPosWithinThreshold(PUSHER_BOTTOM_POSITION)) {
-                targetPusherPos = PUSHER_POSITION_1;
+                if (Math.abs(moveServerForLaunch()) < 30) {
+                    targetPusherPos = PUSHER_POSITION_1;
+                }
             } else if (pusherPosWithinThreshold(PUSHER_POSITION_1)) {
                 targetPusherPos = PUSHER_POSITION_2;
             } else if (pusherPosWithinThreshold(PUSHER_POSITION_2)) {
                 targetPusherPos = PUSHER_POSITION_3;
             } else if (pusherPosWithinThreshold(PUSHER_POSITION_3)) {
                 targetPusherPos = PUSHER_BOTTOM_POSITION;
+                moveServerForCollect();
                 rapidFiring = false;
             }
 
@@ -391,14 +396,25 @@ public class MM_Launcher {
         }
     }
 
+    private void moveServerForCollect() {
+        double error = getAxonDegrees(serverEncoder) - SERVER_STOP_POINT_COLLECT;
+        server.setPower(serverPIDController.getPID(error));
+    }
+
+    private double moveServerForLaunch() {
+        double error = getAxonDegrees(serverEncoder) - SERVER_STOP_POINT_LAUNCH;
+        server.setPower(serverPIDController.getPID(error));
+        return error;
+    }
+
     private double calculateNormalizedServerError(double target, boolean launching) {
         double currentPos = getAxonDegrees(serverEncoder);
         opMode.multipleTelemetry.addData("servoEncoder", currentPos);
         double error;
         if (launching) {
-            error = target <= (currentPos + 15) ? -(target + (360 - currentPos)) : -(target - currentPos);
+            error = target <= (currentPos + 15) ? currentPos - target - 360 : currentPos - target;
         } else {
-            error = (Math.abs(target - currentPos) < Math.abs((target - 360) - currentPos)) ? currentPos - target : -((target - 360) - currentPos);
+            error = (Math.abs(target - currentPos) < Math.abs((target - 360) - currentPos)) ? currentPos - target : (currentPos + 360) - target;
         }
         opMode.multipleTelemetry.addData("serverNormalizedError", error);
         return error;
