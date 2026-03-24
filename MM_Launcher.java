@@ -11,6 +11,7 @@ import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DistanceSensor;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
+import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 
@@ -83,6 +84,7 @@ public class MM_Launcher {
     private final static int SERVER_STOP_POINT_COLLECT = 45;
     private final static int SERVER_STOP_POINT_LAUNCH = 280;
     public static int serverStopPoint = SERVER_STOP_POINT_COLLECT;
+    private int currentServerStopPoint = SERVER_STOP_POINT_COLLECT;
     double serverNormalizedError = 0;
     double launchAttempts;
 
@@ -112,8 +114,6 @@ public class MM_Launcher {
     }
 
     public void runLauncher() {
-        double serverPos = getAxonPosition(serverEncoder);
-
         if (opMode.gamepad2.left_trigger > 0.1 && !(previousGamepad2.left_trigger > 0.1)) {
             rapidFiring = true;
         }
@@ -127,7 +127,18 @@ public class MM_Launcher {
             incrementPusherTargetPos();
         }
 
+        double serverPos = getAxonDegrees(serverEncoder);
+        double serverError = currentServerStopPoint - serverPos;
+
+        if (Math.abs(serverError) > 10) {
+            server.setPower(Range.clip(serverError * 0.008, -1, 1));
+        } else {
+            server.setPower(0);
+        }
+
         opMode.multipleTelemetry.addData("Pusher Target Position", targetPusherPos); //TODO make string variable for word of pusher pos
+        opMode.multipleTelemetry.addData("Server Target Position", currentServerStopPoint);
+        opMode.multipleTelemetry.addData("Server Error", serverError);
 
 //        double pusherPos = getAxonDegrees(pusherEncoder);
 //        double serverPos = getAxonDegrees(serverEncoder);
@@ -379,7 +390,7 @@ public class MM_Launcher {
 
         if (velocityCorrect) {
             if (pusherPosWithinThreshold(PUSHER_BOTTOM_POSITION)) {
-                if (Math.abs(moveServerForLaunch()) < 30) {
+                if (Math.abs(setServerForLaunch()) < 60) {
                     targetPusherPos = PUSHER_POSITION_1;
                 }
             } else if (pusherPosWithinThreshold(PUSHER_POSITION_1)) {
@@ -388,7 +399,7 @@ public class MM_Launcher {
                 targetPusherPos = PUSHER_POSITION_3;
             } else if (pusherPosWithinThreshold(PUSHER_POSITION_3)) {
                 targetPusherPos = PUSHER_BOTTOM_POSITION;
-                moveServerForCollect();
+                currentServerStopPoint = SERVER_STOP_POINT_COLLECT;
                 rapidFiring = false;
             }
 
@@ -396,15 +407,9 @@ public class MM_Launcher {
         }
     }
 
-    private void moveServerForCollect() {
-        double error = getAxonDegrees(serverEncoder) - SERVER_STOP_POINT_COLLECT;
-        server.setPower(serverPIDController.getPID(error));
-    }
-
-    private double moveServerForLaunch() {
-        double error = getAxonDegrees(serverEncoder) - SERVER_STOP_POINT_LAUNCH;
-        server.setPower(serverPIDController.getPID(error));
-        return error;
+    private double setServerForLaunch() {
+        currentServerStopPoint = SERVER_STOP_POINT_LAUNCH;
+        return getAxonDegrees(serverEncoder) - SERVER_STOP_POINT_LAUNCH;
     }
 
     private double calculateNormalizedServerError(double target, boolean launching) {
