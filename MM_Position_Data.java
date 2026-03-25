@@ -106,7 +106,11 @@ public class MM_Position_Data {
                     currentPos = odometryController.getUpdatedPositon();
 
                     if (opMode.opModeInInit()) {
-                        MM_OpMode.alliance = MM_VisionPortal.startingTag == 20 ? -1 : 1; //blue = -1
+                        if (MM_VisionPortal.startingTag == 20) { //blue
+                            MM_OpMode.alliance = -1;
+                        } else if (MM_VisionPortal.startingTag == 24) { //red
+                            MM_OpMode.alliance = 1;
+                        }
                     }
                     opMode.robot.launcher.updateProjectileTarget();
 

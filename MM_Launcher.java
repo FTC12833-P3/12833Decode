@@ -118,11 +118,14 @@ public class MM_Launcher {
             rapidFiring = true;
         }
 
-        if (rapidFiring) { //rapid fire
-            incrementPusherTargetPos();
-        } else if (opMode.gamepad2.yWasPressed()) { //bring pusher to bottom
+        if (opMode.gamepad2.yWasPressed()) { //bring pusher to bottom
+            rapidFiring = false;
             targetPusherPos = PUSHER_BOTTOM_POSITION;
             pusher.setPosition(PUSHER_BOTTOM_POSITION);
+        }
+
+        if (rapidFiring) { //rapid fire
+            incrementPusherTargetPos();
         } else if (opMode.gamepad2.bWasPressed()) { // single launch
             incrementPusherTargetPos();
         }
@@ -370,7 +373,7 @@ public class MM_Launcher {
         return calculatedVelocity;
     }
 
-    private boolean pusherPosWithinThreshold(double pusherPosTarget){
+    private boolean pusherPosWithinThreshold(double pusherPosTarget) {
         double pusherPos = getAxonPosition(pusherEncoder);
         double error = pusherPosTarget - pusherPos;
 
@@ -388,23 +391,23 @@ public class MM_Launcher {
         double targetVelocity = calculateAndSetTargetLauncherVelocity();
         boolean velocityCorrect = Math.abs(targetVelocity - launchMotorLeft.getVelocity()) < 50;
 
-        if (velocityCorrect) {
-            if (pusherPosWithinThreshold(PUSHER_BOTTOM_POSITION)) {
-                if (Math.abs(setServerForLaunch()) < 60) {
+        if (pusherPosWithinThreshold(PUSHER_BOTTOM_POSITION)) {
+            if (Math.abs(setServerForLaunch()) < 180) {
+                if (velocityCorrect) {
                     targetPusherPos = PUSHER_POSITION_1;
                 }
-            } else if (pusherPosWithinThreshold(PUSHER_POSITION_1)) {
-                targetPusherPos = PUSHER_POSITION_2;
-            } else if (pusherPosWithinThreshold(PUSHER_POSITION_2)) {
-                targetPusherPos = PUSHER_POSITION_3;
-            } else if (pusherPosWithinThreshold(PUSHER_POSITION_3)) {
-                targetPusherPos = PUSHER_BOTTOM_POSITION;
-                currentServerStopPoint = SERVER_STOP_POINT_COLLECT;
-                rapidFiring = false;
             }
-
-            pusher.setPosition(targetPusherPos);
+        } else if (pusherPosWithinThreshold(PUSHER_POSITION_1) && velocityCorrect) {
+            targetPusherPos = PUSHER_POSITION_2;
+        } else if (pusherPosWithinThreshold(PUSHER_POSITION_2) && velocityCorrect) {
+            targetPusherPos = PUSHER_POSITION_3;
+        } else if (pusherPosWithinThreshold(PUSHER_POSITION_3)) {
+            targetPusherPos = PUSHER_BOTTOM_POSITION;
+            currentServerStopPoint = SERVER_STOP_POINT_COLLECT;
+            rapidFiring = false;
         }
+
+        pusher.setPosition(targetPusherPos);
     }
 
     private double setServerForLaunch() {

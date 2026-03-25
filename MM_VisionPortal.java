@@ -33,7 +33,6 @@ import java.util.concurrent.atomic.AtomicReference;
 public class MM_VisionPortal {
     public MM_OpMode opMode;
 
-
     private VisionPortal visionPortal;
     private AprilTagProcessor aprilTagProcessor;
     private Limelight3A limelight;
@@ -49,17 +48,31 @@ public class MM_VisionPortal {
     }
 
     public Pose2D setPosFromApriltag(){
+        int tagID = -1;
+
         java.util.ArrayList<AprilTagDetection> detections = aprilTagProcessor.getDetections();
 
         if(!detections.isEmpty() && detections.get(0).ftcPose != null){
-            opMode.multipleTelemetry.addData("xIntrins", round2Dec(detections.get(0).ftcPose.x));
-            opMode.multipleTelemetry.addData("yIntrins", round2Dec(detections.get(0).ftcPose.y));
-            opMode.multipleTelemetry.addData("yawIntrins", round2Dec(detections.get(0).ftcPose.yaw));
-            startingTag = detections.get(0).id;
-            previousIntrinsicX = intrinsicX;
-            intrinsicX = detections.get(0).ftcPose.x;
-            return new Pose2D(DistanceUnit.INCH, detections.get(0).robotPose.getPosition().x,
-                    detections.get(0).robotPose.getPosition().y, AngleUnit.DEGREES, detections.get(0).robotPose.getOrientation().getYaw());
+            if (detections.get(0).id == 20 || detections.get(0).id == 24) {
+                tagID = 0;
+            } else if (detections.size() > 1 && (detections.get(1).id == 20 || detections.get(1).id == 24)) {
+                tagID = 1;
+            }
+
+            if (tagID != -1) {
+                startingTag = detections.get(tagID).id;
+                previousIntrinsicX = intrinsicX;
+                intrinsicX = detections.get(tagID).ftcPose.x;
+
+                opMode.multipleTelemetry.addData("xIntrins", round2Dec(detections.get(tagID).ftcPose.x));
+                opMode.multipleTelemetry.addData("yIntrins", round2Dec(detections.get(tagID).ftcPose.y));
+                opMode.multipleTelemetry.addData("yawIntrins", round2Dec(detections.get(tagID).ftcPose.yaw));
+
+                return new Pose2D(DistanceUnit.INCH, detections.get(tagID).robotPose.getPosition().x,
+                        detections.get(tagID).robotPose.getPosition().y, AngleUnit.DEGREES, detections.get(tagID).robotPose.getOrientation().getYaw());
+            }
+
+            return null;
         }
         return null;
     }
