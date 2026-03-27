@@ -38,8 +38,8 @@ public class MM_Launcher {
     public static final MM_Position projectileTarget = new MM_Position(-62, 62 * alliance, 0); //goal pos
 
     public static double LAUNCH_ZONE_CO_EFF_AUDIENCE = 2.5; // not really using this
-    public static double LAUNCH_ZONE_CO_EFF_CLOSE_AUDIENCE = 2.3;
-    public static double LAUNCH_ZONE_CO_EFF_FIELD_CENTER = 2.35;
+    public static double LAUNCH_ZONE_CO_EFF_CLOSE_AUDIENCE = 2.2;
+    public static double LAUNCH_ZONE_CO_EFF_FIELD_CENTER = 2.3;
     public static double LAUNCH_ZONE_CO_EFF_GOAL_MID = 2.55;
     public static double LAUNCH_ZONE_CO_EFF_GOAL_NEAR = 2;
 
@@ -54,7 +54,7 @@ public class MM_Launcher {
     public static double PUSHER_BOTTOM_POSITION = .2;
     public static double PUSHER_POSITION_1 = .65;
     public static double PUSHER_POSITION_2 = .77;
-    public static double PUSHER_POSITION_3 = .91;
+    public static double PUSHER_POSITION_3 = .95;
     public static double AXON_ENCODER_CO_EFF = 1;
     private final double PUSHER_POS_THRESHOLD = 0.05;
     private final double PUSHER_POS_BOTTOM_THRESHOLD = 0.33; //this is a bad way to do this but it works
@@ -114,6 +114,8 @@ public class MM_Launcher {
     }
 
     public void runLauncher() {
+        calculateAndSetTargetLauncherVelocity(); //for launch zone telemetry - don't need after testing
+
         if (opMode.gamepad2.left_trigger > 0.1 && !(previousGamepad2.left_trigger > 0.1)) {
             rapidFiring = true;
         }
@@ -318,7 +320,7 @@ public class MM_Launcher {
             opMode.multipleTelemetry.addData("serverisready", serverIsReady);
             opMode.multipleTelemetry.addData("servo pos", pusherPos / 360);
 
-            if (Math.abs(launchMotorLeft.getVelocity() - targetLauncherVelocity) < 50 && launching) {
+            if (Math.abs(launchMotorLeft.getVelocity() - targetLauncherVelocity) < 10 && launching) {
                 if (pusherPos / 360 >= pusher.getPosition() - .02 && pusher.getPosition() >= PUSHER_BOTTOM_POSITION - .02) {
                     server.setPower(Math.abs(serverPIDController.getPID(serverError < serverStopPoint ? serverError : serverStopPoint + (360 - serverPos))));
                     if (serverPos < 90) {
@@ -389,7 +391,7 @@ public class MM_Launcher {
 
     private void incrementPusherTargetPos() {
         double targetVelocity = calculateAndSetTargetLauncherVelocity();
-        boolean velocityCorrect = Math.abs(targetVelocity - launchMotorLeft.getVelocity()) < 50;
+        boolean velocityCorrect = Math.abs(targetVelocity - launchMotorLeft.getVelocity()) < 10;
 
         if (pusherPosWithinThreshold(PUSHER_BOTTOM_POSITION)) {
             if (Math.abs(setServerForLaunch()) < 180) {
@@ -408,6 +410,9 @@ public class MM_Launcher {
         }
 
         pusher.setPosition(targetPusherPos);
+
+        opMode.multipleTelemetry.addData("left motor velocity", launchMotorLeft.getVelocity());
+        opMode.multipleTelemetry.addData("left motor target velocity", targetVelocity);
     }
 
     private double setServerForLaunch() {

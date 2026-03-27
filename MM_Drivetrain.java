@@ -83,7 +83,7 @@ public class MM_Drivetrain {
         if(currentGamepad1.y && !previousGamepad1.y){ //toggle lock position far shot
             //navigation.updatePosition();
             positionLocked = !positionLocked;
-            MM_Position_Data.targetPos.setAll(53, 17 * alliance, 158.2 * alliance);
+            MM_Position_Data.targetPos.setAll(54, 16 * alliance, 158.2 * alliance);
 
             if (!positionLocked) {
                 autoLockInToAprilTag = true;
@@ -258,8 +258,8 @@ public class MM_Drivetrain {
         return error;
     }
     private double calculateDesiredAngle(){
-        double xError = MM_Launcher.projectileTarget.getX() - navigation.getX(); //-3
-        double yError = MM_Launcher.projectileTarget.getY() - navigation.getY(); //+3
+        double xError = MM_Launcher.projectileTarget.getX() - navigation.getX() - 5; //-3
+        double yError = MM_Launcher.projectileTarget.getY() - navigation.getY() + 5; //+3
         double angle = Math.toDegrees(Math.atan2(yError, xError));
         opMode.multipleTelemetry.addData("desiredAngle", angle);
         opMode.multipleTelemetry.addData("currentAngle", Math.toDegrees(navigation.odometryController.getHeading()));
