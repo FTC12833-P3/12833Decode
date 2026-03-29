@@ -54,7 +54,7 @@ public class MM_Launcher {
     public static double PUSHER_BOTTOM_POSITION = .2;
     public static double PUSHER_POSITION_1 = .65;
     public static double PUSHER_POSITION_2 = .77;
-    public static double PUSHER_POSITION_3 = .95;
+    public static double PUSHER_POSITION_3 = .93;
     public static double AXON_ENCODER_CO_EFF = 1;
     private final double PUSHER_POS_THRESHOLD = 0.05;
     private final double PUSHER_POS_BOTTOM_THRESHOLD = 0.33; //this is a bad way to do this but it works
@@ -393,26 +393,43 @@ public class MM_Launcher {
         double targetVelocity = calculateAndSetTargetLauncherVelocity();
         boolean velocityCorrect = Math.abs(targetVelocity - launchMotorLeft.getVelocity()) < 10;
 
-        if (pusherPosWithinThreshold(PUSHER_BOTTOM_POSITION)) {
-            if (Math.abs(setServerForLaunch()) < 180) {
-                if (velocityCorrect) {
-                    targetPusherPos = PUSHER_POSITION_1;
+        if (targetPusherPos == PUSHER_BOTTOM_POSITION) {
+            if (pusherPosWithinThreshold(PUSHER_BOTTOM_POSITION)) {
+                if (Math.abs(setServerForLaunch()) < 180) {
+                    if (velocityCorrect) {
+                        targetPusherPos = PUSHER_POSITION_1;
+                    }
                 }
             }
-        } else if (pusherPosWithinThreshold(PUSHER_POSITION_1) && velocityCorrect) {
-            targetPusherPos = PUSHER_POSITION_2;
-        } else if (pusherPosWithinThreshold(PUSHER_POSITION_2) && velocityCorrect) {
-            targetPusherPos = PUSHER_POSITION_3;
-        } else if (pusherPosWithinThreshold(PUSHER_POSITION_3)) {
-            targetPusherPos = PUSHER_BOTTOM_POSITION;
-            currentServerStopPoint = SERVER_STOP_POINT_COLLECT;
-            rapidFiring = false;
+        } else if (targetPusherPos == PUSHER_POSITION_1) {
+            if (pusherPosWithinThreshold(PUSHER_POSITION_1) && velocityCorrect) {
+                targetPusherPos = PUSHER_POSITION_2;
+            }
+        } else if (targetPusherPos == PUSHER_POSITION_2) {
+            if (pusherPosWithinThreshold(PUSHER_POSITION_2) && velocityCorrect) {
+                targetPusherPos = PUSHER_POSITION_3;
+            }
+        } else if (targetPusherPos == PUSHER_POSITION_3) {
+            if (pusherPosWithinThreshold(PUSHER_POSITION_3)) {
+                targetPusherPos = PUSHER_BOTTOM_POSITION;
+                setServerForCollect();
+                rapidFiring = false;
+            }
         }
 
         pusher.setPosition(targetPusherPos);
 
         opMode.multipleTelemetry.addData("left motor velocity", launchMotorLeft.getVelocity());
         opMode.multipleTelemetry.addData("left motor target velocity", targetVelocity);
+    }
+
+    private double setServerForCollect() {
+        currentServerStopPoint = SERVER_STOP_POINT_COLLECT;
+        return getAxonDegrees(serverEncoder) - SERVER_STOP_POINT_COLLECT;
+    }
+
+    public boolean serverReadyForCollect() {
+        return Math.abs(setServerForCollect()) < 10;
     }
 
     private double setServerForLaunch() {
