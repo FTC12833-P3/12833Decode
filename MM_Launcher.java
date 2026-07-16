@@ -120,6 +120,10 @@ public class MM_Launcher {
             rapidFiring = true;
         }
 
+        if (opMode.gamepad2.dpadDownWasPressed()) {
+            rapidFiring = false;
+        }
+
         if (opMode.gamepad2.yWasPressed()) { //bring pusher to bottom
             rapidFiring = false;
             targetPusherPos = PUSHER_BOTTOM_POSITION;
