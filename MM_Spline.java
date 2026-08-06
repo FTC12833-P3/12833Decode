@@ -15,7 +15,7 @@ public class MM_Spline {
             double t = (1.0 /sections) * i;
             this.xPoints[i] = xHandles[1] + Math.pow((1-t), 2) * (xHandles[0] - xHandles[1]) + Math.pow(t, 2) * (xHandles[2] - xHandles[1]); //equation for quadratic Bezier curve
             this.yPoints[i] = yHandles[1] + Math.pow((1-t), 2) * (yHandles[0] - yHandles[1]) + Math.pow(t, 2) * (yHandles[2] - yHandles[1]);
-            if (i >0){
+            if (i > 0){
                 sectionLengths[i - 1] = Math.hypot(this.xPoints[i-1] - this.xPoints[i], this.yPoints[i-1] - this.yPoints[i]);
                 fullCurveLength += sectionLengths[i - 1];
             }

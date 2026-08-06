@@ -1,9 +1,9 @@
 package org.firstinspires.ftc.teamcode;
 
 public class MM_Position {
-    public double x = 0;
-    public double y = 0;
-    public double heading = 0;
+    private double x = 0;
+    private double y = 0;
+    private double heading = 0;
 
     public MM_Position(double x, double y, double heading) {
         setAll(x, y, heading);
@@ -21,8 +21,10 @@ public class MM_Position {
         return heading;
     }
 
-    public void setX(double newX){
-        x = newX;
+    public void setX(double x){
+        if (Math.abs(x) < 63) { // check if x is valid
+            this.x = x;
+        }
     }
 
     public void setY(double newY){

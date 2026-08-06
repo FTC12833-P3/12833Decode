@@ -8,7 +8,7 @@ import java.util.Arrays;
 @Autonomous(name = "autos", group = "MM")
 public class MM_Autos extends MM_OpMode {
     public static final int REGULAR_DRIVE_D_CO_EFF = 30;
-    public static int SPLINE_DETAIL_LEVEL = 20;
+    public static final int SPLINE_DETAIL_LEVEL = 20; //TODO test different values
 
     private enum STATES {
         DRIVE_TO_SCORE,
