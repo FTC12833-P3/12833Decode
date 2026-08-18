@@ -51,11 +51,11 @@ public class MM_Autos extends MM_OpMode {
 
         if(settings[SETTINGS.HP_COLLECT.ordinal()] == 1 && settings[SETTINGS.GOAL_SIDE.ordinal()] == 0){
             finalSpike = 20; //we want to try for as many as possible
-        } else if(settings[SETTINGS.ALL_SPIKES.ordinal()] != 0 || settings[SETTINGS.SPIKE_3.ordinal()] != 0){
+        } else if(settings[SETTINGS.ALL_SPIKES.ordinal()] == 1 || settings[SETTINGS.SPIKE_3.ordinal()] == 1){
             finalSpike = 2;
-        } else if (settings[SETTINGS.SPIKE_2.ordinal()] != 0){
+        } else if (settings[SETTINGS.SPIKE_2.ordinal()] == 1){
             finalSpike = 1;
-        } else if (settings[SETTINGS.SPIKE_1.ordinal()] != 0){
+        } else if (settings[SETTINGS.SPIKE_1.ordinal()] == 1){
             finalSpike = 0;
         }
         gameTime.reset();
@@ -87,9 +87,8 @@ public class MM_Autos extends MM_OpMode {
                                     MM_Position_Data.targetPos.setHeading(158.2 * alliance);
                                     targetHeading = 158.2 * alliance;
                                 }
-
                             }
-                            driveTime.reset();
+                            driveTime.reset(); //not being used...
                         } else if (robot.drivetrain.driveDone()) {
                             if(splineDone(true)){
                                 MM_Collector.runCollector = true;
@@ -98,14 +97,13 @@ public class MM_Autos extends MM_OpMode {
                             } else {
                                 setNextSplinePoint(currentSpline, true);
                                 if(settings[SETTINGS.GOAL_SIDE.ordinal()] == 1){
-                                    MM_Position_Data.targetPos.setHeading(alliance == BLUE ? -138.5 : 133);
                                     targetHeading = alliance == BLUE ? -138.5 : 133;
+                                    MM_Position_Data.targetPos.setHeading(targetHeading);
                                 } else {
-                                    MM_Position_Data.targetPos.setHeading(158.2 * alliance);
                                     targetHeading = 158.2 * alliance;
+                                    MM_Position_Data.targetPos.setHeading(targetHeading);
                                 }
                             }
-
                         }
                         break;
                     case SCORE:
@@ -119,7 +117,7 @@ public class MM_Autos extends MM_OpMode {
                             }
                             if (settings[SETTINGS.ELIMINATION_MATCH.ordinal()] == 0) {
                                 if (motif == -1) {
-                                    state = STATES.LOOK_AT_MOTIF;
+                                    state = STATES.LOOK_AT_MOTIF; //collect cycle is probably now 3
                                 } else if (settings[SETTINGS.ALL_SPIKES.ordinal()] == 0) {
                                     if (settings[SETTINGS.SPIKE_1.ordinal()] == 1 && motif != 0 && collectCycle < 0) {
                                         collectCycle = 0;
@@ -133,13 +131,13 @@ public class MM_Autos extends MM_OpMode {
                                 }
                             } else {
                                 motifDone = true;
-                                if (allSpikes != 0) {
+                                if (allSpikes == 1) { //why not in settings format???
                                     collectCycle++;
-                                } else if (spike1 != 0 && collectCycle < 0) {
+                                } else if (spike1 == 1 && collectCycle < 0) {
                                     collectCycle = 0;
-                                } else if (spike2 != 0 && collectCycle < 1) {
+                                } else if (spike2 == 1 && collectCycle < 1) {
                                     collectCycle = 1;
-                                } else if (collectCycle < 2) {
+                                } else if (collectCycle < 2) { //should probably be spike3 == 1 && ...
                                     collectCycle = 2;
                                 }
                             }
@@ -151,7 +149,7 @@ public class MM_Autos extends MM_OpMode {
                     case LOOK_AT_MOTIF:
                         if (state != previousState) {
                             previousState = state;
-                            MM_Position_Data.targetPos.setHeading(150 * alliance);
+                            MM_Position_Data.targetPos.setHeading(150 * alliance); //angle needs to be negated to be correct
                         }
 
                         if (robot.drivetrain.driveDone()) {
@@ -173,10 +171,10 @@ public class MM_Autos extends MM_OpMode {
                             if (state != previousState) {
                                 MM_Position_Data.targetPos.setHeading(-90 * alliance);
                                 targetHeading = -90;
-                                if (collectCycle == 0) {
+                                if (collectCycle == 0) { //for the straight drive (not spline) to the first spike mark
                                     rotateDone = false;
                                 } else {
-                                    rotateDone = true;
+                                    rotateDone = true; //rotateDone being used to indicate if doing a spline or driving straight (rotateDone = spline)
                                     prepareToSpline(chosenSplineList.get(collectCycle), false);
 
                                 }
@@ -184,7 +182,7 @@ public class MM_Autos extends MM_OpMode {
                             }
 
                             if (robot.drivetrain.driveDone() && rotateDone) {
-                                previousState = state;
+                                previousState = state; //unnecessary??
                                 if (chosenSplineList.get(collectCycle) == null || (currentSpline != null && splineDone(false))) {
                                     state = STATES.COLLECT;
                                 } else if (currentSpline != null) {
@@ -220,11 +218,11 @@ public class MM_Autos extends MM_OpMode {
                             if (state != previousState) {
                                 previousState = state;
                             } else if (robot.drivetrain.driveDone()) {
-                                if (!motifDone) {
+                                if (!motifDone) { //motifDone isn't used to do anything...
                                     motifDone = true;
-                                    collectCycle = -1;
+                                    collectCycle = -1; //TODO figure out why collectCycle is getting reset
                                 }
-                                if ((collectCycle == 1 && (settings[SETTINGS.GOAL_SIDE.ordinal()] < 1) && (settings[SETTINGS.ALL_SPIKES.ordinal()] == 1)) || (collectCycle == 0 && (settings[SETTINGS.ALL_SPIKES.ordinal()] == 1 && settings[SETTINGS.GOAL_SIDE.ordinal()] == 1))) {
+                                if ((collectCycle == 1 && (settings[SETTINGS.GOAL_SIDE.ordinal()] == 0) && (settings[SETTINGS.ALL_SPIKES.ordinal()] == 1)) || (collectCycle == 0 && (settings[SETTINGS.ALL_SPIKES.ordinal()] == 1 && settings[SETTINGS.GOAL_SIDE.ordinal()] == 1))) {
                                     state = STATES.OPEN_GATE;
                                 } else {
                                     state = STATES.DRIVE_TO_SCORE;
@@ -288,9 +286,7 @@ public class MM_Autos extends MM_OpMode {
         targetY = spline.getNextPoint(currentSection)[1];
         MM_Position_Data.targetPos.setAll(targetX, targetY * alliance, targetHeading * alliance);
         currentSection = !reversed? currentSection + 1: currentSection - 1;
-
     }
-
 
     public void prepareToSpline(MM_Spline spline, boolean reversed) {
         spline.resetDistanceTraveled();

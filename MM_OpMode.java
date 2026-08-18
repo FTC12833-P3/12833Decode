@@ -51,7 +51,7 @@ public abstract class MM_OpMode extends LinearOpMode {
         HP_COLLECT,
     }
 
-    int[] settings = {allSpikes, spike1, spike2, spike3, eliminationMatch, goalSide, hpCollect};
+    int[] settings = {allSpikes, spike1, spike2, spike3, eliminationMatch, goalSide, hpCollect}; //why is settings here twice???
     String[] settingsNames = {"AllSpikesEnabled", "spike1Enabled", "spike2Enabled", "spike3Enabled", "Elimination Match", "starting by goal", "hpCollect"};
     int currentSetting = 0;
     List<MM_Spline> goalSideCollectSplines;
