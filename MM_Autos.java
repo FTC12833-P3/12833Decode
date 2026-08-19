@@ -73,7 +73,7 @@ public class MM_Autos extends MM_OpMode {
                         if (state != previousState) {
                             previousState = state;
                             if(collectCycle == -1 ||(spike1Done && spike2Done) || chosenSplineList.get(collectCycle) == null) {
-                                if (settings[SETTINGS.GOAL_SIDE.ordinal()] == 1) {
+                                if (settings[SETTINGS.GOAL_SIDE.ordinal()] == 1) { //Since GOAL_SIDE.ordinal() is always 5 in the code, this is the same as saying settings[5]
                                     MM_Position_Data.targetPos.setAll(-20, 20 * alliance, alliance == BLUE ? -138.5 : 133);
                                 } else {
                                     MM_Position_Data.targetPos.setAll(53, 17 * alliance, 158.2 * alliance);
@@ -115,9 +115,9 @@ public class MM_Autos extends MM_OpMode {
                             if (collectCycle >= finalSpike) {
                                 lastCycle = true;
                             }
-                            if (settings[SETTINGS.ELIMINATION_MATCH.ordinal()] == 0) {
-                                if (motif == -1) {
-                                    state = STATES.LOOK_AT_MOTIF; //collect cycle is probably now 3
+                            if (settings[SETTINGS.ELIMINATION_MATCH.ordinal()] == 0) { // If we aren't in an elimination match.
+                                if (motif == -1) { //Motif is always -1 the first time through the code.
+                                    state = STATES.LOOK_AT_MOTIF; //collectCycle should equal 0, 1, or 2 depending on the obelisk, not 3 as we originally thought.
                                 } else if (settings[SETTINGS.ALL_SPIKES.ordinal()] == 0) {
                                     if (settings[SETTINGS.SPIKE_1.ordinal()] == 1 && motif != 0 && collectCycle < 0) {
                                         collectCycle = 0;
@@ -153,9 +153,12 @@ public class MM_Autos extends MM_OpMode {
                         }
 
                         if (robot.drivetrain.driveDone()) {
-                            robot.drivetrain.navigation.visionPortal.setMotif();
+                            robot.drivetrain.navigation.visionPortal.setMotif(); // Motif variable will become either 0, 1, or 2 depending on the obelisk.
                             if (motif != -2) {
                                 collectCycle = Math.abs(motif - 2);
+                                // If motif is 0, collectCycle becomes 2.
+                                // If motif is 1, collectCycle becomes 1.
+                                // If motif is 2, collectCycle becomes 0.
                             }
                             state = STATES.COLLECT;
                         }
